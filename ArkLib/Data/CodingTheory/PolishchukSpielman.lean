@@ -126,5 +126,5 @@ lemma Polishchuk_Spielman {F : Type} [Field F]
     ∧ (∃ Q_x : Finset F, Q_x.card ≥ n_x - a_x ∧ Q_x ⊆ P_x ∧
         ∀ x ∈ Q_x, Bivariate.evalX x P = quot_Y x)
     ∧ (∃ Q_y : Finset F, Q_y.card ≥ n_y - a_y ∧ Q_y ⊆ P_y ∧
-        ∀ y ∈ Q_y, Bivariate.evalX y P = quot_X y)
+        ∀ y ∈ Q_y, Bivariate.evalY y P = quot_X y)
     := sorry
