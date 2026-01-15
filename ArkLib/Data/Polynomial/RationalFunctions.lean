@@ -100,12 +100,32 @@ abbrev 𝒪 (H : F[X][Y]) : Type :=
 noncomputable instance {H : F[X][Y]} : Ring (𝒪 H) :=
   Ideal.Quotient.ring (Ideal.span {H_tilde' H})
 
-/-- The ring homomorphism defining the embedding of `𝒪` into `𝕃`. -/
-noncomputable def embeddingOf𝒪Into𝕃 (H : F[X][Y]) : 𝒪 H →+* 𝕃 H := by
-  apply Ideal.quotientMap
-        (I := Ideal.span {H_tilde' H}) (Ideal.span {H_tilde H})
-        bivPolyHom
-        sorry
+theorem bivPolyHom_HTilde'_eq_HTilde {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
+    (ToRatFunc.bivPolyHom (F := F)) (H_tilde' H) = H_tilde H := by
+  simpa [ToRatFunc.bivPolyHom, Polynomial.coe_mapRingHom] using
+    (H_tilde_equiv_H_tilde' (F := F) H)
+
+theorem embeddingOf𝒪Into𝕃_ideal_le {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
+    Ideal.span ({H_tilde' H} : Set F[X][Y]) ≤
+      (Ideal.span ({H_tilde H} : Set (Polynomial (RatFunc F)))).comap
+        (ToRatFunc.bivPolyHom (F := F)) := by
+  classical
+  -- Reduce to showing the generator lies in the comap ideal
+  rw [Ideal.span_singleton_le_iff_mem]
+  -- Unfold membership in a comap ideal and rewrite using the bridging lemma
+  simpa [Ideal.mem_comap, bivPolyHom_HTilde'_eq_HTilde (F := F) H] using
+    (Ideal.subset_span (by
+      simp : (H_tilde H) ∈ ({H_tilde H} : Set (Polynomial (RatFunc F)))))
+
+noncomputable def embeddingOf𝒪Into𝕃 {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
+    𝒪 H →+* 𝕃 H := by
+  classical
+  refine
+    Ideal.quotientMap
+      (I := Ideal.span ({H_tilde' H} : Set F[X][Y]))
+      (Ideal.span ({H_tilde H} : Set (Polynomial (RatFunc F))))
+      (ToRatFunc.bivPolyHom (F := F))
+      (embeddingOf𝒪Into𝕃_ideal_le (F := F) H)
 
 /-- The set of regular elements inside `𝕃 H`, i.e. the set of elements of `𝕃 H`
 that in fact lie in `𝒪 H`. -/
