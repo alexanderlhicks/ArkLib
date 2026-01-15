@@ -7,12 +7,17 @@ Authors: Katerina Hristova, František Silváši, Julian Sutherland, Ilia Vlasov
 import ArkLib.Data.Polynomial.Bivariate
 import ArkLib.Data.Polynomial.Prelims
 import Mathlib.Algebra.Field.IsField
+import Mathlib.Algebra.Group.Irreducible.Lemmas
+import Mathlib.Algebra.GroupWithZero.Associated
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.Algebra.Polynomial.Bivariate
 import Mathlib.Algebra.Polynomial.Eval.Defs
+import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.FieldTheory.RatFunc.Defs
 import Mathlib.RingTheory.Ideal.Quotient.Defs
 import Mathlib.RingTheory.Ideal.Span
+import Mathlib.RingTheory.Polynomial.Content
+import Mathlib.RingTheory.Polynomial.GaussLemma
 import Mathlib.RingTheory.PowerSeries.Basic
 import Mathlib.RingTheory.PowerSeries.Substitution
 
@@ -40,7 +45,7 @@ namespace BCIKS20AppendixA
 
 section
 
-variable {F : Type} [CommRing F] [IsDomain F]
+variable {F : Type} [Field F]
 
 /-- Construction of the monisized polynomial `H_tilde` in Appendix A.1 of [BCIKS20].
 Note: Here `H ∈ F[X][Y]` translates to `H ∈ F[Z][Y]` in [BCIKS20] and H_tilde in
@@ -53,10 +58,173 @@ noncomputable def H_tilde (H : F[X][Y]) : Polynomial (RatFunc F) :=
   let H' := Polynomial.eval₂ (RingHom.comp Polynomial.C univPolyHom) S H
   W ^ (d - 1) * H'
 
-/-- The monisized version H_tilde is irreducible if the originial polynomial H is irreducible. -/
-lemma irreducibleHTildeOfIrreducible {H : Polynomial (Polynomial F)} :
+theorem irreducible_comp_C_mul_X_iff {K : Type} [Field K] (a : K) (ha : a ≠ 0) (p : K[X]) :
+    Irreducible (p.comp (Polynomial.C a * Polynomial.X)) ↔ Irreducible p := by
+  classical
+  let f : K[X] →+* K[X] := Polynomial.compRingHom (Polynomial.C a * Polynomial.X)
+  let g : K[X] →+* K[X] := Polynomial.compRingHom (Polynomial.C a⁻¹ * Polynomial.X)
+  have hCa : (Polynomial.C a⁻¹ * Polynomial.C a : K[X]) = 1 := by
+    simpa [Polynomial.C_mul] using (congrArg Polynomial.C (inv_mul_cancel₀ ha))
+  have hCb : (Polynomial.C a * Polynomial.C a⁻¹ : K[X]) = 1 := by
+    simpa [Polynomial.C_mul] using (congrArg Polynomial.C (mul_inv_cancel₀ ha))
+  have hlin₁ : (Polynomial.C a⁻¹ * (Polynomial.C a * Polynomial.X) : K[X]) = Polynomial.X := by
+    calc
+      (Polynomial.C a⁻¹ * (Polynomial.C a * Polynomial.X) : K[X])
+          = (Polynomial.C a⁻¹ * Polynomial.C a) * Polynomial.X := by
+              simpa using (mul_assoc (Polynomial.C a⁻¹) (Polynomial.C a) Polynomial.X).symm
+      _ = Polynomial.X := by simp [hCa]
+  have hlin₂ : (Polynomial.C a * (Polynomial.C a⁻¹ * Polynomial.X) : K[X]) = Polynomial.X := by
+    calc
+      (Polynomial.C a * (Polynomial.C a⁻¹ * Polynomial.X) : K[X])
+          = (Polynomial.C a * Polynomial.C a⁻¹) * Polynomial.X := by
+              simpa using (mul_assoc (Polynomial.C a) (Polynomial.C a⁻¹) Polynomial.X).symm
+      _ = Polynomial.X := by simp [hCb]
+  have hcomp₁ :
+      ((Polynomial.C a⁻¹ * Polynomial.X).comp (Polynomial.C a * Polynomial.X) : K[X]) =
+        Polynomial.X := by
+    simpa [Polynomial.mul_X_comp] using hlin₁
+  have hcomp₂ :
+      ((Polynomial.C a * Polynomial.X).comp (Polynomial.C a⁻¹ * Polynomial.X) : K[X]) =
+        Polynomial.X := by
+    simpa [Polynomial.mul_X_comp] using hlin₂
+  have hf : f.comp g = RingHom.id K[X] := by
+    refine RingHom.ext ?_
+    intro q
+    simp [f, g, Polynomial.coe_compRingHom_apply, Polynomial.comp_assoc, hcomp₁]
+  have hg : g.comp f = RingHom.id K[X] := by
+    refine RingHom.ext ?_
+    intro q
+    simp [f, g, Polynomial.coe_compRingHom_apply, Polynomial.comp_assoc, hcomp₂]
+  let e : K[X] ≃+* K[X] := RingEquiv.ofRingHom f g hf hg
+  simpa [e, f, Polynomial.coe_compRingHom_apply] using
+    (MulEquiv.irreducible_iff (f := (e : K[X] ≃* K[X])) (x := p))
+
+theorem irreducible_map_univPolyHom_of_irreducible {F : Type} [Field F]
+    {H : Polynomial (Polynomial F)} (hdeg : H.natDegree ≠ 0) :
+    Irreducible H → Irreducible (H.map (ToRatFunc.univPolyHom (F := F))) := by
+  intro hH
+  classical
+  have hprim : H.IsPrimitive := Irreducible.isPrimitive hH hdeg
+  have hmap : Irreducible (H.map (algebraMap (Polynomial F) (RatFunc F))) :=
+    (Polynomial.IsPrimitive.irreducible_iff_irreducible_map_fraction_map (p := H) hprim).1 hH
+  simpa using hmap
+
+theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Polynomial F)}
+    (hdeg : H.natDegree ≠ 0) :
     (Irreducible H → Irreducible (H_tilde H)) := by
-  sorry
+  intro hH
+  classical
+  -- set up the constants appearing in `H_tilde`
+  let d : ℕ := H.natDegree
+  let lc : Polynomial F := H.coeff d
+  let a : RatFunc F := ToRatFunc.univPolyHom (F := F) lc
+  let W : Polynomial (RatFunc F) := Polynomial.C a
+
+  -- `lc` is nonzero (it is the leading coefficient)
+  have hH0 : H ≠ 0 := hH.ne_zero
+  have hlc0 : lc ≠ 0 := by
+    have hlead : H.leadingCoeff ≠ 0 := (Polynomial.leadingCoeff_ne_zero).2 hH0
+    simpa [lc, d, Polynomial.coeff_natDegree] using hlead
+
+  -- hence its image in `RatFunc F` is nonzero
+  have ha0 : a ≠ 0 := by
+    have hinj : Function.Injective (ToRatFunc.univPolyHom (F := F)) := by
+      simpa [ToRatFunc.univPolyHom] using (RatFunc.algebraMap_injective (K := F))
+    intro ha
+    apply hlc0
+    apply hinj
+    have hmap0 : ToRatFunc.univPolyHom (F := F) lc = 0 := by
+      simpa [a] using ha
+    calc
+      ToRatFunc.univPolyHom (F := F) lc = 0 := hmap0
+      _ = ToRatFunc.univPolyHom (F := F) 0 := by simp
+
+  -- irreducibility over `RatFunc F`
+  have hHmap : Irreducible (H.map (ToRatFunc.univPolyHom (F := F))) :=
+    irreducible_map_univPolyHom_of_irreducible (F := F) (H := H) hdeg hH
+
+  -- linear change of variables: irreducible `p` implies irreducible `p.comp (C a⁻¹ * X)`
+  have ha0' : (a⁻¹ : RatFunc F) ≠ 0 := inv_ne_zero ha0
+  have hcomp :
+      Irreducible
+        ((H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X)) :=
+    (irreducible_comp_C_mul_X_iff (K := RatFunc F) (a := a⁻¹) ha0'
+        (p := H.map (ToRatFunc.univPolyHom (F := F)))).2
+      hHmap
+
+  -- compute `X / W = C a⁻¹ * X`
+  have hS : (Polynomial.X / W) = Polynomial.C (a⁻¹) * Polynomial.X := by
+    calc
+      Polynomial.X / W = Polynomial.X / Polynomial.C a := by simp [W]
+      _ = Polynomial.X * Polynomial.C (a⁻¹) := by
+        simpa using (Polynomial.div_C (p := (Polynomial.X : Polynomial (RatFunc F))) (a := a))
+      _ = Polynomial.C (a⁻¹) * Polynomial.X := by
+        simpa using (Polynomial.X_mul_C (r := (a⁻¹ : RatFunc F)))
+
+  -- rewrite the evaluation polynomial `H'` as a composition
+  have hEval :
+      Polynomial.eval₂
+          (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F))) (Polynomial.X / W) H =
+        (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.X / W) := by
+    simpa [Polynomial.comp] using
+      (Polynomial.eval₂_map (p := H) (f := ToRatFunc.univPolyHom (F := F))
+            (g := (Polynomial.C : RatFunc F →+* Polynomial (RatFunc F)))
+            (x := (Polynomial.X / W))).symm
+
+  -- hence the `eval₂`-polynomial appearing in `H_tilde` is irreducible
+  have hH' :
+      Irreducible
+        (Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+          (Polynomial.X / W) H) := by
+    -- rewrite to the polynomial in `hcomp`
+    have hEq :
+        Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+            (Polynomial.X / W) H =
+          (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X) := by
+      calc
+        Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+            (Polynomial.X / W) H =
+          (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.X / W) := hEval
+        _ = (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X) := by
+          rw [hS]
+    simpa [hEq] using hcomp
+
+  -- the prefactor `W^(d-1)` is a unit
+  have hunitW : IsUnit (W ^ (d - 1)) := by
+    have haUnit : IsUnit a := (isUnit_iff_ne_zero).2 ha0
+    have hWUnit : IsUnit W := (Polynomial.isUnit_C).2 haUnit
+    exact (hWUnit.pow (d - 1))
+
+  rcases hunitW with ⟨u, hu⟩
+  have hu' : (u : Polynomial (RatFunc F)) = W ^ (d - 1) := by
+    simpa using hu
+
+  -- unfold `H_tilde` and finish using `irreducible_units_mul`
+  -- (multiplying by a unit does not affect irreducibility)
+  -- First, rewrite `H_tilde` into a product with left factor `W^(d-1)`.
+  have htilde_unfold :
+      H_tilde H =
+        (W ^ (d - 1)) *
+          (Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+            (Polynomial.X / W) H) := by
+    -- expand the `let`-bindings
+    simp [H_tilde, d, lc, a, W]
+
+  -- now apply the unit-multiplication lemma
+  have hirr_prod :
+      Irreducible
+        ((W ^ (d - 1)) *
+          (Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+            (Polynomial.X / W) H)) := by
+    -- rewrite the left factor as `↑u`
+    simpa [hu'] using
+      (irreducible_units_mul (M := Polynomial (RatFunc F)) (u := u)
+          (y :=
+            Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
+              (Polynomial.X / W) H)).2
+        hH'
+
+  simpa [htilde_unfold] using hirr_prod
 
 /-- The function field `𝕃 ` from Appendix A.1 of [BCIKS20]. -/
 abbrev 𝕃 (H : F[X][Y]) : Type :=
@@ -64,19 +232,21 @@ abbrev 𝕃 (H : F[X][Y]) : Type :=
 
 /-- The function field `𝕃 ` is indeed a field if and only if the generator of the ideal we quotient
 by is an irreducible polynomial. -/
-lemma isField_of_irreducible {H : F[X][Y]} : Irreducible H → IsField (𝕃 H) := by
-  intros h
+lemma isField_of_irreducible {H : F[X][Y]} (hdeg : H.natDegree ≠ 0) :
+    Irreducible H → IsField (𝕃 H) := by
+  intro h
   unfold 𝕃
   erw
     [
       ←Ideal.Quotient.maximal_ideal_iff_isField_quotient,
       principal_is_maximal_iff_irred
     ]
-  exact irreducibleHTildeOfIrreducible h
+  exact irreducibleHTildeOfIrreducible hdeg h
 
 /-- The function field `𝕃` as defined above is a field. -/
-noncomputable instance {H : F[X][Y]} [inst : Fact (Irreducible H)] : Field (𝕃 H) :=
-  IsField.toField (isField_of_irreducible inst.out)
+noncomputable instance {H : F[X][Y]} [inst : Fact (Irreducible H)]
+    [hdeg : Fact (H.natDegree ≠ 0)] : Field (𝕃 H) :=
+  IsField.toField (isField_of_irreducible (H := H) hdeg.out inst.out)
 
 /-- The monisized polynomial `H_tilde` is in fact an element of `F[X][Y]`. -/
 noncomputable def H_tilde' (H : F[X][Y]) : F[X][Y] :=
@@ -100,32 +270,12 @@ abbrev 𝒪 (H : F[X][Y]) : Type :=
 noncomputable instance {H : F[X][Y]} : Ring (𝒪 H) :=
   Ideal.Quotient.ring (Ideal.span {H_tilde' H})
 
-theorem bivPolyHom_HTilde'_eq_HTilde {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
-    (ToRatFunc.bivPolyHom (F := F)) (H_tilde' H) = H_tilde H := by
-  simpa [ToRatFunc.bivPolyHom, Polynomial.coe_mapRingHom] using
-    (H_tilde_equiv_H_tilde' (F := F) H)
-
-theorem embeddingOf𝒪Into𝕃_ideal_le {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
-    Ideal.span ({H_tilde' H} : Set F[X][Y]) ≤
-      (Ideal.span ({H_tilde H} : Set (Polynomial (RatFunc F)))).comap
-        (ToRatFunc.bivPolyHom (F := F)) := by
-  classical
-  -- Reduce to showing the generator lies in the comap ideal
-  rw [Ideal.span_singleton_le_iff_mem]
-  -- Unfold membership in a comap ideal and rewrite using the bridging lemma
-  simpa [Ideal.mem_comap, bivPolyHom_HTilde'_eq_HTilde (F := F) H] using
-    (Ideal.subset_span (by
-      simp : (H_tilde H) ∈ ({H_tilde H} : Set (Polynomial (RatFunc F)))))
-
-noncomputable def embeddingOf𝒪Into𝕃 {F : Type} [CommRing F] [IsDomain F] (H : F[X][Y]) :
-    𝒪 H →+* 𝕃 H := by
-  classical
-  refine
-    Ideal.quotientMap
-      (I := Ideal.span ({H_tilde' H} : Set F[X][Y]))
-      (Ideal.span ({H_tilde H} : Set (Polynomial (RatFunc F))))
-      (ToRatFunc.bivPolyHom (F := F))
-      (embeddingOf𝒪Into𝕃_ideal_le (F := F) H)
+/-- The ring homomorphism defining the embedding of `𝒪` into `𝕃`. -/
+noncomputable def embeddingOf𝒪Into𝕃 (H : F[X][Y]) : 𝒪 H →+* 𝕃 H := by
+  apply Ideal.quotientMap
+        (I := Ideal.span {H_tilde' H}) (Ideal.span {H_tilde H})
+        bivPolyHom
+        sorry
 
 /-- The set of regular elements inside `𝕃 H`, i.e. the set of elements of `𝕃 H`
 that in fact lie in `𝒪 H`. -/
@@ -216,12 +366,15 @@ noncomputable section
 
 namespace ClaimA2
 
-variable {F : Type} [CommRing F] [IsDomain F]
+variable {F : Type} [Field F]
          {R : F[X][X][Y]}
          {H : F[X][Y]} [H_irreducible : Fact (Irreducible H)]
+         [H_natDegree_pos : Fact (H.natDegree ≠ 0)]
 
 /-- The definition of `ζ` given in Appendix A.4 of [BCIKS20]. -/
-def ζ (R : F[X][X][Y]) (x₀ : F) (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)] : 𝕃 H :=
+def ζ (R : F[X][X][Y]) (x₀ : F) (H : F[X][Y])
+    [H_irreducible : Fact (Irreducible H)] [H_natDegree_pos : Fact (H.natDegree ≠ 0)] :
+    𝕃 H :=
   let W  : 𝕃 H := liftToFunctionField (H.leadingCoeff);
   let T : 𝕃 H := Ideal.Quotient.mk (Ideal.span {H_tilde H}) Polynomial.X;
     Polynomial.eval₂ liftToFunctionField (T / W)
@@ -229,7 +382,8 @@ def ζ (R : F[X][X][Y]) (x₀ : F) (H : F[X][Y]) [H_irreducible : Fact (Irreduci
 
 /-- There exist regular elements `ξ = W(Z)^(d-2) * ζ` as defined in Claim A.2 of Appendix A.4
 of [BCIKS20]. -/
-lemma ξ_regular (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)] :
+lemma ξ_regular (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y])
+    [H_irreducible : Fact (Irreducible H)] [H_natDegree_pos : Fact (H.natDegree ≠ 0)] :
   ∃ pre : 𝒪 H,
     let d := R.natDegree
     let W : 𝕃 H := liftToFunctionField (H.leadingCoeff);
@@ -237,7 +391,8 @@ lemma ξ_regular (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [H_irreducible : Fact
   sorry
 
 /-- The elements `ξ = W(Z)^(d-2) * ζ` as defined in Claim A.2 of Appendix A.4 of [BCIKS20]. -/
-def ξ (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [φ : Fact (Irreducible H)] : 𝒪 H :=
+def ξ (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y])
+    [φ : Fact (Irreducible H)] [H_natDegree_pos : Fact (H.natDegree ≠ 0)] : 𝒪 H :=
   (ξ_regular x₀ R H).choose
 
 /-- The bound of the weight `Λ` of the elements `ζ` as stated in Claim A.2 of Appendix A.4
@@ -251,6 +406,7 @@ lemma weight_ξ_bound (x₀ : F) {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) 
 of Appendix A.4 of [BCIKS20]. -/
 lemma β_regular (R : F[X][X][Y])
                 (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)]
+                [H_natDegree_pos : Fact (H.natDegree ≠ 0)]
                 {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) :
     ∀ t : ℕ, ∃ β : 𝒪 H, weight_Λ_over_𝒪 β ≤ (2 * t + 1) * Bivariate.natDegreeY R * D := by
   sorry
@@ -262,16 +418,20 @@ def β (R : F[X][X][Y]) (t : ℕ) : 𝒪 H :=
 
 /-- The Hensel lift coefficients `α` are of the form as given in Claim A.2 of Appendix A.4
 of [BCIKS20]. -/
-def α (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [φ : Fact (Irreducible H)] (t : ℕ) : 𝕃 H :=
+def α (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y])
+    [φ : Fact (Irreducible H)] [H_natDegree_pos : Fact (H.natDegree ≠ 0)] (t : ℕ) : 𝕃 H :=
   let W : 𝕃 H := liftToFunctionField (H.leadingCoeff)
   embeddingOf𝒪Into𝕃 _ (β R t) / (W ^ (t + 1) * (embeddingOf𝒪Into𝕃 _ (ξ x₀ R H)) ^ (2*t - 1))
 
+/-- The Hensel lift coefficients `α'` with bundled irreducibility witness. -/
 def α' (x₀ : F) (R : F[X][X][Y]) (H_irreducible : Irreducible H) (t : ℕ) : 𝕃 H :=
   α x₀ R _ (φ := ⟨H_irreducible⟩) t
 
 /-- The power series `γ = ∑ α^t (X - x₀)^t ∈ 𝕃 [[X - x₀]]` as defined in Appendix A.4
 of [BCIKS20]. -/
-def γ (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [φ : Fact (Irreducible H)] : PowerSeries (𝕃 H) :=
+def γ (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y])
+    [φ : Fact (Irreducible H)] [H_natDegree_pos : Fact (H.natDegree ≠ 0)] :
+    PowerSeries (𝕃 H) :=
   let subst (t : ℕ) : 𝕃 H :=
     match t with
     | 0 => fieldTo𝕃 (-x₀)
@@ -279,6 +439,7 @@ def γ (x₀ : F) (R : F[X][X][Y]) (H : F[X][Y]) [φ : Fact (Irreducible H)] : P
     | _ => 0
   PowerSeries.subst (PowerSeries.mk subst) (PowerSeries.mk (α x₀ R H))
 
+/-- The power series `γ'` with bundled irreducibility witness. -/
 def γ' (x₀ : F) (R : F[X][X][Y]) (H_irreducible : Irreducible H) : PowerSeries (𝕃 H) :=
   γ x₀ R H (φ := ⟨H_irreducible⟩)
 

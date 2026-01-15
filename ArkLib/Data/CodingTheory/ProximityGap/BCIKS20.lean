@@ -415,6 +415,7 @@ open BCIKS20AppendixA.ClaimA2 in
 -/
 lemma approximate_solution_is_exact_solution_coeffs
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   : ∀ t ≥ k,
   α'
     x₀
@@ -433,6 +434,7 @@ open BCIKS20AppendixA.ClaimA2 in
 -/
 lemma approximate_solution_is_exact_solution_coeffs'
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   :
     γ' x₀ (R k δ x₀ h_gs) (irreducible_H k h_gs) =
         PowerSeries.mk (fun t =>
@@ -452,6 +454,7 @@ open BCIKS20AppendixA.ClaimA2 in
 -/
 lemma solution_gamma_is_linear_in_Z
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   :
   ∃ (v₀ v₁ : F[X]),
     γ' x₀ (R k δ x₀ h_gs) (irreducible_H k (x₀ := x₀) (δ := δ) h_gs) =
@@ -467,6 +470,7 @@ lemma solution_gamma_is_linear_in_Z
 noncomputable def P
   (δ : ℚ) (x₀ : F)
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   :
   F[Z][X] :=
   let v₀ := Classical.choose (solution_gamma_is_linear_in_Z k (δ := δ) (x₀ := x₀) h_gs)
@@ -482,6 +486,7 @@ open BCIKS20AppendixA.ClaimA2 in
 -/
 lemma gamma_eq_P
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   :
   γ' x₀ (R k δ x₀ h_gs) (irreducible_H k (x₀ := x₀) (δ := δ) h_gs) =
   BCIKS20AppendixA.polyToPowerSeries𝕃 _
@@ -506,6 +511,7 @@ noncomputable def matching_set_at_x
 lemma solution_gamma_matches_word_if_subset_large
   {ωs : Fin n ↪ F}
   (h_gs : ModifiedGuruswami m n k ωs Q u₀ u₁)
+  [Fact ((H k δ x₀ h_gs).natDegree ≠ 0)]
   {x : Fin n}
   {D : ℕ}
   (hD : D ≥ Bivariate.totalDegree (H k δ x₀ h_gs))
