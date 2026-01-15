@@ -86,7 +86,7 @@ noncomputable def H_tilde' (H : F[X][Y]) : F[X][Y] :=
   Polynomial.X ^ d +
     ∑ i ∈ (List.range d).toFinset,
       Polynomial.X^(d - 1 - i) *
-      Polynomial.C (hᵢ (i + 1) * W ^ i)
+      Polynomial.C (hᵢ (d - 1 - i) * W ^ i)
 
 lemma H_tilde_equiv_H_tilde' (H : F[X][Y]) : (H_tilde' H).map univPolyHom = H_tilde H := by
   sorry
@@ -101,10 +101,11 @@ noncomputable instance {H : F[X][Y]} : Ring (𝒪 H) :=
   Ideal.Quotient.ring (Ideal.span {H_tilde' H})
 
 /-- The ring homomorphism defining the embedding of `𝒪` into `𝕃`. -/
-noncomputable def embeddingOf𝒪Into𝕃 (H : F[X][Y]) : 𝒪 H →+* 𝕃 H :=
-  Ideal.quotientMap
+noncomputable def embeddingOf𝒪Into𝕃 (H : F[X][Y]) : 𝒪 H →+* 𝕃 H := by
+  apply Ideal.quotientMap
         (I := Ideal.span {H_tilde' H}) (Ideal.span {H_tilde H})
-        bivPolyHom sorry
+        bivPolyHom
+        sorry
 
 /-- The set of regular elements inside `𝕃 H`, i.e. the set of elements of `𝕃 H`
 that in fact lie in `𝒪 H`. -/
@@ -129,8 +130,9 @@ noncomputable def π_z_lift {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde'
 
 /-- The rational substitution `π_z` from Appendix A.3 of [BCIKS20] is a well-defined map on the
 quotient ring `𝒪`. -/
-noncomputable def π_z {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde' H) z) : 𝒪 H →+* F :=
-  Ideal.Quotient.lift (Ideal.span {H_tilde' H}) (π_z_lift z root) sorry
+noncomputable def π_z {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde' H) z) : 𝒪 H →+* F := by
+  apply Ideal.Quotient.lift (Ideal.span {H_tilde' H}) (π_z_lift z root)
+  sorry
 
 /-- The canonical representative of an element of `F[X][Y]` inside
 the ring of regular elements `𝒪`. -/
@@ -152,7 +154,7 @@ def weight_Λ (f H : F[X][Y]) (D : ℕ) : WithBot ℕ :=
 /-- The weight function `Λ` on the ring of regular elements `𝒪` is defined as the weight their
 canonical representatives in `F[X][Y]`. -/
 noncomputable def weight_Λ_over_𝒪 {H : F[X][Y]} (f : 𝒪 H) (D : ℕ)
-  : WithBot ℕ := weight_Λ (canonicalRepOf𝒪 f) H D
+: WithBot ℕ := weight_Λ (canonicalRepOf𝒪 f) H D
 
 /-- The set `S_β` from the statement of Lemma A.1 in Appendix A of [BCIKS20].
 Note: Here `F[X][Y]` is `F[Z][T]`. -/
@@ -162,7 +164,8 @@ noncomputable def S_β {H : F[X][Y]} (β : 𝒪 H) : Set F :=
 /-- The statement of Lemma A.1 in Appendix A.3 of [BCIKS20]. -/
 lemma Lemma_A_1 {H : F[X][Y]} (β : 𝒪 H) (D : ℕ) (hD : D ≥ Bivariate.totalDegree H)
     (S_β_card : Set.ncard (S_β β) > (weight_Λ_over_𝒪 β D) * H.natDegree) :
-  embeddingOf𝒪Into𝕃 _ β = 0 := by sorry
+  embeddingOf𝒪Into𝕃 _ β = 0 := by
+  sorry
 
 /-- The embeddining of the coefficients of a bivarite polynomial into the bivariate polynomial ring
 with rational coefficients. -/
@@ -194,13 +197,13 @@ noncomputable section
 namespace ClaimA2
 
 variable {F : Type} [CommRing F] [IsDomain F]
-         {R : F[X][X][X]}
+         {R : F[X][X][Y]}
          {H : F[X][Y]} [H_irreducible : Fact (Irreducible H)]
 
 /-- The definition of `ζ` given in Appendix A.4 of [BCIKS20]. -/
 def ζ (R : F[X][X][Y]) (x₀ : F) (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)] : 𝕃 H :=
   let W  : 𝕃 H := liftToFunctionField (H.leadingCoeff);
-  let T : 𝕃 H := liftToFunctionField (Polynomial.X);
+  let T : 𝕃 H := Ideal.Quotient.mk (Ideal.span {H_tilde H}) Polynomial.X;
     Polynomial.eval₂ liftToFunctionField (T / W)
       (Bivariate.evalX (Polynomial.C x₀) R.derivative)
 
@@ -229,7 +232,7 @@ of Appendix A.4 of [BCIKS20]. -/
 lemma β_regular (R : F[X][X][Y])
                 (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)]
                 {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) :
-    ∀ t : ℕ, ∃ β : 𝒪 H, weight_Λ_over_𝒪 β ≤ (2 * t + 1) * Bivariate.natDegreeY R * D :=
+    ∀ t : ℕ, ∃ β : 𝒪 H, weight_Λ_over_𝒪 β ≤ (2 * t + 1) * Bivariate.natDegreeY R * D := by
   sorry
 
 /-- The definition of the regular elements `β` giving the numerators of the Hensel lift coefficients
