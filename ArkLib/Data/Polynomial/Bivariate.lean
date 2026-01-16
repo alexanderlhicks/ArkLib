@@ -144,6 +144,12 @@ def rootMultiplicity.{u} {F : Type u} [CommSemiring F] [DecidableEq F]
   let X := (Polynomial.X : Polynomial F)
   rootMultiplicity₀ (F := F) ((f.comp (Y + (C (C y)))).map (Polynomial.compRingHom (X + C x)))
 
+/-- If the multiplicity of a pair `(x,y)` is non-negative, then the pair is a root of `f`. -/
+lemma rootMultiplicity_some_implies_root {F : Type} [CommSemiring F] [DecidableEq F]
+  {x y : F} {f : F[X][Y]} (h : some 0 < (rootMultiplicity (f := f) x y))
+  : (f.eval 0).eval 0 = 0 := by
+  sorry
+
 open Univariate in
 /-- In the case of a bivariate polynomial we cannot easily use `discriminant`.
    We are using the fact that the resultant in question is always
@@ -205,7 +211,7 @@ lemma natDeg_sum_eq_of_unique {α : Type} {s : Finset α} {f : α → F[X]} {deg
     obtain ⟨h₁, h₂⟩ : b ∈ s ∧ ¬b = mx := by grind
     rcases others_le b h₁ h₂ with h' | h'
     · exact Polynomial.degree_lt_degree (f_x_deg.symm ▸ h')
-    · cases cs : (f mx).degree <;> grind
+    · cases cs : (f mx).degree <;> grind    
 
 /-- If some element `x ∈ s` maps to `y` under `f`, and every element of `s` maps to a value
 less than or equal to `y`, then the supremum of `f` over `s` is exactly `y`. -/
@@ -352,13 +358,6 @@ If `q * f ≠ 0`, then the `Y`-degree of `q` is bounded above by the difference 
 lemma degreeY_le_degreeY_sub_degreeY [IsDomain F] {f q : F[X][Y]} (hf : f ≠ 0) (hg : q * f ≠ 0) :
   natDegreeY q ≤ natDegreeY (q * f) - natDegreeY f := by grind
 
-/-- The total degree of the product of two bivariate polynomials is the sum of their total degrees.
--/
-@[simp, grind _=_]
-theorem totalDegree_mul {f g : F[X][Y]} (hf : f ≠ 0) (hg : g ≠ 0) :
-    totalDegree (f * g) = totalDegree f + totalDegree g := by
-    sorry
-
 /-- Definition of a monomial when the bivariate polynomial is considered as a univariate
 polynomial in `Y`. -/
 def monomialY (n : ℕ) : F[X] →ₗ[F[X]] F[X][Y] where
@@ -454,12 +453,3 @@ def weightedDegreeMonomialXY {n m : ℕ} (a b t : ℕ) : ℕ :=
 
 end
 end Polynomial.Bivariate
-
-
-open Polynomial
-open Polynomial.Bivariate
-
-theorem rootMultiplicity_some_implies_root {F : Type} [CommRing F] [DecidableEq F]
-  {x y : F} {f : F[X][Y]} (h : 0 < ((f.eval (C y)).rootMultiplicity x))
-  : (f.eval (C y)).eval x = 0 := by
-  simp_all only [rootMultiplicity_pos', ne_eq, IsRoot.def]
