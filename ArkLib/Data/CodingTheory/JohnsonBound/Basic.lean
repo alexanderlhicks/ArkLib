@@ -294,19 +294,4 @@ theorem johnson_bound [Field F]
     (johnson_condition_strong_implies_2_le_B_card h_condition)
     (johnson_condition_strong_implies_2_le_F_card h_condition)
 
-/-- Alphabet-free Johnson bound from [codingtheory].
--/
-theorem johnson_bound_alphabet_free [Field F] [DecidableEq F]
-  {B : Finset (Fin n → F)}
-  {v : Fin n → F}
-  {e : ℕ}
-  :
-  let d := sInf { d | ∃ u ∈ B, ∃ v ∈ B, u ≠ v ∧ hammingDist u v = d }
-  let q : ℚ := Fintype.card F
-  let frac := q / (q - 1)
-  e ≤ n - ((n * (n - d)) : ℝ).sqrt
-  →
-  (B ∩ ({ x | Δ₀(x, v) ≤ e } : Finset _)).card ≤ q * d * n := by
-  sorry
-
 end JohnsonBound
