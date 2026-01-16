@@ -5,7 +5,6 @@ Authors: Katerina Hristova, František Silváši, Julian Sutherland, Ilia Vlasov
 -/
 
 import ArkLib.Data.Polynomial.Prelims
-import Mathlib.Algebra.Polynomial.Div
 
 /-!
   # Definitions and Theorems about Bivariate Polynomials with coefficients in a semiring
@@ -464,3 +463,5 @@ theorem rootMultiplicity_some_implies_root {F : Type} [CommRing F] [DecidableEq 
   {x y : F} {f : F[X][Y]} (h : 0 < ((f.eval (C y)).rootMultiplicity x))
   : (f.eval (C y)).eval x = 0 := by
   simp_all only [rootMultiplicity_pos', ne_eq, IsRoot.def]
+
+#min_imports
