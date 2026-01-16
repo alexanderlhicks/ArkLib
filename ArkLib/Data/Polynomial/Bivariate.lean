@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Katerina Hristova, František Silváši, Julian Sutherland, Ilia Vlasov
 -/
 
+import Mathlib.Data.List.MinMax
 import ArkLib.Data.Polynomial.Prelims
 
 /-!
@@ -99,11 +100,6 @@ def natWeightedDegree.{u} {F : Type u} [Semiring F] (f : F[X][Y]) (u v : ℕ) : 
   f.support.sup (fun m => u * (f.coeff m).natDegree + v * m)
 
 variable {f : F[X][Y]}
-
-@[grind _=_]
-lemma weightedDegree_eq_natWeightedDegree {u v : ℕ} :
-  f ≠ 0 → weightedDegree f u v = natWeightedDegree f u v := by
-  sorry
 
 /-- The total degree of a bivariate polynomial is equal to the `(1,1)`-weighted degree -/
 @[grind _=_]
@@ -460,3 +456,93 @@ def weightedDegreeMonomialXY {n m : ℕ} (a b t : ℕ) : ℕ :=
 
 end
 end Polynomial.Bivariate
+
+theorem Polynomial.Bivariate.list_max?_eq_some_of_mem_of_forall_le {l : List ℕ} {y : ℕ} :
+  y ∈ l → (∀ x ∈ l, x ≤ y) → l.max? = some y := by
+  intro hy hle
+  haveI : Std.Antisymm (α := ℕ) (· ≤ ·) := ⟨fun a b => le_antisymm⟩
+  refine (List.max?_eq_some_iff (xs := l) (a := y) ?_ ?_ ?_).2 ?_
+  · intro a
+    exact le_rfl
+  · intro a b
+    cases le_total a b with
+    | inl hab =>
+        exact Or.inr (sup_eq_right.2 hab)
+    | inr hba =>
+        exact Or.inl (sup_eq_left.2 hba)
+  · intro a b c
+    exact sup_le_iff
+  · exact ⟨hy, hle⟩
+
+theorem Polynomial.Bivariate.natWeightedDegree_exists_eq {F : Type} [Semiring F] {f : F[X][Y]} {u v : ℕ} :
+  f ≠ 0 → ∃ m ∈ f.support,
+    u * (f.coeff m).natDegree + v * m = natWeightedDegree f u v := by
+  intro hf
+  classical
+  let g : ℕ → ℕ := fun m => u * (f.coeff m).natDegree + v * m
+  have hs : f.support.Nonempty := (Polynomial.support_nonempty.2 hf)
+  obtain ⟨m, hm, hsup⟩ := Finset.exists_mem_eq_sup (s := f.support) hs g
+  refine ⟨m, hm, ?_⟩
+  simpa [Polynomial.Bivariate.natWeightedDegree, g] using hsup.symm
+
+theorem Polynomial.Bivariate.weightedDegree_map_range_le_natWeightedDegree {F : Type} [Semiring F] {f : F[X][Y]} {u v : ℕ} :
+  f ≠ 0 → ∀ n ∈ List.range f.natDegree.succ,
+    u * (f.coeff n).natDegree + v * n ≤ natWeightedDegree f u v := by
+  intro hf
+  intro n hn_range
+  have hnlt : n < f.natDegree.succ := by
+    simpa [List.mem_range] using hn_range
+  have hnle : n ≤ f.natDegree := Nat.lt_succ_iff.mp hnlt
+  by_cases hn : n ∈ f.support
+  ·
+    unfold natWeightedDegree
+    exact
+      Finset.le_sup (s := f.support)
+        (f := fun m => u * (f.coeff m).natDegree + v * m) hn
+  ·
+    have hcoeff : f.coeff n = 0 := (Polynomial.notMem_support_iff).1 hn
+    have hdeg : f.natDegree ∈ f.support := Polynomial.natDegree_mem_support_of_nonzero hf
+    have hdeg_le :
+        u * (f.coeff f.natDegree).natDegree + v * f.natDegree ≤ natWeightedDegree f u v := by
+      unfold natWeightedDegree
+      exact
+        Finset.le_sup (s := f.support)
+          (f := fun m => u * (f.coeff m).natDegree + v * m) hdeg
+    calc
+      u * (f.coeff n).natDegree + v * n = v * n := by simp [hcoeff]
+      _ ≤ v * f.natDegree := Nat.mul_le_mul_left v hnle
+      _ ≤ u * (f.coeff f.natDegree).natDegree + v * f.natDegree := by
+        exact Nat.le_add_left _ _
+      _ ≤ natWeightedDegree f u v := hdeg_le
+
+theorem Polynomial.Bivariate.goal_weightedDegree_eq_natWeightedDegree {F : Type} [Semiring F] {f : F[X][Y]} {u v : ℕ} :
+  f ≠ 0 → weightedDegree f u v = natWeightedDegree f u v := by
+  intro hf
+  classical
+  let g : ℕ → ℕ := fun n => u * (f.coeff n).natDegree + v * n
+  let L : List ℕ := List.map g (List.range f.natDegree.succ)
+  obtain ⟨m, hm_supp, hm_eq⟩ :=
+    Polynomial.Bivariate.natWeightedDegree_exists_eq (f := f) (u := u) (v := v) hf
+  have hm_eq' : g m = natWeightedDegree f u v := by
+    simpa [g] using hm_eq
+  have hm_le : m ≤ f.natDegree :=
+    Polynomial.le_natDegree_of_mem_supp (p := f) m hm_supp
+  have hm_range : m ∈ List.range f.natDegree.succ := by
+    have hm_lt : m < f.natDegree.succ := Nat.lt_succ_of_le hm_le
+    simpa [List.mem_range] using hm_lt
+  have hmem : natWeightedDegree f u v ∈ L := by
+    have : g m ∈ L := by
+      refine List.mem_map.2 ?_
+      exact ⟨m, hm_range, rfl⟩
+    simpa [hm_eq'] using this
+  have hub : ∀ x ∈ L, x ≤ natWeightedDegree f u v := by
+    intro x hx
+    rcases (List.mem_map.1 hx) with ⟨n, hn, rfl⟩
+    have hle :=
+      Polynomial.Bivariate.weightedDegree_map_range_le_natWeightedDegree
+        (f := f) (u := u) (v := v) hf n hn
+    simpa [g] using hle
+  have hmax : L.max? = some (natWeightedDegree f u v) :=
+    Polynomial.Bivariate.list_max?_eq_some_of_mem_of_forall_le (l := L) (y := natWeightedDegree f u v)
+      hmem hub
+  simpa [Polynomial.Bivariate.weightedDegree, Polynomial.Bivariate.natWeightedDegree, L, g] using hmax
