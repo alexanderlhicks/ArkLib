@@ -144,6 +144,12 @@ def rootMultiplicity.{u} {F : Type u} [CommSemiring F] [DecidableEq F]
   let X := (Polynomial.X : Polynomial F)
   rootMultiplicity₀ (F := F) ((f.comp (Y + (C (C y)))).map (Polynomial.compRingHom (X + C x)))
 
+/-- If the multiplicity of a pair `(x,y)` is non-negative, then the pair is a root of `f`. -/
+lemma rootMultiplicity_some_implies_root {F : Type} [CommSemiring F] [DecidableEq F]
+  {x y : F} {f : F[X][Y]} (h : some 0 < (rootMultiplicity (f := f) x y))
+  : (f.eval 0).eval 0 = 0 := by
+  sorry
+
 open Univariate in
 /-- In the case of a bivariate polynomial we cannot easily use `discriminant`.
    We are using the fact that the resultant in question is always
@@ -205,7 +211,7 @@ lemma natDeg_sum_eq_of_unique {α : Type} {s : Finset α} {f : α → F[X]} {deg
     obtain ⟨h₁, h₂⟩ : b ∈ s ∧ ¬b = mx := by grind
     rcases others_le b h₁ h₂ with h' | h'
     · exact Polynomial.degree_lt_degree (f_x_deg.symm ▸ h')
-    · cases cs : (f mx).degree <;> grind
+    · cases cs : (f mx).degree <;> grind    
 
 /-- If some element `x ∈ s` maps to `y` under `f`, and every element of `s` maps to a value
 less than or equal to `y`, then the supremum of `f` over `s` is exactly `y`. -/
@@ -304,7 +310,7 @@ lemma degreeX_mul [IsDomain F] (f g : F[X][Y]) (hf : f ≠ 0) (hg : g ≠ 0) :
       (Polynomial.natDegree_sum_le (Finset.antidiagonal x) (fun x ↦ f.coeff x.1 * g.coeff x.2))
     rw [Finset.fold_max_le]
     grind [degreeX]
-
+        
 
 /-- The evaluation at a point of a bivariate polynomial in the first variable `X`. -/
 def evalX (a : F) (f : F[X][Y]) : Polynomial F :=
@@ -454,12 +460,3 @@ def weightedDegreeMonomialXY {n m : ℕ} (a b t : ℕ) : ℕ :=
 
 end
 end Polynomial.Bivariate
-
-
-open Polynomial
-open Polynomial.Bivariate
-
-theorem rootMultiplicity_some_implies_root {F : Type} [CommRing F] [DecidableEq F]
-  {x y : F} {f : F[X][Y]} (h : 0 < ((f.eval (C y)).rootMultiplicity x))
-  : (f.eval (C y)).eval x = 0 := by
-  simp_all only [rootMultiplicity_pos', ne_eq, IsRoot.def]

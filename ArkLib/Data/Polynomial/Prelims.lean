@@ -4,12 +4,24 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Katerina Hristova, Ilia Vlasov
 -/
 
+import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.Algebra.Polynomial.Bivariate
-import Mathlib.Algebra.Polynomial.Basic
+import Mathlib.Algebra.Polynomial.Coeff
+import Mathlib.Algebra.Polynomial.Degree.Definitions
+import Mathlib.Algebra.Polynomial.Degree.Domain
+import Mathlib.Algebra.Polynomial.Degree.Operations
 import Mathlib.Algebra.Polynomial.Eval.Irreducible
+import Mathlib.Algebra.Polynomial.OfFn
+import Mathlib.Data.Fin.Tuple.Basic
+import Mathlib.Data.Matrix.Mul
+import Mathlib.Data.Nat.WithBot
 import Mathlib.FieldTheory.RatFunc.Basic
 import Mathlib.FieldTheory.Separable
+import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.RingTheory.Coprime.Basic
 import Mathlib.RingTheory.Ideal.Span
 import Mathlib.RingTheory.Polynomial.Resultant.Basic
 
@@ -52,10 +64,6 @@ lemma resultant_is_divisible_by_leadingCoeff {F : Type} [CommRing F] [Inhabited 
     Polynomial.resultant f (Polynomial.derivative f) = f.leadingCoeff * r'
     := by sorry
 
-/-- A polynomial is separable if and only if its discriminant is non-zero. -/
-lemma separable_iff_discr_eq_zero {F : Type} [Field F] [Inhabited F] (f : F[X]) :
-  f.Separable ↔ discriminant f ≠ 0 := by sorry
-
 end
 end Univariate
 
@@ -87,3 +95,569 @@ def bivPolyHom {F : Type} [CommRing F] [IsDomain F] :
 
 end
 end ToRatFunc
+open Polynomial
+open Univariate
+open scoped BigOperators
+
+theorem coeff_mul_monomial_ite {R : Type} [CommSemiring R] (p : R[X]) (n i : ℕ) (r : R) :
+  (p * Polynomial.monomial n r).coeff i = if n ≤ i then p.coeff (i - n) * r else 0 := by
+  -- Rewrite the monomial as a constant times a power of `X`.
+  rw [← Polynomial.C_mul_X_pow_eq_monomial (a := r) (n := n)]
+  -- Reassociate so we can use the coefficient lemma for multiplication by `X ^ n`.
+  rw [← mul_assoc]
+  -- Now apply the coefficient formula for `* X ^ n` and simplify the constant factor.
+  simp [Polynomial.coeff_mul_X_pow', Polynomial.coeff_mul_C]
+
+theorem discriminant_ne_zero_iff_resultant_ne_zero {F : Type} [Field F] [Inhabited F] {f : F[X]} (hf : f ≠ 0) : discriminant f ≠ 0 ↔ Polynomial.resultant f f.derivative ≠ 0 := by
+  classical
+  have hlc : f.leadingCoeff ≠ 0 := (Polynomial.leadingCoeff_ne_zero).2 hf
+  have hfac : (1 / f.leadingCoeff) ≠ 0 := by
+    simpa [one_div] using (inv_ne_zero hlc)
+  constructor
+  · intro hdisc
+    intro hres0
+    apply hdisc
+    simp [Univariate.discriminant, hres0]
+  · intro hres
+    simpa [Univariate.discriminant] using mul_ne_zero hfac hres
+
+
+theorem discriminant_zero {F : Type} [Field F] [Inhabited F] : discriminant (0 : F[X]) = 0 := by
+  simp [Univariate.discriminant]
+
+
+theorem fin_addCases_zero {α : Type} [Zero α] {m n : ℕ} :
+  Fin.addCases (fun _ : Fin m => (0 : α)) (fun _ : Fin n => (0 : α)) = (fun _ : Fin (m + n) => (0 : α)) := by
+  funext i
+  cases i using Fin.addCases <;> simp
+
+noncomputable def polyOfVec {R : Type} [Semiring R] {n : ℕ} (v : Fin n → R) : R[X] :=
+  ∑ i : Fin n, Polynomial.monomial (i : ℕ) (v i)
+
+theorem coeff_mul_polyOfVec {R : Type} [CommSemiring R] (p : R[X]) {n : ℕ} (v : Fin n → R) (i : ℕ) :
+  (p * polyOfVec v).coeff i = ∑ j : Fin n, if (j : ℕ) ≤ i then p.coeff (i - (j : ℕ)) * v j else 0 := by
+  classical
+  -- expand `polyOfVec` and compute coefficients termwise
+  simp [polyOfVec, Finset.mul_sum, Polynomial.finset_sum_coeff, coeff_mul_monomial_ite]
+
+theorem coeff_mul_polyOfVec_Icc {R : Type} [CommSemiring R] (p : R[X]) {n : ℕ} (v : Fin n → R) (i : ℕ) :
+  (p * polyOfVec v).coeff i =
+    ∑ j : Fin n, if (j : ℕ) ≤ i ∧ i ≤ (j : ℕ) + p.natDegree then p.coeff (i - (j : ℕ)) * v j else 0 := by
+  classical
+  rw [coeff_mul_polyOfVec (p := p) (v := v) (i := i)]
+  -- show the extra upper-bound condition does not change the sum
+  refine Fintype.sum_congr
+    (f := fun j : Fin n =>
+      if (j : ℕ) ≤ i then p.coeff (i - (j : ℕ)) * v j else 0)
+    (g := fun j : Fin n =>
+      if (j : ℕ) ≤ i ∧ i ≤ (j : ℕ) + p.natDegree then p.coeff (i - (j : ℕ)) * v j else 0)
+    ?_
+  intro j
+  by_cases hji : (j : ℕ) ≤ i
+  · by_cases hi : i ≤ (j : ℕ) + p.natDegree
+    · simp [hji, hi]
+    · have hlt : (j : ℕ) + p.natDegree < i := Nat.lt_of_not_ge hi
+      have hn : p.natDegree < i - (j : ℕ) := by
+        have hi_eq : i = (i - (j : ℕ)) + (j : ℕ) := (Nat.sub_add_cancel hji).symm
+        have hlt2 : (j : ℕ) + p.natDegree < (i - (j : ℕ)) + (j : ℕ) := by
+          exact hlt.trans_eq hi_eq
+        have hlt3 : p.natDegree + (j : ℕ) < (i - (j : ℕ)) + (j : ℕ) := by
+          -- just commute the left addends
+          simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hlt2
+        exact lt_of_add_lt_add_right hlt3
+      have hcoeff : p.coeff (i - (j : ℕ)) = 0 :=
+        Polynomial.coeff_eq_zero_of_natDegree_lt hn
+      simp [hji, hi, hcoeff]
+  · simp [hji]
+
+
+theorem polyOfVec_degree_lt {R : Type} [CommSemiring R] {n : ℕ} (v : Fin n → R) : (polyOfVec v).degree < n := by
+  classical
+  have h : polyOfVec v = Polynomial.ofFn n v := by
+    simpa [polyOfVec] using
+      (Polynomial.ofFn_eq_sum_monomial (R := R) (n := n) (v := v)).symm
+  -- Now use the degree bound for `ofFn`
+  simpa [h] using (Polynomial.ofFn_degree_lt (R := R) (n := n) v)
+
+
+theorem polyOfVec_eq_zero_iff {R : Type} [CommSemiring R] {n : ℕ} (v : Fin n → R) : polyOfVec v = 0 ↔ v = 0 := by
+  classical
+  have h : polyOfVec v = Polynomial.ofFn n v := by
+    simpa [polyOfVec] using (Polynomial.ofFn_eq_sum_monomial (R := R) (v := v)).symm
+  constructor
+  · intro hv
+    have hv0 : Polynomial.ofFn n v = 0 := by
+      simpa [h] using hv
+    have : Polynomial.ofFn n v = Polynomial.ofFn n (0 : Fin n → R) := by
+      calc
+        Polynomial.ofFn n v = 0 := hv0
+        _ = Polynomial.ofFn n (0 : Fin n → R) := by
+          simpa [Polynomial.ofFn_zero]
+    exact (Polynomial.injective_ofFn (R := R) n) this
+  · intro hv
+    subst hv
+    simp [polyOfVec]
+
+
+theorem sylvester_mulVec_polyOfVec {R : Type} [CommSemiring R] (f g : R[X]) (a : Fin g.natDegree → R) (b : Fin f.natDegree → R) :
+  Matrix.mulVec (Polynomial.sylvester f g f.natDegree g.natDegree)
+      (fun j : Fin (g.natDegree + f.natDegree) => j.addCases a b)
+    = fun i : Fin (g.natDegree + f.natDegree) => (f * polyOfVec a + g * polyOfVec b).coeff (i : ℕ) := by
+  classical
+  funext i
+  -- Expand the matrix-vector product and split into the two blocks
+  simp [Matrix.mulVec, dotProduct, Polynomial.sylvester]
+  rw [Fin.sum_univ_add]
+  simp
+  -- First block: coefficients coming from `f * polyOfVec a`
+  have hf : (∑ x : Fin g.natDegree,
+        if (x : ℕ) ≤ (i : ℕ) ∧ (i : ℕ) ≤ (x : ℕ) + f.natDegree then
+          f.coeff ((i : ℕ) - (x : ℕ)) * a x
+        else 0)
+      = (f * polyOfVec a).coeff (i : ℕ) := by
+    classical
+    -- Expand the RHS using `coeff_mul` and `coeff_monomial`
+    simp [polyOfVec, Polynomial.coeff_mul, Finset.mul_sum, Finset.sum_mul, Polynomial.coeff_monomial]
+    -- Compare the outer sums termwise
+    refine Fintype.sum_congr (f := fun x : Fin g.natDegree =>
+        if (x : ℕ) ≤ (i : ℕ) ∧ (i : ℕ) ≤ (x : ℕ) + f.natDegree then
+          f.coeff ((i : ℕ) - (x : ℕ)) * a x
+        else 0)
+      (g := fun x : Fin g.natDegree =>
+        ∑ y ∈ Finset.antidiagonal (i : ℕ), if (x : ℕ) = y.2 then f.coeff y.1 * a x else 0) ?_
+    intro x
+    by_cases hx : (x : ℕ) ≤ (i : ℕ)
+    · have hxmem : ((i : ℕ) - (x : ℕ), (x : ℕ)) ∈ Finset.antidiagonal (i : ℕ) := by
+        simpa [Finset.mem_antidiagonal] using (Nat.sub_add_cancel hx)
+      -- Evaluate the inner antidiagonal sum
+      have hsum : (∑ y ∈ Finset.antidiagonal (i : ℕ),
+            if (x : ℕ) = y.2 then f.coeff y.1 * a x else 0)
+          = (if (x : ℕ) = (x : ℕ) then f.coeff ((i : ℕ) - (x : ℕ)) * a x else 0) := by
+        classical
+        refine Finset.sum_eq_single_of_mem ((i : ℕ) - (x : ℕ), (x : ℕ)) hxmem ?_
+        intro y hy hne
+        have : (x : ℕ) ≠ y.2 := by
+          intro hxy
+          have hy' : y.1 + y.2 = (i : ℕ) := by
+            simpa [Finset.mem_antidiagonal] using hy
+          have hy'' : y.1 + (x : ℕ) = (i : ℕ) := by
+            simpa [hxy] using hy'
+          have hi' : (i : ℕ) = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := (Nat.sub_add_cancel hx).symm
+          have hy1 : y.1 = (i : ℕ) - (x : ℕ) := by
+            apply Nat.add_right_cancel
+            calc
+              y.1 + (x : ℕ) = (i : ℕ) := hy''
+              _ = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := hi'
+          have : y = ((i : ℕ) - (x : ℕ), (x : ℕ)) := by
+            apply Prod.ext
+            · exact hy1
+            · exact hxy.symm
+          exact hne this
+        simp [this]
+      -- Compare with the desired `if` condition
+      by_cases hx2 : (i : ℕ) ≤ (x : ℕ) + f.natDegree
+      · -- In range: both sides are `f.coeff (i-x) * a x`
+        simp [hx, hx2, hsum]
+      · -- Out of range: the coefficient vanishes, so both sides are 0
+        have hi_gt : (x : ℕ) + f.natDegree < (i : ℕ) := Nat.lt_of_not_ge hx2
+        have hnat : f.natDegree < (i : ℕ) - (x : ℕ) := by
+          have hi' : (i : ℕ) = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := (Nat.sub_add_cancel hx).symm
+          have hi'' : (x : ℕ) + f.natDegree < ((i : ℕ) - (x : ℕ)) + (x : ℕ) :=
+            lt_of_lt_of_eq hi_gt hi'
+          have hi''' : f.natDegree + (x : ℕ) < ((i : ℕ) - (x : ℕ)) + (x : ℕ) := by
+            simpa [Nat.add_comm] using hi''
+          exact Nat.lt_of_add_lt_add_right hi'''
+        have hcoeff : ∀ m : ℕ, (f.natDegree : WithBot ℕ) < m → f.coeff m = 0 :=
+          (Polynomial.degree_le_iff_coeff_zero (f := f) (n := (f.natDegree : WithBot ℕ))).1
+            (Polynomial.degree_le_natDegree (p := f))
+        have hdeg : f.coeff ((i : ℕ) - (x : ℕ)) = 0 := by
+          have : (f.natDegree : WithBot ℕ) < (i : ℕ) - (x : ℕ) :=
+            WithBot.coe_lt_coe.mpr hnat
+          exact hcoeff _ this
+        simp [hx, hx2, hsum, hdeg]
+    · -- case `x > i`: both sides are 0
+      have hsum0 : (∑ y ∈ Finset.antidiagonal (i : ℕ),
+            if (x : ℕ) = y.2 then f.coeff y.1 * a x else 0) = 0 := by
+        classical
+        refine Finset.sum_eq_zero ?_
+        intro y hy
+        have hy' : y.1 + y.2 = (i : ℕ) := by
+          simpa [Finset.mem_antidiagonal] using hy
+        have hy_le : y.2 ≤ (i : ℕ) := by
+          -- y.2 ≤ y.1 + y.2 = i
+          simpa [hy'] using (Nat.le_add_left y.2 y.1)
+        have : (x : ℕ) ≠ y.2 := by
+          exact ne_of_gt (lt_of_le_of_lt hy_le (Nat.lt_of_not_ge hx))
+        simp [this]
+      simp [hx, hsum0]
+
+  -- Second block: coefficients coming from `g * polyOfVec b`
+  have hg : (∑ x : Fin f.natDegree,
+        if (x : ℕ) ≤ (i : ℕ) ∧ (i : ℕ) ≤ (x : ℕ) + g.natDegree then
+          g.coeff ((i : ℕ) - (x : ℕ)) * b x
+        else 0)
+      = (g * polyOfVec b).coeff (i : ℕ) := by
+    classical
+    simp [polyOfVec, Polynomial.coeff_mul, Finset.mul_sum, Finset.sum_mul, Polynomial.coeff_monomial]
+    refine Fintype.sum_congr (f := fun x : Fin f.natDegree =>
+        if (x : ℕ) ≤ (i : ℕ) ∧ (i : ℕ) ≤ (x : ℕ) + g.natDegree then
+          g.coeff ((i : ℕ) - (x : ℕ)) * b x
+        else 0)
+      (g := fun x : Fin f.natDegree =>
+        ∑ y ∈ Finset.antidiagonal (i : ℕ), if (x : ℕ) = y.2 then g.coeff y.1 * b x else 0) ?_
+    intro x
+    by_cases hx : (x : ℕ) ≤ (i : ℕ)
+    · have hxmem : ((i : ℕ) - (x : ℕ), (x : ℕ)) ∈ Finset.antidiagonal (i : ℕ) := by
+        simpa [Finset.mem_antidiagonal] using (Nat.sub_add_cancel hx)
+      have hsum : (∑ y ∈ Finset.antidiagonal (i : ℕ),
+            if (x : ℕ) = y.2 then g.coeff y.1 * b x else 0)
+          = (if (x : ℕ) = (x : ℕ) then g.coeff ((i : ℕ) - (x : ℕ)) * b x else 0) := by
+        classical
+        refine Finset.sum_eq_single_of_mem ((i : ℕ) - (x : ℕ), (x : ℕ)) hxmem ?_
+        intro y hy hne
+        have : (x : ℕ) ≠ y.2 := by
+          intro hxy
+          have hy' : y.1 + y.2 = (i : ℕ) := by
+            simpa [Finset.mem_antidiagonal] using hy
+          have hy'' : y.1 + (x : ℕ) = (i : ℕ) := by
+            simpa [hxy] using hy'
+          have hi' : (i : ℕ) = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := (Nat.sub_add_cancel hx).symm
+          have hy1 : y.1 = (i : ℕ) - (x : ℕ) := by
+            apply Nat.add_right_cancel
+            calc
+              y.1 + (x : ℕ) = (i : ℕ) := hy''
+              _ = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := hi'
+          have : y = ((i : ℕ) - (x : ℕ), (x : ℕ)) := by
+            apply Prod.ext
+            · exact hy1
+            · exact hxy.symm
+          exact hne this
+        simp [this]
+      by_cases hx2 : (i : ℕ) ≤ (x : ℕ) + g.natDegree
+      · simp [hx, hx2, hsum]
+      · have hi_gt : (x : ℕ) + g.natDegree < (i : ℕ) := Nat.lt_of_not_ge hx2
+        have hnat : g.natDegree < (i : ℕ) - (x : ℕ) := by
+          have hi' : (i : ℕ) = ((i : ℕ) - (x : ℕ)) + (x : ℕ) := (Nat.sub_add_cancel hx).symm
+          have hi'' : (x : ℕ) + g.natDegree < ((i : ℕ) - (x : ℕ)) + (x : ℕ) :=
+            lt_of_lt_of_eq hi_gt hi'
+          have hi''' : g.natDegree + (x : ℕ) < ((i : ℕ) - (x : ℕ)) + (x : ℕ) := by
+            simpa [Nat.add_comm] using hi''
+          exact Nat.lt_of_add_lt_add_right hi'''
+        have hcoeff : ∀ m : ℕ, (g.natDegree : WithBot ℕ) < m → g.coeff m = 0 :=
+          (Polynomial.degree_le_iff_coeff_zero (f := g) (n := (g.natDegree : WithBot ℕ))).1
+            (Polynomial.degree_le_natDegree (p := g))
+        have hdeg : g.coeff ((i : ℕ) - (x : ℕ)) = 0 := by
+          have : (g.natDegree : WithBot ℕ) < (i : ℕ) - (x : ℕ) :=
+            WithBot.coe_lt_coe.mpr hnat
+          exact hcoeff _ this
+        simp [hx, hx2, hsum, hdeg]
+    · have hsum0 : (∑ y ∈ Finset.antidiagonal (i : ℕ),
+            if (x : ℕ) = y.2 then g.coeff y.1 * b x else 0) = 0 := by
+        classical
+        refine Finset.sum_eq_zero ?_
+        intro y hy
+        have hy' : y.1 + y.2 = (i : ℕ) := by
+          simpa [Finset.mem_antidiagonal] using hy
+        have hy_le : y.2 ≤ (i : ℕ) := by
+          simpa [hy'] using (Nat.le_add_left y.2 y.1)
+        have : (x : ℕ) ≠ y.2 := by
+          exact ne_of_gt (lt_of_le_of_lt hy_le (Nat.lt_of_not_ge hx))
+        simp [this]
+      simp [hx, hsum0]
+
+  -- Combine the two blocks
+  simpa [hf, hg, add_assoc, add_comm, add_left_comm]
+
+theorem isCoprime_imp_resultant_ne_zero_of_ne_zero_left {F : Type} [Field F] [Inhabited F] {f g : F[X]} (hf : f ≠ 0) :
+  IsCoprime f g → Polynomial.resultant f g ≠ 0 := by
+  intro hcop
+  classical
+  -- notation for degrees and Sylvester matrix
+  set m : ℕ := f.natDegree
+  set n : ℕ := g.natDegree
+  set A : Matrix (Fin (n + m)) (Fin (n + m)) F := Polynomial.sylvester f g m n
+  -- resultant is the determinant of the Sylvester matrix
+  have hres_def : Polynomial.resultant f g = A.det := by
+    simp [Polynomial.resultant, A, m, n]
+  -- argue by contradiction
+  by_contra hres0
+  have hdet0 : A.det = 0 := by
+    simpa [hres_def] using hres0
+  -- split on the size of the Sylvester matrix
+  by_cases hnm : n + m = 0
+  · -- empty index set: determinant is 1
+    have hdet1 : A.det = (1 : F) := by
+      simpa using (Matrix.det_eq_one_of_card_eq_zero (A := A) (by simpa [hnm]))
+    exact one_ne_zero (hdet1.symm.trans hdet0)
+  · -- nontrivial size: det = 0 gives a nonzero kernel vector
+    obtain ⟨v, hv0, hv⟩ :=
+      (Matrix.exists_mulVec_eq_zero_iff_aux (M := A)).2 hdet0
+    let a : Fin n → F := fun i => v (Fin.castAdd m i)
+    let b : Fin m → F := fun j => v (Fin.natAdd n j)
+    have hvab : (fun i => Fin.addCases a b i) = v := by
+      simpa [a, b] using (Fin.addCases_castAdd_natAdd (m := n) (n := m) v)
+    have hv' : Matrix.mulVec A (Fin.addCases a b) = 0 := by
+      simpa [hvab.symm] using hv
+    -- translate kernel equation to coefficient vanishing
+    have hcoeffvec :
+        (fun i : Fin (n + m) => (f * polyOfVec a + g * polyOfVec b).coeff (i : ℕ)) = 0 := by
+      have hv'' :
+          Matrix.mulVec (Polynomial.sylvester f g f.natDegree g.natDegree)
+              (fun j : Fin (g.natDegree + f.natDegree) => j.addCases a b) = 0 := by
+        simpa [A, m, n] using hv'
+      have hv''' := hv''
+      rw [sylvester_mulVec_polyOfVec (f := f) (g := g) (a := a) (b := b)] at hv'''
+      simpa [m, n] using hv'''
+    -- show the polynomial combination is zero by coefficients and degree bounds
+    have hh0 : f * polyOfVec a + g * polyOfVec b = 0 := by
+      ext k
+      by_cases hk : k < n + m
+      · let i : Fin (n + m) := ⟨k, hk⟩
+        have hi := congrArg (fun φ => φ i) hcoeffvec
+        simpa [i] using hi
+      ·
+        have hdeg1 : (f * polyOfVec a).degree < n + m := by
+          have hfdeg : f.degree = (m : WithBot ℕ) := by
+            simpa [m] using (Polynomial.degree_eq_natDegree hf)
+          have hfdeg_neBot : f.degree ≠ (⊥ : WithBot ℕ) := by
+            simpa [Polynomial.degree_eq_bot] using hf
+          have hdega : (polyOfVec a).degree < (n : WithBot ℕ) := by
+            simpa [n] using (polyOfVec_degree_lt (v := a))
+          have hsum' : f.degree + (polyOfVec a).degree < f.degree + (n : WithBot ℕ) :=
+            WithBot.add_lt_add_left (x := f.degree) (hx := hfdeg_neBot) hdega
+          have hsum : f.degree + (polyOfVec a).degree < (m : WithBot ℕ) + n := by
+            simpa [hfdeg] using hsum'
+          have hmul : (f * polyOfVec a).degree ≤ f.degree + (polyOfVec a).degree :=
+            Polynomial.degree_mul_le f (polyOfVec a)
+          have : (f * polyOfVec a).degree < (m : WithBot ℕ) + n :=
+            lt_of_le_of_lt hmul hsum
+          simpa [add_comm, add_left_comm, add_assoc] using this
+        have hdeg2 : (g * polyOfVec b).degree < n + m := by
+          have hdegg : g.degree ≤ (n : WithBot ℕ) := by
+            simpa [n] using (Polynomial.degree_le_natDegree (p := g))
+          have hdegb : (polyOfVec b).degree < (m : WithBot ℕ) := by
+            simpa [m] using (polyOfVec_degree_lt (v := b))
+          have hn_neBot : (n : WithBot ℕ) ≠ ⊥ := by simp
+          have hsum_lt : (n : WithBot ℕ) + (polyOfVec b).degree < (n : WithBot ℕ) + m :=
+            WithBot.add_lt_add_left (x := (n : WithBot ℕ)) (hx := hn_neBot) hdegb
+          have hsum : g.degree + (polyOfVec b).degree < (n : WithBot ℕ) + m := by
+            exact lt_of_le_of_lt (add_le_add_right hdegg _) hsum_lt
+          have hmul : (g * polyOfVec b).degree ≤ g.degree + (polyOfVec b).degree :=
+            Polynomial.degree_mul_le g (polyOfVec b)
+          have : (g * polyOfVec b).degree < (n : WithBot ℕ) + m :=
+            lt_of_le_of_lt hmul hsum
+          simpa [add_comm, add_left_comm, add_assoc] using this
+        have hdeg : (f * polyOfVec a + g * polyOfVec b).degree < n + m := by
+          have hle := Polynomial.degree_add_le (f * polyOfVec a) (g * polyOfVec b)
+          have hmax : max (f * polyOfVec a).degree (g * polyOfVec b).degree < n + m :=
+            max_lt_iff.mpr ⟨hdeg1, hdeg2⟩
+          exact lt_of_le_of_lt hle hmax
+        have hk' : (n + m : ℕ) ≤ k := Nat.le_of_not_lt hk
+        have hk'' : (n + m : WithBot ℕ) ≤ k := by
+          exact_mod_cast hk'
+        have hdegk : (f * polyOfVec a + g * polyOfVec b).degree < k :=
+          lt_of_lt_of_le hdeg hk''
+        exact Polynomial.coeff_eq_zero_of_degree_lt hdegk
+    -- from hh0, deduce f ∣ g * polyOfVec b
+    have hfDiv : f ∣ g * polyOfVec b := by
+      have hEq : g * polyOfVec b = -(f * polyOfVec a) := by
+        have h' : g * polyOfVec b + f * polyOfVec a = 0 := by
+          simpa [add_comm, add_left_comm, add_assoc] using hh0
+        exact (add_eq_zero_iff_eq_neg).1 h'
+      have hdivneg : f ∣ -(f * polyOfVec a) := by
+        refine ⟨-(polyOfVec a), ?_⟩
+        simp [mul_assoc]
+      simpa [hEq] using hdivneg
+    have hbDiv : f ∣ polyOfVec b := hcop.dvd_of_dvd_mul_left hfDiv
+    -- show polyOfVec b = 0 by degree considerations
+    have hbpoly : polyOfVec b = 0 := by
+      by_contra hb0
+      have hdegb : (polyOfVec b).degree < (m : WithBot ℕ) := by
+        simpa [m] using (polyOfVec_degree_lt (v := b))
+      have hdegf : f.degree = (m : WithBot ℕ) := by
+        simpa [m] using (Polynomial.degree_eq_natDegree hf)
+      have hl : (polyOfVec b).degree < f.degree := by
+        simpa [hdegf] using hdegb
+      have hnot : ¬ f ∣ polyOfVec b :=
+        Polynomial.not_dvd_of_degree_lt (p := f) (q := polyOfVec b) hb0 hl
+      exact hnot hbDiv
+    have hb : b = 0 := (polyOfVec_eq_zero_iff (v := b)).1 hbpoly
+    -- now hh0 forces polyOfVec a = 0 since f ≠ 0
+    have haPoly : polyOfVec a = 0 := by
+      have hfpa0 : f * polyOfVec a = 0 := by
+        simpa [hbpoly] using hh0
+      have : f = 0 ∨ polyOfVec a = 0 := mul_eq_zero.mp hfpa0
+      exact this.resolve_left hf
+    have ha : a = 0 := (polyOfVec_eq_zero_iff (v := a)).1 haPoly
+    -- conclude v = 0, contradicting hv0
+    have hvzero : v = 0 := by
+      funext j
+      have hvab' : v = fun i => Fin.addCases a b i := by
+        simpa using hvab.symm
+      rw [hvab']
+      -- use the helper lemma `fin_addCases_zero`
+      have hz :
+          Fin.addCases (fun _ : Fin n => (0 : F)) (fun _ : Fin m => (0 : F))
+            = (fun _ : Fin (n + m) => (0 : F)) := by
+        simpa using (fin_addCases_zero (α := F) (m := n) (n := m))
+      have hzero := congrArg (fun φ : Fin (n + m) → F => φ j) hz
+      simpa [ha, hb] using hzero
+    exact hv0 hvzero
+
+theorem isCoprime_of_resultant_ne_zero_of_ne_zero_left {F : Type} [Field F] [Inhabited F] {f g : F[X]} (hf : f ≠ 0) :
+  Polynomial.resultant f g ≠ 0 → IsCoprime f g := by
+  intro hres
+  classical
+  let m : ℕ := f.natDegree
+  let n : ℕ := g.natDegree
+  let A : Matrix (Fin (n + m)) (Fin (n + m)) F := Polynomial.sylvester f g m n
+  have hdet_ne : A.det ≠ 0 := by
+    simpa [Polynomial.resultant, A, m, n] using hres
+  by_cases hnm : n + m = 0
+  · have hm0 : m = 0 := by
+      exact (Nat.add_eq_zero_iff.mp hnm).2
+    have hnat : f.natDegree = 0 := by
+      simpa [m] using hm0
+    rcases (Polynomial.natDegree_eq_zero.mp hnat) with ⟨c, hc⟩
+    have hc0 : c ≠ 0 := by
+      intro hc0
+      apply hf
+      simpa [hc0] using hc.symm
+    refine ⟨Polynomial.C c⁻¹, 0, ?_⟩
+    have : (Polynomial.C c⁻¹ : F[X]) * Polynomial.C c = Polynomial.C (c⁻¹ * c) := by
+      simpa using (Polynomial.C_mul (a := c⁻¹) (b := c)).symm
+    simpa [hc.symm, this, hc0]
+  · have hunit : IsUnit A.det := by
+      exact (isUnit_iff_ne_zero).2 hdet_ne
+    let e0 : Fin (n + m) → F := fun i => if (i : ℕ) = 0 then 1 else 0
+    let v : Fin (n + m) → F := Matrix.mulVec A⁻¹ e0
+    have hAv : Matrix.mulVec A v = e0 := by
+      simp [v, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv A hunit]
+    let a : Fin n → F := fun i => v (Fin.castAdd m i)
+    let b : Fin m → F := fun i => v (Fin.natAdd n i)
+    have hv : (fun j : Fin (n + m) => j.addCases a b) = v := by
+      simpa [a, b] using (Fin.addCases_castAdd_natAdd (m := n) (n := m) v)
+    have hAv' : Matrix.mulVec A (fun j : Fin (n + m) => j.addCases a b) = e0 := by
+      simpa [hv] using hAv
+    have hcoeffVec :
+        (fun i : Fin (n + m) => (f * polyOfVec a + g * polyOfVec b).coeff (i : ℕ)) = e0 := by
+      calc
+        (fun i : Fin (n + m) => (f * polyOfVec a + g * polyOfVec b).coeff (i : ℕ))
+            = Matrix.mulVec A (fun j : Fin (n + m) => j.addCases a b) := by
+              symm
+              simpa [A, m, n] using (sylvester_mulVec_polyOfVec (R := F) f g a b)
+        _ = e0 := hAv'
+    let hpoly : F[X] := f * polyOfVec a + g * polyOfVec b
+    have hcoeffVec' : (fun i : Fin (n + m) => hpoly.coeff (i : ℕ)) = e0 := by
+      simpa [hpoly] using hcoeffVec
+    have hdeg : hpoly.degree < n + m := by
+      -- degree bounds for the two summands
+      have hdegf : f.degree ≤ (m : WithBot ℕ) := by
+        have : f.natDegree ≤ m := by
+          simpa [m] using (le_rfl : f.natDegree ≤ f.natDegree)
+        exact Polynomial.degree_le_of_natDegree_le this
+      have hdegg : g.degree ≤ (n : WithBot ℕ) := by
+        have : g.natDegree ≤ n := by
+          simpa [n] using (le_rfl : g.natDegree ≤ g.natDegree)
+        exact Polynomial.degree_le_of_natDegree_le this
+      have hfbot : f.degree ≠ (⊥ : WithBot ℕ) := by
+        simpa [Polynomial.degree_ne_bot] using hf
+      have hpa : (polyOfVec a).degree < (n : WithBot ℕ) := by
+        simpa using (polyOfVec_degree_lt (v := a))
+      have hpb : (polyOfVec b).degree < (m : WithBot ℕ) := by
+        simpa using (polyOfVec_degree_lt (v := b))
+      have hdeg1 : (f * polyOfVec a).degree < (n + m : WithBot ℕ) := by
+        have hle : (f * polyOfVec a).degree ≤ f.degree + (polyOfVec a).degree :=
+          Polynomial.degree_mul_le f (polyOfVec a)
+        have hlt : f.degree + (polyOfVec a).degree < (m : WithBot ℕ) + (n : WithBot ℕ) := by
+          -- use `f ≠ 0` to avoid bottom issues
+          have := WithBot.add_lt_add_of_le_of_lt (w := f.degree) (y := (m : WithBot ℕ))
+            (x := (polyOfVec a).degree) (z := (n : WithBot ℕ)) hfbot hdegf hpa
+          simpa [add_assoc, add_left_comm, add_comm] using this
+        have hlt' : f.degree + (polyOfVec a).degree < (n + m : WithBot ℕ) := by
+          -- swap `m+n` to `n+m`
+          simpa [add_comm, add_left_comm, add_assoc] using hlt
+        exact lt_of_le_of_lt hle hlt'
+      have hdeg2 : (g * polyOfVec b).degree < (n + m : WithBot ℕ) := by
+        -- if `g = 0`, the product has degree `⊥` and we're done
+        by_cases hg0 : g = 0
+        · subst hg0
+          -- degree is bottom
+          have : (⊥ : WithBot ℕ) < (n + m : WithBot ℕ) := by
+            simpa using (bot_lt_iff_ne_bot.mpr (by simp))
+          simpa using this
+        · have hgbot : g.degree ≠ (⊥ : WithBot ℕ) := by
+            simpa [Polynomial.degree_ne_bot] using hg0
+          have hle : (g * polyOfVec b).degree ≤ g.degree + (polyOfVec b).degree :=
+            Polynomial.degree_mul_le g (polyOfVec b)
+          have hlt : g.degree + (polyOfVec b).degree < (n : WithBot ℕ) + (m : WithBot ℕ) := by
+            have := WithBot.add_lt_add_of_le_of_lt (w := g.degree) (y := (n : WithBot ℕ))
+              (x := (polyOfVec b).degree) (z := (m : WithBot ℕ)) hgbot hdegg hpb
+            simpa [add_assoc, add_left_comm, add_comm] using this
+          have hlt' : g.degree + (polyOfVec b).degree < (n + m : WithBot ℕ) := by
+            simpa [add_comm, add_left_comm, add_assoc] using hlt
+          exact lt_of_le_of_lt hle hlt'
+      have hle_add : hpoly.degree ≤ max (f * polyOfVec a).degree (g * polyOfVec b).degree := by
+        simpa [hpoly] using (Polynomial.degree_add_le (f * polyOfVec a) (g * polyOfVec b))
+      have hmax : max (f * polyOfVec a).degree (g * polyOfVec b).degree < (n + m : WithBot ℕ) := by
+        exact max_lt_iff.mpr ⟨hdeg1, hdeg2⟩
+      exact lt_of_le_of_lt hle_add hmax
+    have hone : hpoly = 1 := by
+      ext k
+      by_cases hk : k < n + m
+      · -- k is within the coefficient vector equality
+        have hkval : hpoly.coeff k = e0 ⟨k, hk⟩ := by
+          have := congrArg (fun f => f ⟨k, hk⟩) hcoeffVec'
+          simpa using this
+        by_cases hk0 : k = 0
+        · subst hk0
+          simpa [e0, Polynomial.coeff_one] using hkval
+        · simpa [e0, hk0, Polynomial.coeff_one] using hkval
+      · -- k ≥ n+m, use degree bound
+        have hkm : n + m ≤ k := Nat.le_of_not_lt hk
+        have hdeg' : hpoly.degree < k := lt_of_lt_of_le hdeg (by exact_mod_cast hkm)
+        have hkcoeff : hpoly.coeff k = 0 := Polynomial.coeff_eq_zero_of_degree_lt hdeg'
+        have hk0 : k ≠ 0 := by
+          intro hk0
+          subst hk0
+          have : n + m = 0 := Nat.eq_zero_of_le_zero hkm
+          exact hnm this
+        simpa [hkcoeff, hk0, Polynomial.coeff_one]
+    have hbez : f * polyOfVec a + g * polyOfVec b = 1 := by
+      simpa [hpoly] using hone
+    refine ⟨polyOfVec a, polyOfVec b, ?_⟩
+    simpa [mul_comm, mul_left_comm, mul_assoc, add_comm, add_left_comm, add_assoc] using hbez
+
+theorem isCoprime_iff_resultant_ne_zero_of_ne_zero_left {F : Type} [Field F] [Inhabited F] {f g : F[X]} (hf : f ≠ 0) :
+  IsCoprime f g ↔ Polynomial.resultant f g ≠ 0 := by
+  constructor
+  · intro hcop
+    exact
+      isCoprime_imp_resultant_ne_zero_of_ne_zero_left (F := F) (f := f) (g := g) hf hcop
+  · intro hres
+    exact
+      isCoprime_of_resultant_ne_zero_of_ne_zero_left (F := F) (f := f) (g := g) hf hres
+
+
+theorem separable_iff_resultant_derivative_ne_zero {F : Type} [Field F] [Inhabited F] {f : F[X]} (hf : f ≠ 0) : f.Separable ↔ Polynomial.resultant f f.derivative ≠ 0 := by
+  classical
+  -- `f.Separable` is defined by coprimality with the derivative
+  -- then use the given characterization of coprimality via the resultant
+  simpa [Polynomial.separable_def] using
+    (isCoprime_iff_resultant_ne_zero_of_ne_zero_left (F := F) (f := f) (g := f.derivative) hf)
+
+theorem separable_iff_discr_eq_zero {F : Type} [Field F] [Inhabited F] (f : F[X]) : f.Separable ↔ discriminant f ≠ 0 := by
+  classical
+  by_cases h0 : f = 0
+  · subst h0
+    constructor
+    · intro hs
+      have : False := (Polynomial.Separable.ne_zero hs) rfl
+      exact False.elim this
+    · intro hdisc
+      have : False := hdisc (by simpa using (discriminant_zero (F := F)))
+      exact False.elim this
+  · -- h0 : f ≠ 0
+    exact
+      (separable_iff_resultant_derivative_ne_zero (f := f) h0).trans
+        (discriminant_ne_zero_iff_resultant_ne_zero (f := f) h0).symm
