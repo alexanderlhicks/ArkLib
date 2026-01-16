@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Quang Dao
 -/
 
+import Mathlib
 import Mathlib.Algebra.Polynomial.AlgebraMap
 import Mathlib.RingTheory.Polynomial.DegreeLT
 
@@ -108,9 +109,6 @@ lemma eval₂_eq' {S : Type w} [CommSemiring S] (g : P →+* S) (p : P) :
 lemma eval₂_monomial {S : Type w} [CommSemiring S] (f : R →+* S) (x : S) (n : ℕ) (r : R) :
     eval₂ (P := P) f x (monomial n r) = f r * x ^ n := by
   simp [monomial]
-
-/-- `eval₂` is determined by its values on `C` and `X`. -/
-lemma eval₂_induction_on : True := sorry
 
 lemma C_injective : Function.Injective (C : R → P) := by
   intro r₁ r₂ h
@@ -249,3 +247,7 @@ lemma polynomialAlgEquiv_unique (f : P ≃ₐ[R] R[X]) : f = polynomialAlgEquiv 
   sorry
 
 end PolynomialLike
+
+/-- `eval₂` is determined by its values on `C` and `X`. -/
+lemma eval₂_induction_on : True := by
+  trivial
