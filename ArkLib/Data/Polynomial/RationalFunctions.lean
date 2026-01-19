@@ -68,33 +68,23 @@ theorem irreducible_comp_C_mul_X_iff {K : Type} [Field K] (a : K) (ha : a ≠ 0)
   have hCb : (Polynomial.C a * Polynomial.C a⁻¹ : K[X]) = 1 := by
     simpa [Polynomial.C_mul] using (congrArg Polynomial.C (mul_inv_cancel₀ ha))
   have hlin₁ : (Polynomial.C a⁻¹ * (Polynomial.C a * Polynomial.X) : K[X]) = Polynomial.X := by
-    calc
-      (Polynomial.C a⁻¹ * (Polynomial.C a * Polynomial.X) : K[X])
-          = (Polynomial.C a⁻¹ * Polynomial.C a) * Polynomial.X := by
-              simpa using (mul_assoc (Polynomial.C a⁻¹) (Polynomial.C a) Polynomial.X).symm
-      _ = Polynomial.X := by simp [hCa]
+    grind only
   have hlin₂ : (Polynomial.C a * (Polynomial.C a⁻¹ * Polynomial.X) : K[X]) = Polynomial.X := by
-    calc
-      (Polynomial.C a * (Polynomial.C a⁻¹ * Polynomial.X) : K[X])
-          = (Polynomial.C a * Polynomial.C a⁻¹) * Polynomial.X := by
-              simpa using (mul_assoc (Polynomial.C a) (Polynomial.C a⁻¹) Polynomial.X).symm
-      _ = Polynomial.X := by simp [hCb]
+    grind only
   have hcomp₁ :
       ((Polynomial.C a⁻¹ * Polynomial.X).comp (Polynomial.C a * Polynomial.X) : K[X]) =
-        Polynomial.X := by
-    simpa [Polynomial.mul_X_comp] using hlin₁
+        Polynomial.X := by simp_all only [ne_eq, mul_comp, C_comp, X_comp]
   have hcomp₂ :
       ((Polynomial.C a * Polynomial.X).comp (Polynomial.C a⁻¹ * Polynomial.X) : K[X]) =
-        Polynomial.X := by
-    simpa [Polynomial.mul_X_comp] using hlin₂
+        Polynomial.X := by simp_all only [ne_eq, mul_comp, C_comp, X_comp]
   have hf : f.comp g = RingHom.id K[X] := by
     refine RingHom.ext ?_
     intro q
-    simp [f, g, Polynomial.coe_compRingHom_apply, Polynomial.comp_assoc, hcomp₁]
+    simp [f, g, Polynomial.comp_assoc, hcomp₁]
   have hg : g.comp f = RingHom.id K[X] := by
     refine RingHom.ext ?_
     intro q
-    simp [f, g, Polynomial.coe_compRingHom_apply, Polynomial.comp_assoc, hcomp₂]
+    simp [f, g, Polynomial.comp_assoc, hcomp₂]
   let e : K[X] ≃+* K[X] := RingEquiv.ofRingHom f g hf hg
   simpa [e, f, Polynomial.coe_compRingHom_apply] using
     (MulEquiv.irreducible_iff (f := (e : K[X] ≃* K[X])) (x := p))
@@ -104,10 +94,10 @@ theorem irreducible_map_univPolyHom_of_irreducible {F : Type} [Field F]
     Irreducible H → Irreducible (H.map (ToRatFunc.univPolyHom (F := F))) := by
   intro hH
   classical
-  have hprim : H.IsPrimitive := Irreducible.isPrimitive hH hdeg
-  have hmap : Irreducible (H.map (algebraMap (Polynomial F) (RatFunc F))) :=
-    (Polynomial.IsPrimitive.irreducible_iff_irreducible_map_fraction_map (p := H) hprim).1 hH
-  simpa using hmap
+  have hprim : H.IsPrimitive := by exact Irreducible.isPrimitive hH hdeg
+  have hmap : Irreducible (H.map (algebraMap (Polynomial F) (RatFunc F))) := by
+    exact (IsPrimitive.irreducible_iff_irreducible_map_fraction_map hprim).mp hH
+  exact hmap
 
 theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Polynomial F)}
     (hdeg : H.natDegree ≠ 0) :
@@ -121,10 +111,9 @@ theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Pol
   let W : Polynomial (RatFunc F) := Polynomial.C a
 
   -- `lc` is nonzero (it is the leading coefficient)
-  have hH0 : H ≠ 0 := hH.ne_zero
+  have hH0 : H ≠ 0 := by exact Ne.symm (ne_of_apply_ne natDegree fun a ↦ hdeg (id (Eq.symm a)))
   have hlc0 : lc ≠ 0 := by
-    have hlead : H.leadingCoeff ≠ 0 := (Polynomial.leadingCoeff_ne_zero).2 hH0
-    simpa [lc, d, Polynomial.coeff_natDegree] using hlead
+    simp_all only [ne_eq, coeff_natDegree, leadingCoeff_eq_zero, not_false_eq_true, lc, d]
 
   -- hence its image in `RatFunc F` is nonzero
   have ha0 : a ≠ 0 := by
@@ -133,33 +122,29 @@ theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Pol
     intro ha
     apply hlc0
     apply hinj
-    have hmap0 : ToRatFunc.univPolyHom (F := F) lc = 0 := by
-      simpa [a] using ha
+    have hmap0 : ToRatFunc.univPolyHom (F := F) lc = 0 := by exact ha
     calc
-      ToRatFunc.univPolyHom (F := F) lc = 0 := hmap0
+      ToRatFunc.univPolyHom (F := F) lc = 0 := by exact ha
       _ = ToRatFunc.univPolyHom (F := F) 0 := by simp
 
   -- irreducibility over `RatFunc F`
-  have hHmap : Irreducible (H.map (ToRatFunc.univPolyHom (F := F))) :=
-    irreducible_map_univPolyHom_of_irreducible (F := F) (H := H) hdeg hH
+  have hHmap : Irreducible (H.map (ToRatFunc.univPolyHom (F := F))) := by
+    exact irreducible_map_univPolyHom_of_irreducible hdeg hH
 
   -- linear change of variables: irreducible `p` implies irreducible `p.comp (C a⁻¹ * X)`
-  have ha0' : (a⁻¹ : RatFunc F) ≠ 0 := inv_ne_zero ha0
+  have ha0' : (a⁻¹ : RatFunc F) ≠ 0 := by exact inv_ne_zero ha0
   have hcomp :
       Irreducible
-        ((H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X)) :=
-    (irreducible_comp_C_mul_X_iff (K := RatFunc F) (a := a⁻¹) ha0'
-        (p := H.map (ToRatFunc.univPolyHom (F := F)))).2
-      hHmap
+        ((H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X)) := by
+        exact (irreducible_comp_C_mul_X_iff a⁻¹ ha0' (Polynomial.map univPolyHom H)).mpr hHmap
 
   -- compute `X / W = C a⁻¹ * X`
   have hS : (Polynomial.X / W) = Polynomial.C (a⁻¹) * Polynomial.X := by
     calc
-      Polynomial.X / W = Polynomial.X / Polynomial.C a := by simp [W]
-      _ = Polynomial.X * Polynomial.C (a⁻¹) := by
-        simpa using (Polynomial.div_C (p := (Polynomial.X : Polynomial (RatFunc F))) (a := a))
-      _ = Polynomial.C (a⁻¹) * Polynomial.X := by
-        simpa using (Polynomial.X_mul_C (r := (a⁻¹ : RatFunc F)))
+      Polynomial.X / W = Polynomial.X / Polynomial.C a := by rfl
+      _ = Polynomial.X * Polynomial.C (a⁻¹) := by exact div_C
+        -- simpa using (Polynomial.div_C (p := (Polynomial.X : Polynomial (RatFunc F))) (a := a))
+      _ = Polynomial.C (a⁻¹) * Polynomial.X := by exact X_mul_C a⁻¹
 
   -- rewrite the evaluation polynomial `H'` as a composition
   have hEval :
@@ -175,29 +160,16 @@ theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Pol
   have hH' :
       Irreducible
         (Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
-          (Polynomial.X / W) H) := by
-    -- rewrite to the polynomial in `hcomp`
-    have hEq :
-        Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
-            (Polynomial.X / W) H =
-          (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X) := by
-      calc
-        Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
-            (Polynomial.X / W) H =
-          (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.X / W) := hEval
-        _ = (H.map (ToRatFunc.univPolyHom (F := F))).comp (Polynomial.C (a⁻¹) * Polynomial.X) := by
-          rw [hS]
-    simpa [hEq] using hcomp
+          (Polynomial.X / W) H) := by grind only
 
   -- the prefactor `W^(d-1)` is a unit
   have hunitW : IsUnit (W ^ (d - 1)) := by
-    have haUnit : IsUnit a := (isUnit_iff_ne_zero).2 ha0
-    have hWUnit : IsUnit W := (Polynomial.isUnit_C).2 haUnit
+    have haUnit : IsUnit a := by exact Ne.isUnit ha0
+    have hWUnit : IsUnit W := by exact isUnit_C.mpr haUnit
     exact (hWUnit.pow (d - 1))
 
   rcases hunitW with ⟨u, hu⟩
-  have hu' : (u : Polynomial (RatFunc F)) = W ^ (d - 1) := by
-    simpa using hu
+  have hu' : (u : Polynomial (RatFunc F)) = W ^ (d - 1) := by exact hu
 
   -- unfold `H_tilde` and finish using `irreducible_units_mul`
   -- (multiplying by a unit does not affect irreducibility)
@@ -206,9 +178,7 @@ theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Pol
       H_tilde H =
         (W ^ (d - 1)) *
           (Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
-            (Polynomial.X / W) H) := by
-    -- expand the `let`-bindings
-    simp [H_tilde, d, lc, a, W]
+            (Polynomial.X / W) H) := by rfl
 
   -- now apply the unit-multiplication lemma
   have hirr_prod :
@@ -223,8 +193,7 @@ theorem irreducibleHTildeOfIrreducible {F : Type} [Field F] {H : Polynomial (Pol
             Polynomial.eval₂ (RingHom.comp Polynomial.C (ToRatFunc.univPolyHom (F := F)))
               (Polynomial.X / W) H)).2
         hH'
-
-  simpa [htilde_unfold] using hirr_prod
+  exact hirr_prod
 
 /-- The function field `𝕃 ` from Appendix A.1 of [BCIKS20]. -/
 abbrev 𝕃 (H : F[X][Y]) : Type :=
