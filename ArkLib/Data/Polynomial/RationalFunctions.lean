@@ -288,11 +288,39 @@ bivariate polynomials. -/
 noncomputable def π_z_lift {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde' H) z) :
   F[X][Y] →+* F := Polynomial.evalEvalRingHom z root.1
 
-/-- The rational substitution `π_z` from Appendix A.3 of [BCIKS20] is a well-defined map on the
-quotient ring `𝒪`. -/
-noncomputable def π_z {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde' H) z) : 𝒪 H →+* F := by
-  apply Ideal.Quotient.lift (Ideal.span {H_tilde' H}) (π_z_lift z root)
-  sorry
+/-- `π_z_lift` annihilates `H_tilde'`. -/
+theorem pi_z_lift_H_tilde'_eq_zero {H : F[X][Y]} (z : F)
+    (root : rationalRoot (H_tilde' H) z) :
+    π_z_lift (H := H) z root (H_tilde' H) = 0 := by
+  classical
+  simpa [π_z_lift] using root.property
+
+/-- The kernel of `π_z_lift` contains the span of `H_tilde'`. -/
+theorem pi_z_lift_span_le_ker {H : F[X][Y]} (z : F)
+    (root : rationalRoot (H_tilde' H) z) :
+    Ideal.span {H_tilde' H} ≤ RingHom.ker (π_z_lift (H := H) z root) := by
+  classical
+  refine
+    (Ideal.span_singleton_le_iff_mem (I := RingHom.ker (π_z_lift (H := H) z root))
+          (x := H_tilde' H)).2 ?_
+  exact (RingHom.mem_ker).2 (pi_z_lift_H_tilde'_eq_zero (H := H) z root)
+
+/-- `π_z_lift` vanishes on the span of `H_tilde'`. -/
+theorem pi_z_lift_vanishes_on_span {H : F[X][Y]} (z : F)
+    (root : rationalRoot (H_tilde' H) z) :
+    ∀ a, a ∈ Ideal.span {H_tilde' H} → π_z_lift (H := H) z root a = 0 := by
+  intro a ha
+  have hker : a ∈ RingHom.ker (π_z_lift (H := H) z root) :=
+    (pi_z_lift_span_le_ker (H := H) z root) ha
+  exact (RingHom.mem_ker (f := π_z_lift (H := H) z root)).1 hker
+
+/-- The rational substitution map `𝒪 H →+* F` obtained by descending `π_z_lift`. -/
+noncomputable def π_z {H : F[X][Y]} (z : F) (root : rationalRoot (H_tilde' H) z) :
+    𝒪 H →+* F := by
+  classical
+  refine Ideal.Quotient.lift (Ideal.span {H_tilde' H}) (π_z_lift (H := H) z root) ?_
+  intro a ha
+  exact pi_z_lift_vanishes_on_span (H := H) z root a ha
 
 /-- The canonical representative of an element of `F[X][Y]` inside
 the ring of regular elements `𝒪`. -/
