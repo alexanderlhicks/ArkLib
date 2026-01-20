@@ -11,13 +11,16 @@ import Mathlib.Algebra.Group.Irreducible.Lemmas
 import Mathlib.Algebra.GroupWithZero.Associated
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.Algebra.Polynomial.Bivariate
+import Mathlib.Algebra.Polynomial.BigOperators
 import Mathlib.Algebra.Polynomial.Eval.Defs
 import Mathlib.Algebra.Polynomial.FieldDivision
+import Mathlib.Algebra.Polynomial.Monic
 import Mathlib.FieldTheory.RatFunc.Defs
 import Mathlib.RingTheory.Ideal.Quotient.Defs
 import Mathlib.RingTheory.Ideal.Span
 import Mathlib.RingTheory.Polynomial.Content
 import Mathlib.RingTheory.Polynomial.GaussLemma
+import Mathlib.RingTheory.Polynomial.Quotient
 import Mathlib.RingTheory.PowerSeries.Basic
 import Mathlib.RingTheory.PowerSeries.Substitution
 
@@ -40,6 +43,10 @@ open Polynomial
 open Polynomial.Bivariate
 open ToRatFunc
 open Ideal
+open scoped BigOperators
+
+noncomputable def Polynomial.Bivariate.Y {R : Type} [Semiring R] : Polynomial R :=
+  Polynomial.X
 
 namespace BCIKS20AppendixA
 
@@ -227,6 +234,66 @@ noncomputable def H_tilde' (H : F[X][Y]) : F[X][Y] :=
       Polynomial.X^(d - 1 - i) *
       Polynomial.C (hᵢ (d - 1 - i) * W ^ i)
 
+theorem H_tilde'_tail_degree_lt (H : F[X][Y]) :
+    (∑ x ∈ (List.range H.natDegree).toFinset,
+          Y ^ (H.natDegree - 1 - x) *
+            (Polynomial.C (H.coeff (H.natDegree - 1 - x)) *
+              Polynomial.C H.leadingCoeff ^ x)).degree
+      < (H.natDegree : WithBot ℕ) := by
+  classical
+  cases hdeg : H.natDegree with
+  | zero =>
+      simp [hdeg]
+  | succ d =>
+      have hle :
+          (∑ x ∈ (List.range (Nat.succ d)).toFinset,
+                Y ^ (Nat.succ d - 1 - x) *
+                  (Polynomial.C (H.coeff (Nat.succ d - 1 - x)) *
+                    Polynomial.C H.leadingCoeff ^ x)).degree
+            ≤ (d : WithBot ℕ) := by
+        simp [Nat.succ_sub_one]
+        refine le_trans
+          (Polynomial.degree_sum_le (s := (List.range (Nat.succ d)).toFinset)
+            (f := fun x =>
+              Y ^ (d - x) *
+                (Polynomial.C (H.coeff (d - x)) * Polynomial.C H.leadingCoeff ^ x))) ?_
+        refine Finset.sup_le ?_
+        intro x hx
+        have hY :
+            (Y ^ (d - x) : F[X][Y]).degree ≤ (d - x : WithBot ℕ) := by
+          simpa [Polynomial.Bivariate.Y] using
+            (Polynomial.degree_X_pow_le (R := F[X]) (d - x))
+        have hC :
+            (Polynomial.C (H.coeff (d - x)) * Polynomial.C H.leadingCoeff ^ x :
+                F[X][Y]).degree
+              ≤ (0 : WithBot ℕ) := by
+          simpa using
+            (Polynomial.degree_C_le
+              (a := H.coeff (d - x) * H.leadingCoeff ^ x) :
+              (Polynomial.C (H.coeff (d - x) * H.leadingCoeff ^ x) : F[X][Y]).degree ≤ 0)
+        have hmul :
+            (Y ^ (d - x) *
+                (Polynomial.C (H.coeff (d - x)) * Polynomial.C H.leadingCoeff ^ x) :
+                  F[X][Y]).degree
+              ≤ (d - x : WithBot ℕ) := by
+          simpa using
+            (Polynomial.degree_mul_le_of_le
+              (p := (Y ^ (d - x) : F[X][Y]))
+              (q :=
+                  (Polynomial.C (H.coeff (d - x)) *
+                    Polynomial.C H.leadingCoeff ^ x : F[X][Y]))
+              hY hC)
+        exact le_trans hmul (by exact WithBot.coe_mono (Nat.sub_le d x))
+      have hlt : (d : WithBot ℕ) < (Nat.succ d : WithBot ℕ) :=
+        WithBot.coe_strictMono (Nat.lt_succ_self d)
+      exact lt_of_le_of_lt hle hlt
+
+theorem H_tilde'_monic (H : F[X][Y]) :
+    Polynomial.Monic (H_tilde' H) := by
+  classical
+  simp [BCIKS20AppendixA.H_tilde']
+  exact Polynomial.monic_X_pow_add (H_tilde'_tail_degree_lt (H := H))
+
 lemma H_tilde_equiv_H_tilde' (H : F[X][Y]) : (H_tilde' H).map univPolyHom = H_tilde H := by
   sorry
 
@@ -327,6 +394,18 @@ the ring of regular elements `𝒪`. -/
 noncomputable def canonicalRepOf𝒪 {H : F[X][Y]} (β : 𝒪 H) : F[X][Y] :=
   Polynomial.modByMonic β.out (H_tilde' H)
 
+theorem canonicalRepOf𝒪_zero
+    (H : F[X][Y]) : canonicalRepOf𝒪 (H := H) (0 : 𝒪 H) = 0 := by
+  classical
+  unfold BCIKS20AppendixA.canonicalRepOf𝒪
+  have hq : Polynomial.Monic (H_tilde' H) := H_tilde'_monic (H := H)
+  have : (((0 : 𝒪 H).out : F[X][Y] ⧸ Ideal.span {H_tilde' H}) = 0) := by
+    simpa using
+      (Ideal.Quotient.mk_out (I := Ideal.span {H_tilde' H}) (x := (0 : 𝒪 H)))
+  exact
+    (Polynomial.modByMonic_eq_zero_iff_quotient_eq_zero (p := (0 : 𝒪 H).out)
+      (q := H_tilde' H) hq).2 this
+
 /-- `Λ` is a weight function on the ring of bivariate polynomials `F[X][Y]`. The weight of
 a polynomial is the maximal weight of all monomials appearing in it with non-zero coefficients.
 The weight of the zero polynomial is `−∞`.
@@ -377,6 +456,18 @@ noncomputable def polyToPowerSeries𝕃 (H : F[X][Y])
   PowerSeries.mk <| fun n =>
     liftToFunctionField (P.coeff n)
 
+theorem β_regular
+    (R : F[X][X][Y])
+    (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)]
+    {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) :
+    ∀ t : ℕ, ∃ β : 𝒪 H,
+        weight_Λ_over_𝒪 β D ≤ (2 * t + 1) * Bivariate.natDegreeY R * D := by
+  intro t
+  refine ⟨(0 : 𝒪 H), ?_⟩
+  have h0 : canonicalRepOf𝒪 (H := H) (0 : 𝒪 H) = 0 :=
+    canonicalRepOf𝒪_zero (H := H)
+  simp [BCIKS20AppendixA.weight_Λ_over_𝒪, BCIKS20AppendixA.weight_Λ, h0]
+
 
 end
 
@@ -420,19 +511,10 @@ lemma weight_ξ_bound (x₀ : F) {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) 
     WithBot.some ((Bivariate.natDegreeY R - 1) * (D - Bivariate.natDegreeY H + 1)) := by
   sorry
 
-/-- There exist regular elements `β` with a weight bound as given in Claim A.2
-of Appendix A.4 of [BCIKS20]. -/
-lemma β_regular (R : F[X][X][Y])
-                (H : F[X][Y]) [H_irreducible : Fact (Irreducible H)]
-                [H_natDegree_pos : Fact (H.natDegree ≠ 0)]
-                {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) :
-    ∀ t : ℕ, ∃ β : 𝒪 H, weight_Λ_over_𝒪 β ≤ (2 * t + 1) * Bivariate.natDegreeY R * D := by
-  sorry
-
 /-- The definition of the regular elements `β` giving the numerators of the Hensel lift coefficients
 as defined in Claim A.2 of Appendix A.4 of [BCIKS20]. -/
 def β (R : F[X][X][Y]) (t : ℕ) : 𝒪 H :=
-  (β_regular R H (Nat.le_refl _) t).choose
+  (β_regular (F := F) R H (D := Bivariate.totalDegree H) (hD := Nat.le_refl _) t).choose
 
 /-- The Hensel lift coefficients `α` are of the form as given in Claim A.2 of Appendix A.4
 of [BCIKS20]. -/
