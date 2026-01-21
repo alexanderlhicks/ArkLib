@@ -171,11 +171,8 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
           (Polynomial.C (univPolyHom (H.coeff k)) *
             Polynomial.C (univPolyHom H.leadingCoeff) ^ (H.natDegree - 1 - k)) := by
   classical
-  have hH0 : H ≠ 0 := by
-    intro h0
-    simpa [h0] using hdeg
-  have hlead : H.leadingCoeff ≠ 0 := by
-    simpa using (leadingCoeff_ne_zero.2 hH0)
+  have hH0 : H ≠ 0 := by exact ne_zero_of_natDegree_gt hdeg
+  have hlead : H.leadingCoeff ≠ 0 := by exact leadingCoeff_ne_zero.mpr hH0
   have hw : univPolyHom H.leadingCoeff ≠ (0 : RatFunc F) := by
     intro hw0
     apply hlead
@@ -195,20 +192,13 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
             (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ k) +
           Polynomial.C (univPolyHom (H.coeff H.natDegree)) *
             (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ H.natDegree := by
-    -- `Finset.sum_range_succ` rewrites the sum over `range (d+1)`
-    simpa using
-      (Finset.sum_range_succ
-        (fun k =>
-          Polynomial.C (univPolyHom (H.coeff k)) *
-            (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ k)
-        H.natDegree)
-
+            exact Finset.sum_range_succ
+                (fun x ↦ C (univPolyHom (H.coeff x)) * (X / C (univPolyHom H.leadingCoeff)) ^ x)
+                H.natDegree
   rw [hsplit, mul_add]
 
   -- top term becomes X^natDegree
-  have hcoeff_nat : H.coeff H.natDegree = H.leadingCoeff := by
-    simpa using (Polynomial.coeff_natDegree H)
-
+  have hcoeff_nat : H.coeff H.natDegree = H.leadingCoeff := by rfl
   have htop :
       Polynomial.C (univPolyHom H.leadingCoeff) ^ (H.natDegree - 1) *
           (Polynomial.C (univPolyHom (H.coeff H.natDegree)) *
