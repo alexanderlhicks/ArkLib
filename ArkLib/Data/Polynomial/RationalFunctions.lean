@@ -162,7 +162,6 @@ theorem univPolyHom_injective :
   Function.Injective (univPolyHom (F := F)) := by
   simpa [ToRatFunc.univPolyHom] using (RatFunc.algebraMap_injective (K := F))
 
-
 theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
   H_tilde H =
     Polynomial.X ^ H.natDegree +
@@ -171,11 +170,8 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
           (Polynomial.C (univPolyHom (H.coeff k)) *
             Polynomial.C (univPolyHom H.leadingCoeff) ^ (H.natDegree - 1 - k)) := by
   classical
-  have hH0 : H ≠ 0 := by
-    intro h0
-    simpa [h0] using hdeg
-  have hlead : H.leadingCoeff ≠ 0 := by
-    simpa using (leadingCoeff_ne_zero.2 hH0)
+  have hH0 : H ≠ 0 := by exact ne_zero_of_natDegree_gt hdeg
+  have hlead : H.leadingCoeff ≠ 0 := by exact leadingCoeff_ne_zero.mpr hH0
   have hw : univPolyHom H.leadingCoeff ≠ (0 : RatFunc F) := by
     intro hw0
     apply hlead
@@ -195,20 +191,13 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
             (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ k) +
           Polynomial.C (univPolyHom (H.coeff H.natDegree)) *
             (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ H.natDegree := by
-    -- `Finset.sum_range_succ` rewrites the sum over `range (d+1)`
-    simpa using
-      (Finset.sum_range_succ
-        (fun k =>
-          Polynomial.C (univPolyHom (H.coeff k)) *
-            (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ k)
-        H.natDegree)
-
+            exact Finset.sum_range_succ
+                (fun x ↦ C (univPolyHom (H.coeff x)) * (X / C (univPolyHom H.leadingCoeff)) ^ x)
+                H.natDegree
   rw [hsplit, mul_add]
 
   -- top term becomes X^natDegree
-  have hcoeff_nat : H.coeff H.natDegree = H.leadingCoeff := by
-    simpa using (Polynomial.coeff_natDegree H)
-
+  have hcoeff_nat : H.coeff H.natDegree = H.leadingCoeff := by rfl
   have htop :
       Polynomial.C (univPolyHom H.leadingCoeff) ^ (H.natDegree - 1) *
           (Polynomial.C (univPolyHom (H.coeff H.natDegree)) *
@@ -216,8 +205,7 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
         Polynomial.X ^ H.natDegree := by
     -- rewrite `H.coeff H.natDegree`
     rw [hcoeff_nat]
-    have hd1 : (H.natDegree - 1) + 1 = H.natDegree :=
-      Nat.sub_add_cancel (Nat.succ_le_of_lt hdeg)
+    have hd1 : (H.natDegree - 1) + 1 = H.natDegree := by exact Nat.sub_add_cancel hdeg
     calc
       Polynomial.C (univPolyHom H.leadingCoeff) ^ (H.natDegree - 1) *
           (Polynomial.C (univPolyHom H.leadingCoeff) *
@@ -232,16 +220,12 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
                 rw [← pow_succ (Polynomial.C (univPolyHom H.leadingCoeff)) (H.natDegree - 1)]
       _ = Polynomial.C (univPolyHom H.leadingCoeff) ^ H.natDegree *
             (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff)) ^ H.natDegree := by
-                simpa [hd1]
+                simp [hd1]
       _ =
           (Polynomial.C (univPolyHom H.leadingCoeff) *
               (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff))) ^ H.natDegree := by
                 -- reverse `mul_pow`
-                simpa [mul_pow, mul_assoc, mul_left_comm, mul_comm] using
-                  (mul_pow
-                      (Polynomial.C (univPolyHom H.leadingCoeff))
-                      (Polynomial.X / Polynomial.C (univPolyHom H.leadingCoeff))
-                      H.natDegree).symm
+                simp [mul_pow]
       _ = Polynomial.X ^ H.natDegree := by
                 -- use the dedicated cancellation lemma
                 rw [C_mul_X_div_C (w := univPolyHom H.leadingCoeff) (hw := hw)]
@@ -317,7 +301,7 @@ theorem H_tilde_eq_explicit_forward (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
 
   -- finish by rewriting and using commutativity of addition
   rw [hlow, htop]
-  simpa [add_comm, add_left_comm, add_assoc]
+  simp [add_comm]
 
 theorem H_tilde_eq_explicit (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
   H_tilde H =
@@ -364,7 +348,7 @@ theorem H_tilde_eq_explicit (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
 theorem H_tilde_equiv_H_tilde' (H : F[X][Y]) (hdeg : 0 < H.natDegree) :
   (H_tilde' H).map univPolyHom = H_tilde H := by
   classical
-  simpa [H_tilde'_map_explicit (H := H), H_tilde_eq_explicit (H := H) hdeg]
+  simp [H_tilde'_map_explicit (H := H), H_tilde_eq_explicit (H := H) hdeg]
 
 /-- The ring of regular elements `𝒪` from Appendix A.1 of [BCIKS20]. -/
 abbrev 𝒪 (H : F[X][Y]) : Type :=
@@ -533,13 +517,12 @@ noncomputable def polyToPowerSeries𝕃 (H : F[X][Y])
 theorem β_regular
     (R : F[X][X][Y])
     (H : F[X][Y]) [Fact (Irreducible H)]
-    {D : ℕ} (hD : D ≥ Bivariate.totalDegree H) :
+    {D : ℕ} :
     ∀ t : ℕ, ∃ β : 𝒪 H,
         weight_Λ_over_𝒪 β D ≤ (2 * t + 1) * Bivariate.natDegreeY R * D := by
   intro t
   refine ⟨(0 : 𝒪 H), ?_⟩
-  have h0 : canonicalRepOf𝒪 (H := H) (0 : 𝒪 H) = 0 :=
-    canonicalRepOf𝒪_zero (H := H)
+  have h0 : canonicalRepOf𝒪 (H := H) (0 : 𝒪 H) = 0 := by exact canonicalRepOf𝒪_zero H
   simp [BCIKS20AppendixA.weight_Λ_over_𝒪, BCIKS20AppendixA.weight_Λ, h0]
 
 
