@@ -1,30 +1,11 @@
 /-
 Copyright (c) 2024-2025 ArkLib Contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Katerina Hristova, František Silváši, Julian Sutherland, Ilia Vlasov
+Authors: Katerina Hristova, František Silváši, Julian Sutherland, Ilia Vlasov, Alexander Hicks, Aleph
 -/
 
 import ArkLib.Data.Polynomial.Bivariate
-import ArkLib.Data.Polynomial.Prelims
-import Mathlib.Algebra.BigOperators.Intervals
-import Mathlib.Algebra.Field.IsField
-import Mathlib.Algebra.Group.Irreducible.Lemmas
-import Mathlib.Algebra.GroupWithZero.Associated
-import Mathlib.Algebra.Polynomial.Basic
-import Mathlib.Algebra.Polynomial.BigOperators
-import Mathlib.Algebra.Polynomial.Bivariate
-import Mathlib.Algebra.Polynomial.Eval.Degree
-import Mathlib.Algebra.Polynomial.Eval.Defs
-import Mathlib.Algebra.Polynomial.FieldDivision
-import Mathlib.Algebra.Polynomial.Monic
-import Mathlib.FieldTheory.RatFunc.Basic
-import Mathlib.FieldTheory.RatFunc.Defs
-import Mathlib.RingTheory.Ideal.Quotient.Defs
-import Mathlib.RingTheory.Ideal.Span
-import Mathlib.RingTheory.Polynomial.Content
 import Mathlib.RingTheory.Polynomial.GaussLemma
-import Mathlib.RingTheory.Polynomial.Quotient
-import Mathlib.RingTheory.PowerSeries.Basic
 import Mathlib.RingTheory.PowerSeries.Substitution
 
 
@@ -796,3 +777,5 @@ noncomputable def γ' (x₀ : F) (R : F[X][X][Y]) (H_irreducible : Irreducible H
 
 end ClaimA2
 end BCIKS20AppendixA
+
+#min_imports
