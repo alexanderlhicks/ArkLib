@@ -21,7 +21,7 @@ which provides an efficient decoding method for Reed-Solomon codes.
 
 ## References
 
-* [Polishchuk, A., and Spielman, D., *Holographic proofs of high-degree polynomials*](https://doi.org/10.1145/335305.335314)
+* [Polishchuk, A., and Spielman, D., *Holographic proofs of high-degree polynomials*][PS94]
 * [Ben-Sasson, E., Carmon, D., Ishai, Y., Kopparty, S., and Saraf, S., *Proximity Gaps
     for Reed-Solomon Codes*][BCIKS20]
 

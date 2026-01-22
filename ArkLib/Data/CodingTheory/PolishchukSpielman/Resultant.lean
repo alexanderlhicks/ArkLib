@@ -64,7 +64,7 @@ lemma PS_natDegree_resultant_le {F : Type} [Field F]
     · -- use the definition of `Finset.sup`
       simpa using
         (Finset.le_sup (s := A.support) (f := fun t : ℕ => (A.coeff t).natDegree) hk)
-    ·have hk0 : A.coeff k = 0 := by exact notMem_support_iff.mp hk
+    · have hk0 : A.coeff k = 0 := by exact notMem_support_iff.mp hk
      simp [hk0]
 
   -- Every coefficient of `B` has `X`-degree bounded by `degreeX B`.
@@ -73,9 +73,9 @@ lemma PS_natDegree_resultant_le {F : Type} [Field F]
     classical
     unfold Polynomial.Bivariate.degreeX
     by_cases hk : k ∈ B.support
-    ·simpa using
+    · simpa using
         (Finset.le_sup (s := B.support) (f := fun t : ℕ => (B.coeff t).natDegree) hk)
-    ·have hk0 : B.coeff k = 0 :=  by exact notMem_support_iff.mp hk
+    · have hk0 : B.coeff k = 0 :=  by exact notMem_support_iff.mp hk
      simp [hk0]
 
   -- Column-wise `X`-degree bounds for the Sylvester matrix:
@@ -101,9 +101,9 @@ lemma PS_natDegree_resultant_le {F : Type} [Field F]
           (show (M (σ (Fin.castAdd m i0)) (Fin.castAdd m i0)).natDegree ≤
               colBound (Fin.castAdd m i0) from by
             by_cases h : ((σ (Fin.castAdd m i0) : ℕ) ∈ Set.Icc (i0 : ℕ) ((i0 : ℕ) + m))
-            ·simp [hM, hB, h]
+            · simp [hM, hB, h]
              exact hAcoeff ((σ (Fin.castAdd m i0) : ℕ) - i0)
-            ·simp [hM, hB, h])
+            · simp [hM, hB, h])
     | right i0 =>
         have hM :
             M (σ (Fin.natAdd n i0)) (Fin.natAdd n i0) =
@@ -117,9 +117,9 @@ lemma PS_natDegree_resultant_le {F : Type} [Field F]
           (show (M (σ (Fin.natAdd n i0)) (Fin.natAdd n i0)).natDegree ≤
               colBound (Fin.natAdd n i0) from by
             by_cases h : ((σ (Fin.natAdd n i0) : ℕ) ∈ Set.Icc (i0 : ℕ) ((i0 : ℕ) + n))
-            ·simp [hM, hB, h]
+            · simp [hM, hB, h]
              exact hBcoeff ((σ (Fin.natAdd n i0) : ℕ) - i0)
-            ·simp [hM, hB, h])
+            · simp [hM, hB, h])
 
   have h_term (σ : Equiv.Perm (Fin (n + m))) :
       (Equiv.Perm.sign σ • ∏ i : Fin (n + m), M (σ i) i).natDegree ≤
