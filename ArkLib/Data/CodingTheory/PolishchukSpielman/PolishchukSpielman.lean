@@ -11,7 +11,7 @@ import ArkLib.Data.CodingTheory.PolishchukSpielman.Resultant
 /-!
 # Polishchuk-Spielman algorithm
 
-This file defines the main theorem for the Polishchuk-Spielman algorithm,
+This file defines the main theorem for the Polishchuk-Spielman algorithm [PS94],
 which provides an efficient decoding method for Reed-Solomon codes.
 
 ## Main results
@@ -21,7 +21,7 @@ which provides an efficient decoding method for Reed-Solomon codes.
 
 ## References
 
-* [Polishchuk, A., and Spielman, D., *Holographic proofs of high-degree polynomials*][PS94]
+* [Polishchuk, A., and Spielman, D., *Nearly-linear size holographic proofs*][PS94]
 * [Ben-Sasson, E., Carmon, D., Ishai, Y., Kopparty, S., and Saraf, S., *Proximity Gaps
     for Reed-Solomon Codes*][BCIKS20]
 
@@ -60,14 +60,14 @@ theorem polishchuk_spielman {F : Type} [Field F]
 
   -- 1. obtain P with B = P * A
   obtain ⟨P, hBA⟩ :=
-    PS_exists_P (F := F) a_x a_y b_x b_y n_x n_y h_bx_ge_ax h_by_ge_ay A B
+    ps_exists_p (F := F) a_x a_y b_x b_y n_x n_y h_bx_ge_ax h_by_ge_ay A B
       h_f_degX h_g_degX h_f_degY h_g_degY P_x P_y quot_X quot_Y h_card_Px h_card_Py h_quot_X
       h_quot_Y h_le_1
 
   -- 2. degree bounds for P
   have hdeg : Polynomial.Bivariate.degreeX P ≤ b_x - a_x ∧
       Polynomial.Bivariate.natDegreeY P ≤ b_y - a_y :=
-    PS_degree_bounds_of_mul (F := F) a_x a_y b_x b_y n_x n_y h_bx_ge_ax h_by_ge_ay
+    ps_degree_bounds_of_mul (F := F) a_x a_y b_x b_y n_x n_y h_bx_ge_ax h_by_ge_ay
       (A := A) (B := B) (P := P) hA0 hBA h_f_degX h_f_degY h_g_degY P_x P_y
       quot_X quot_Y h_card_Px h_card_Py h_quot_X h_quot_Y h_le_1
 
@@ -78,7 +78,7 @@ theorem polishchuk_spielman {F : Type} [Field F]
     exact (h_quot_Y x hx).2
 
   obtain ⟨Q_x, hQx_card, hQx_sub, hQx_eval⟩ :=
-    PS_exists_Qx_of_cancel (F := F) a_x n_x (A := A) (B := B) (P := P) hA0 hBA P_x h_card_Px
+    ps_exists_qx_of_cancel (F := F) a_x n_x (A := A) (B := B) (P := P) hA0 hBA P_x h_card_Px
       quot_Y h_quot_Y_eq h_f_degX
 
   -- 4. cancellation in Y gives Q_y
@@ -88,7 +88,7 @@ theorem polishchuk_spielman {F : Type} [Field F]
     exact (h_quot_X y hy).2
 
   obtain ⟨Q_y, hQy_card, hQy_sub, hQy_eval⟩ :=
-    PS_exists_Qy_of_cancel (F := F) a_y n_y (A := A) (B := B) (P := P) hA0 hBA P_y h_card_Py
+    ps_exists_qy_of_cancel (F := F) a_y n_y (A := A) (B := B) (P := P) hA0 hBA P_y h_card_Py
       quot_X h_quot_X_eq h_f_degY
 
   -- assemble

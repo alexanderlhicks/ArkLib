@@ -14,15 +14,15 @@ import Mathlib.RingTheory.SimpleModule.Basic
 
 This file contains auxiliary lemmas regarding degree bounds, evaluation, and
 variable swapping for bivariate polynomials, used in the Polishchuk-Spielman
-algorithm.
+algorithm [BCIKS20].
 
 ## Main results
 
-- `PS_bx_lt_nx`, `PS_by_lt_ny`: Bounds on the degrees parameters.
-- `PS_card_evalX_eq_zero_le_degreeX`, `PS_card_evalY_eq_zero_le_natDegreeY`:
+- `ps_bx_lt_nx`, `ps_by_lt_ny`: Bounds on the degrees parameters.
+- `ps_card_eval_x_eq_zero_le_degree_x`, `ps_card_eval_y_eq_zero_le_nat_degree_y`:
   Bounds on the number of roots of a bivariate polynomial on lines.
-- `PS_evalY_eq_evalX_swap`: Relates evaluation in Y to evaluation in X of the swapped polynomial.
-- `PS_exists_x_preserve_natDegreeY`, `PS_exists_y_preserve_degreeX`: Existence of evaluation points
+- `ps_eval_y_eq_eval_x_swap`: Relates evaluation in Y to evaluation in X of the swapped polynomial.
+- `ps_exists_x_preserve_nat_degree_y`, `ps_exists_y_preserve_degree_x`: Existence of evaluation points
   preserving the degree.
 
 ## References
@@ -35,7 +35,7 @@ algorithm.
 open Polynomial.Bivariate Polynomial
 open scoped BigOperators
 
-lemma PS_bx_lt_nx {b_x b_y : ℕ} {n_x n_y : ℕ+}
+lemma ps_bx_lt_nx {b_x b_y : ℕ} {n_x n_y : ℕ+}
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) : b_x < (n_x : ℕ) := by
   have hby_nonneg : (0 : ℚ) ≤ (b_y : ℚ) / (n_y : ℚ) := by
     have hnum : (0 : ℚ) ≤ (b_y : ℚ) := by
@@ -54,7 +54,7 @@ lemma PS_bx_lt_nx {b_x b_y : ℕ} {n_x n_y : ℕ+}
     simpa [div_mul_cancel₀, hnx_ne, one_mul] using hmul
   exact_mod_cast hx
 
-lemma PS_by_lt_ny {b_x b_y : ℕ} {n_x n_y : ℕ+}
+lemma ps_by_lt_ny {b_x b_y : ℕ} {n_x n_y : ℕ+}
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) : b_y < (n_y : ℕ) := by
   have hsum : (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ) < 1 := by
     exact h_le_1
@@ -79,7 +79,7 @@ lemma PS_by_lt_ny {b_x b_y : ℕ} {n_x n_y : ℕ+}
   simp only [gt_iff_lt]
   exact_mod_cast hy_lt
 
-lemma PS_card_evalX_eq_zero_le_degreeX {F : Type} [Field F] [DecidableEq F]
+lemma ps_card_eval_x_eq_zero_le_degree_x {F : Type} [Field F] [DecidableEq F]
     (A : F[X][Y]) (hA : A ≠ 0) (P : Finset F) :
     (P.filter (fun x => Polynomial.Bivariate.evalX x A = 0)).card
       ≤ Polynomial.Bivariate.degreeX A := by
@@ -115,7 +115,7 @@ lemma PS_card_evalX_eq_zero_le_degreeX {F : Type} [Field F] [DecidableEq F]
   simpa [S] using this
 
 
-lemma PS_card_evalY_eq_zero_le_natDegreeY {F : Type} [Field F] [DecidableEq F]
+lemma ps_card_eval_y_eq_zero_le_nat_degree_y {F : Type} [Field F] [DecidableEq F]
     (A : F[X][Y]) (hA : A ≠ 0) (P : Finset F) :
     (P.filter (fun y => Polynomial.Bivariate.evalY y A = 0)).card
       ≤ Polynomial.Bivariate.natDegreeY A := by
@@ -161,7 +161,7 @@ lemma PS_card_evalY_eq_zero_le_natDegreeY {F : Type} [Field F] [DecidableEq F]
   -- `natDegreeY` is just `natDegree`.
   simpa [Polynomial.Bivariate.natDegreeY, bad, hcard] using hZcard
 
-lemma PS_coeff_mul_monomial_ite {R : Type} [Semiring R]
+lemma ps_coeff_mul_monomial_ite {R : Type} [Semiring R]
     (A : R[X]) (j i : ℕ) (r : R) :
     (A * Polynomial.monomial j r).coeff i =
       if j ≤ i then A.coeff (i - j) * r else 0 := by
@@ -169,7 +169,7 @@ lemma PS_coeff_mul_monomial_ite {R : Type} [Semiring R]
   simp [← Polynomial.C_mul_X_pow_eq_monomial, ← mul_assoc, Polynomial.coeff_mul_X_pow',
     Polynomial.coeff_mul_C]
 
-lemma PS_coeff_mul_sum_monomial {R : Type} [CommRing R]
+lemma ps_coeff_mul_sum_monomial {R : Type} [CommRing R]
     (A : R[X]) (m n : ℕ) (hm : A.natDegree ≤ m)
     (c : Fin n → R) (i : ℕ) :
     (A * (∑ j : Fin n, Polynomial.monomial (j : ℕ) (c j))).coeff i =
@@ -179,10 +179,10 @@ lemma PS_coeff_mul_sum_monomial {R : Type} [CommRing R]
   classical
   have hdeg : ∀ N : ℕ, m < N → A.coeff N = 0 :=
     (Polynomial.natDegree_le_iff_coeff_eq_zero (p := A) (n := m)).1 hm
-  simp [Finset.mul_sum, Polynomial.finset_sum_coeff, PS_coeff_mul_monomial_ite]
+  simp [Finset.mul_sum, Polynomial.finset_sum_coeff, ps_coeff_mul_monomial_ite]
   grind only [cases Or]
 
-lemma PS_degreeX_swap {F : Type} [CommRing F]
+lemma ps_degree_x_swap {F : Type} [CommRing F]
     (f : F[X][Y]) :
     Polynomial.Bivariate.degreeX (Polynomial.Bivariate.swap f) =
       Polynomial.Bivariate.natDegreeY f := by
@@ -275,7 +275,7 @@ lemma PS_degreeX_swap {F : Type} [CommRing F]
         Finset.le_sup (f := fun k => ((Polynomial.Bivariate.swap f).coeff k).natDegree) hn_support
       exact le_trans hNle_natDeg hn_le_degX
 
-lemma PS_descend_evalX {F : Type} [Field F] [DecidableEq F]
+lemma ps_descend_eval_x {F : Type} [Field F] [DecidableEq F]
     {A B G A1 B1 : F[X][Y]} (hA : A = G * A1) (hB : B = G * B1)
     (x : F) (hx : Polynomial.Bivariate.evalX x G ≠ 0) (q : F[X])
     (h : Polynomial.Bivariate.evalX x B = q * Polynomial.Bivariate.evalX x A) :
@@ -307,7 +307,7 @@ lemma PS_descend_evalX {F : Type} [Field F] [DecidableEq F]
   -- rewrite back to `evalX`
   simpa [evalX_eq_map] using hcancel
 
-lemma PS_descend_evalY {F : Type} [Field F] [DecidableEq F]
+lemma ps_descend_eval_y {F : Type} [Field F] [DecidableEq F]
     {A B G A1 B1 : F[X][Y]} (hA : A = G * A1) (hB : B = G * B1)
     (y : F) (hy : Polynomial.Bivariate.evalY y G ≠ 0) (q : F[X])
     (h : Polynomial.Bivariate.evalY y B = q * Polynomial.Bivariate.evalY y A) :
@@ -321,14 +321,14 @@ lemma PS_descend_evalY {F : Type} [Field F] [DecidableEq F]
   apply mul_left_cancel₀ hy
   grind only
 
-lemma PS_evalX_eq_map {F : Type} [CommSemiring F]
+lemma ps_eval_x_eq_map {F : Type} [CommSemiring F]
     (x : F) (f : F[X][Y]) :
     Polynomial.Bivariate.evalX x f = f.map (Polynomial.evalRingHom x) := by
   classical
   ext n
   simp [Polynomial.Bivariate.evalX, Polynomial.toFinsupp_apply]
 
-lemma PS_evalY_eq_evalX_swap {F : Type} [CommRing F]
+lemma ps_eval_y_eq_eval_x_swap {F : Type} [CommRing F]
     (y : F) (f : F[X][Y]) :
     Polynomial.Bivariate.evalY y f =
       Polynomial.Bivariate.evalX y (Polynomial.Bivariate.swap f) := by
@@ -365,10 +365,10 @@ lemma PS_evalY_eq_evalX_swap {F : Type} [CommRing F]
       _ = (Polynomial.Bivariate.swap f).map (Polynomial.evalRingHom y) := by
         exact mapAlgHom_eq_map
       _ = Polynomial.Bivariate.evalX y (Polynomial.Bivariate.swap f) := by
-        exact Eq.symm (PS_evalX_eq_map y (swap f))
+        exact Eq.symm (ps_eval_x_eq_map y (swap f))
   exact hmain
 
-lemma PS_exists_x_preserve_natDegreeY {F : Type} [Field F] [DecidableEq F]
+lemma ps_exists_x_preserve_nat_degree_y {F : Type} [Field F] [DecidableEq F]
     (B : F[X][Y]) (hB : B ≠ 0) (P_x : Finset F)
     (hcard : P_x.card > Polynomial.Bivariate.degreeX B) :
     ∃ x ∈ P_x, (Polynomial.Bivariate.evalX x B).natDegree = Polynomial.Bivariate.natDegreeY B := by
@@ -414,7 +414,7 @@ lemma PS_exists_x_preserve_natDegreeY {F : Type} [Field F] [DecidableEq F]
     exact hxne
   exact natDegree_eq_of_le_of_coeff_ne_zero hnat_le hxne
 
-lemma PS_exists_y_preserve_degreeX {F : Type} [Field F] [DecidableEq F]
+lemma ps_exists_y_preserve_degree_x {F : Type} [Field F] [DecidableEq F]
     (B : F[X][Y]) (hB : B ≠ 0) (P_y : Finset F)
     (hcard : P_y.card > Polynomial.Bivariate.natDegreeY B) :
     ∃ y ∈ P_y, (Polynomial.Bivariate.evalY y B).natDegree = Polynomial.Bivariate.degreeX B := by
@@ -533,7 +533,7 @@ lemma PS_exists_y_preserve_degreeX {F : Type} [Field F] [DecidableEq F]
 
   simpa [hd] using hnat
 
-lemma PS_degree_bounds_of_mul {F : Type} [Field F]
+lemma ps_degree_bounds_of_mul {F : Type} [Field F]
     (a_x a_y b_x b_y : ℕ) (n_x n_y : ℕ+)
     (h_bx_ge_ax : b_x ≥ a_x) (h_by_ge_ay : b_y ≥ a_y)
     {A B P : F[X][Y]}
@@ -594,7 +594,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
 
     have hPy0_le : Py0.card ≤ Polynomial.Bivariate.natDegreeY A := by
       simpa [Py0] using
-        PS_card_evalY_eq_zero_le_natDegreeY (A := A) (hA := hA) (P := P_y)
+        ps_card_eval_y_eq_zero_le_nat_degree_y (A := A) (hA := hA) (P := P_y)
 
     have hcard_part : Py0.card + Py'.card = P_y.card := by
       simpa [Py0, Py'] using
@@ -612,7 +612,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
       simpa [hPy0_sub] using hsub
 
     have hby_lt_ny : b_y < (n_y : ℕ) :=
-      PS_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+      ps_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
     have hby_lt_card : b_y < P_y.card := lt_of_lt_of_le hby_lt_ny h_card_Py
 
     have hdegA_le_by : Polynomial.Bivariate.natDegreeY A ≤ b_y := le_trans h_f_degY h_by_ge_ay
@@ -633,7 +633,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
       simpa [hdegY] using hBN
 
     have hnatDegY_P_le :
-        Polynomial.Bivariate.natDegreeY P ≤ b_y - Polynomial.Bivariate.natDegreeY A :=
+        Polynomial.Bivariate.nat_degree_y P ≤ b_y - Polynomial.Bivariate.natDegreeY A :=
       le_tsub_of_add_le_right hsumY
 
     have hbsubY : b_y - Polynomial.Bivariate.natDegreeY A
@@ -647,7 +647,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
       exact hlt'
 
     -- choose y preserving degreeX
-    rcases PS_exists_y_preserve_degreeX (F := F) (B := P) (hB := hP) (P_y := Py') hPy'_card with
+    rcases ps_exists_y_preserve_degree_x (F := F) (B := P) (hB := hP) (P_y := Py') hPy'_card with
       ⟨y, hyPy', hydegX⟩
 
     have hyP_y : y ∈ P_y := (Finset.mem_filter.mp hyPy').1
@@ -688,7 +688,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
     let Px' : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A ≠ 0)
 
     have hPx0_le : Px0.card ≤ Polynomial.Bivariate.degreeX A := by
-      simpa [Px0] using PS_card_evalX_eq_zero_le_degreeX (A := A) (hA := hA) (P := P_x)
+      simpa [Px0] using ps_card_eval_x_eq_zero_le_degree_x (A := A) (hA := hA) (P := P_x)
 
     have hcard_partX : Px0.card + Px'.card = P_x.card := by
       simpa [Px0, Px'] using
@@ -704,7 +704,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
       simpa [hPx0_sub] using hsub
 
     have hbx_lt_nx : b_x < (n_x : ℕ) :=
-      PS_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+      ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
     have hbx_lt_card : b_x < P_x.card := lt_of_lt_of_le hbx_lt_nx h_card_Px
 
     have hdegX_A_le_bx : Polynomial.Bivariate.degreeX A ≤ b_x := by
@@ -727,7 +727,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
       have hlt' : Polynomial.Bivariate.degreeX P < Px'.card := lt_of_lt_of_le hlt hPx'_ge
       exact hlt'
 
-    rcases PS_exists_x_preserve_natDegreeY (F := F) (B := P) (hB := hP) (P_x := Px') hPx'_card with
+    rcases ps_exists_x_preserve_nat_degree_y (F := F) (B := P) (hB := hP) (P_x := Px') hPx'_card with
       ⟨x, hxPx', hxdegY⟩
 
     have hxP_x : x ∈ P_x := (Finset.mem_filter.mp hxPx').1
@@ -763,7 +763,7 @@ lemma PS_degree_bounds_of_mul {F : Type} [Field F]
 
     exact ⟨hdegX_P_le, hdegY_P_le⟩
 
-lemma PS_gcd_decompose {F : Type} [Field F]
+lemma ps_gcd_decompose {F : Type} [Field F]
     {A B : F[X][Y]} (hA : A ≠ 0) (hB : B ≠ 0) :
     ∃ G A1 B1 : F[X][Y],
       A = G * A1 ∧ B = G * B1 ∧ IsRelPrime A1 B1 ∧ A1 ≠ 0 ∧ B1 ≠ 0 := by
@@ -807,7 +807,7 @@ lemma PS_gcd_decompose {F : Type} [Field F]
   have hrel : IsRelPrime A1 B1 := by exact gcd_isUnit_iff_isRelPrime.mp hgcd_unit
   exact ⟨hAfac, hBfac, hrel, hA1, hB1⟩
 
-lemma PS_isRelPrime_swap {F : Type} [CommRing F] {A B : F[X][Y]}
+lemma ps_is_rel_prime_swap {F : Type} [CommRing F] {A B : F[X][Y]}
     (h : IsRelPrime A B) :
     IsRelPrime (Polynomial.Bivariate.swap A) (Polynomial.Bivariate.swap B) := by
   classical
@@ -822,12 +822,12 @@ lemma PS_isRelPrime_swap {F : Type} [CommRing F] {A B : F[X][Y]}
   have : IsUnit (f (f.symm d)) := (f.toRingHom).isUnit_map hunit
   simpa [f] using this
 
-lemma PS_natDegreeY_swap {F : Type} [CommRing F]
+lemma ps_nat_degree_y_swap {F : Type} [CommRing F]
     (f : F[X][Y]) :
     Polynomial.Bivariate.natDegreeY (Polynomial.Bivariate.swap f) =
       Polynomial.Bivariate.degreeX f := by
   classical
-  have h := PS_degreeX_swap (F := F) (f := Polynomial.Bivariate.swap f)
+  have h := ps_degree_x_swap (F := F) (f := Polynomial.Bivariate.swap f)
   have hs : Polynomial.Bivariate.swap (R := F) (Polynomial.Bivariate.swap f) = f := by
     simpa using (Polynomial.Bivariate.swap (R := F)).left_inv f
   have h' :

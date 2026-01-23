@@ -13,13 +13,13 @@ import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 # Existence of polynomials for Polishchuk-Spielman
 
 This file contains the core existence proofs for the polynomials $P$ and $Q$
-required by the Polishchuk-Spielman algorithm.
+required by the Polishchuk-Spielman algorithm [BCIKS20].
 
 ## Main results
 
-- `PS_exists_P`: Existence of a polynomial `P` such that `B = P * A`.
-- `PS_exists_Qx_of_cancel`: Existence of `Q_x` after cancellation in the X direction.
-- `PS_exists_Qy_of_cancel`: Existence of `Q_y` after cancellation in the Y direction.
+- `ps_exists_p`: Existence of a polynomial `P` such that `B = P * A`.
+- `ps_exists_qx_of_cancel`: Existence of `Q_x` after cancellation in the X direction.
+- `ps_exists_qy_of_cancel`: Existence of `Q_y` after cancellation in the Y direction.
 
 ## References
 
@@ -31,7 +31,7 @@ required by the Polishchuk-Spielman algorithm.
 open Polynomial.Bivariate Polynomial Matrix
 open scoped BigOperators
 
-lemma PS_exists_P_of_degreeX_eq_zero_natDegreeY_eq_zero {F : Type} [Field F]
+lemma ps_exists_p_of_degree_x_eq_zero_nat_degree_y_eq_zero {F : Type} [Field F]
     {A B : F[X][Y]} (hA0 : A ≠ 0)
     (hdegX : Polynomial.Bivariate.degreeX A = 0)
     (hdegY : Polynomial.Bivariate.natDegreeY A = 0) :
@@ -67,7 +67,7 @@ lemma PS_exists_P_of_degreeX_eq_zero_natDegreeY_eq_zero {F : Type} [Field F]
   simp_all only [coeff_mul_C, ne_eq, not_false_eq_true, inv_mul_cancel_right₀]
 
 
-lemma PS_exists_Qx_of_cancel {F : Type} [Field F] [DecidableEq F]
+lemma ps_exists_qx_of_cancel {F : Type} [Field F] [DecidableEq F]
     (a_x : ℕ) (n_x : ℕ+)
     {A B P : F[X][Y]}
     (hA : A ≠ 0)
@@ -86,7 +86,7 @@ lemma PS_exists_Qx_of_cancel {F : Type} [Field F] [DecidableEq F]
   · -- cardinality bound
     let Z_x : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A = 0)
     have hZdeg : Z_x.card ≤ Polynomial.Bivariate.degreeX A := by
-      exact PS_card_evalX_eq_zero_le_degreeX A hA P_x
+      exact ps_card_eval_x_eq_zero_le_degree_x A hA P_x
     have hsplit : Z_x.card + Q_x.card = P_x.card := by
       exact Finset.filter_card_add_filter_neg_card_eq_card fun x ↦ evalX x A = 0
     have hPsub : P_x.card - a_x ≤ Q_x.card := by
@@ -125,7 +125,7 @@ lemma PS_exists_Qx_of_cancel {F : Type} [Field F] [DecidableEq F]
       grind only
     exact mul_right_cancel₀ hxA hcancel_eq
 
-lemma PS_exists_Qy_of_cancel {F : Type} [Field F] [DecidableEq F]
+lemma ps_exists_qy_of_cancel {F : Type} [Field F] [DecidableEq F]
     (a_y : ℕ) (n_y : ℕ+)
     {A B P : F[X][Y]}
     (hA : A ≠ 0)
@@ -147,7 +147,7 @@ lemma PS_exists_Qy_of_cancel {F : Type} [Field F] [DecidableEq F]
       exact Finset.filter_card_add_filter_neg_card_eq_card fun y ↦ evalY y A = 0
     have hbad : bad.card ≤ a_y := by
       have h1 : bad.card ≤ Polynomial.Bivariate.natDegreeY A := by
-        exact PS_card_evalY_eq_zero_le_natDegreeY A hA P_y
+        exact ps_card_eval_y_eq_zero_le_nat_degree_y A hA P_y
       exact le_trans h1 h_f_degY
     have hny : (n_y : ℕ) ≤ P_y.card := by
       exact h_card_Py
@@ -191,7 +191,7 @@ lemma PS_exists_Qy_of_cancel {F : Type} [Field F] [DecidableEq F]
 
 
 
-lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
+lemma ps_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
     (a_x a_y b_x b_y : ℕ) (n_x n_y : ℕ+)
     (h_bx_ge_ax : b_x ≥ a_x) (h_by_ge_ay : b_y ≥ a_y)
     (A B : F[X][Y])
@@ -237,7 +237,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
   -- nonvanishing of the two resultants from coprimality
   have hRY0 : RY ≠ 0 := by
     have h :=
-      PS_resultant_ne_zero_of_isRelPrime (A := A) (B := B) (n := b_y) (hn := by
+      ps_resultant_ne_zero_of_is_rel_prime (A := A) (B := B) (n := b_y) (hn := by
         -- natDegreeY B ≤ b_y
         simpa using h_g_degY)
         (hA0 := hA0) (hrel := hrel)
@@ -254,22 +254,22 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
     exact (Polynomial.Bivariate.swap (R := F)).injective (by simpa using h)
 
   have hrel' : IsRelPrime (Polynomial.Bivariate.swap A) (Polynomial.Bivariate.swap B) :=
-    PS_isRelPrime_swap (A := A) (B := B) hrel
+    ps_is_rel_prime_swap (A := A) (B := B) hrel
 
   have hnX : Polynomial.Bivariate.natDegreeY (Polynomial.Bivariate.swap B) ≤ b_x := by
-    rw [PS_natDegreeY_swap (f := B)]
+    rw [ps_nat_degree_y_swap (f := B)]
     simpa using h_g_degX
 
   have hRX0 : RX ≠ 0 := by
     have h :=
-      PS_resultant_ne_zero_of_isRelPrime
+      ps_resultant_ne_zero_of_is_rel_prime
         (A := Polynomial.Bivariate.swap A) (B := Polynomial.Bivariate.swap B) (n := b_x) (hn := hnX)
         (hA0 := hA0') (hrel := hrel')
     -- unfold RX and rewrite the exponent to match the lemma
     rw [hRX]
     have hnat : mX = Polynomial.Bivariate.natDegreeY (Polynomial.Bivariate.swap A) := by
       -- mX = degreeX A = natDegreeY (swap A)
-      exact hmX.trans (PS_natDegreeY_swap (f := A)).symm
+      exact hmX.trans (ps_nat_degree_y_swap (f := A)).symm
     -- replace mX by natDegreeY (swap A)
     rw [hnat]
     simpa using h
@@ -291,7 +291,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       intro x hx
       rcases h_quot_Y x hx with ⟨hdegQ, hQ⟩
       have h :=
-        PS_resultant_dvd_pow_evalX (A := A) (B := B) (x := x) (Q := quot_Y x) (n := b_y)
+        ps_resultant_dvd_pow_eval_x (A := A) (B := B) (x := x) (Q := quot_Y x) (n := b_y)
           (hmn := by
             -- natDegreeY A ≤ b_y
             simpa [hmY.symm] using hmY_le_by)
@@ -325,7 +325,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       intro y hy
       rcases h_quot_X y hy with ⟨hdegQ, hQ⟩
       have h :=
-        PS_resultant_dvd_pow_evalY (A := A) (B := B) (y := y) (Q := quot_X y) (n := b_x)
+        ps_resultant_dvd_pow_eval_y (A := A) (B := B) (y := y) (Q := quot_X y) (n := b_x)
           (hmn := by
             -- degreeX A ≤ b_x
             simpa [hmX.symm] using hmX_le_bx)
@@ -407,7 +407,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
   -- upper bounds on natDegrees from the given resultant degree lemma
   have hRY_le : RY.natDegree ≤ mY * b_x + mX * b_y := by
     have hdeg :=
-      PS_natDegree_resultant_le (A := A) (B := B) (m := mY) (n := b_y)
+      ps_nat_degree_resultant_le (A := A) (B := B) (m := mY) (n := b_y)
     have hdeg' :
         RY.natDegree ≤ mY * Polynomial.Bivariate.degreeX B + b_y * Polynomial.Bivariate.degreeX A := by
       simpa [RY, hRY] using hdeg
@@ -428,9 +428,9 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
 
   have hRX_le : RX.natDegree ≤ mX * b_y + mY * b_x := by
     have hm_swap : Polynomial.Bivariate.natDegreeY (Polynomial.Bivariate.swap A) ≤ mX := by
-      simpa [hmX.symm] using (le_of_eq (PS_natDegreeY_swap (f := A)))
+      simpa [hmX.symm] using (le_of_eq (ps_nat_degree_y_swap (f := A)))
     have hdeg :=
-      PS_natDegree_resultant_le (A := Polynomial.Bivariate.swap A)
+      ps_nat_degree_resultant_le (A := Polynomial.Bivariate.swap A)
         (B := Polynomial.Bivariate.swap B) (m := mX) (n := b_x)
     have hdeg' :
         RX.natDegree ≤
@@ -439,13 +439,13 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       simpa [RX, hRX] using hdeg
     have h1 : mX * Polynomial.Bivariate.degreeX (Polynomial.Bivariate.swap B) ≤ mX * b_y := by
       -- degreeX (swap B) = natDegreeY B ≤ b_y
-      rw [PS_degreeX_swap (f := B)]
+      rw [ps_degree_x_swap (f := B)]
       have : Polynomial.Bivariate.natDegreeY B ≤ b_y := by
         simpa using h_g_degY
       exact Nat.mul_le_mul_left _ this
     have h2 : b_x * Polynomial.Bivariate.degreeX (Polynomial.Bivariate.swap A) ≤ mY * b_x := by
       -- degreeX (swap A) = natDegreeY A = mY
-      rw [PS_degreeX_swap (f := A)]
+      rw [ps_degree_x_swap (f := A)]
       -- now both sides are equal by commutativity
       have : b_x * Polynomial.Bivariate.natDegreeY A = mY * b_x := by
         -- rewrite natDegreeY A as mY
@@ -501,7 +501,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       have hnonneg : 0 ≤ (b_y : ℚ) / (n_y : ℚ) := by
         exact div_nonneg (by exact_mod_cast (Nat.zero_le b_y)) (le_of_lt hn_y0)
       have hb' := mul_le_mul_of_nonneg_right hb hnonneg
-      have : (mX : ℚ) * (n_y : ℚ) * ((b_y : ℚ) / (n_y : ℚ)) = (mX : ℚ) * (b_y : ℚ) := by
+      have : (mX : ℚ) * (n_y : ℕ) * ((b_y : ℚ) / (n_y : ℚ)) = (mX : ℚ) * (b_y : ℚ) := by
         field_simp [hn_y0']
         ring
       simpa [mul_assoc, this] using hb'
@@ -552,7 +552,7 @@ lemma PS_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
   · simpa [mY, hmY] using hmY0
 
 
-lemma PS_exists_P_nonzero {F : Type} [Field F]
+lemma ps_exists_p_nonzero {F : Type} [Field F]
     (a_x a_y b_x b_y : ℕ) (n_x n_y : ℕ+)
     (h_bx_ge_ax : b_x ≥ a_x) (h_by_ge_ay : b_y ≥ a_y)
     (A B : F[X][Y])
@@ -573,7 +573,7 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) :
     ∃ P : F[X][Y], B = P * A := by
   classical
-  rcases PS_gcd_decompose (A := A) (B := B) hA0 hB0 with ⟨G, A1, B1, hA, hB, hrel, hA1, hB1⟩
+  rcases ps_gcd_decompose (A := A) (B := B) hA0 hB0 with ⟨G, A1, B1, hA, hB, hrel, hA1, hB1⟩
   have hG0 : G ≠ 0 := by
     intro hG
     apply hA0
@@ -599,9 +599,9 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
       (Polynomial.Bivariate.degreeY_mul (F := F) (f := G) (g := B1) hG0 hB1)
   -- inequalities gx < n_x and gy < n_y
   have hbxltnx : b_x < (n_x : ℕ) :=
-    PS_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+    ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
   have hbyltny : b_y < (n_y : ℕ) :=
-    PS_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+    ps_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
   have hgx_le_degA : gx ≤ Polynomial.Bivariate.degreeX A := by
     simp [hdegX_A]
   have hgy_le_degYA : gy ≤ Polynomial.Bivariate.natDegreeY A := by
@@ -617,9 +617,9 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
   let Py' : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y G ≠ 0)
   -- card bounds on zeros
   have hcard_zero_x : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card ≤ gx := by
-    simpa [gx] using PS_card_evalX_eq_zero_le_degreeX (A := G) hG0 P_x
+    simpa [gx] using ps_card_eval_x_eq_zero_le_degree_x (A := G) hG0 P_x
   have hcard_zero_y : (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card ≤ gy := by
-    simpa [gy] using PS_card_evalY_eq_zero_le_natDegreeY (A := G) hG0 P_y
+    simpa [gy] using ps_card_eval_y_eq_zero_le_nat_degree_y (A := G) hG0 P_y
   -- card lower bounds on filtered sets
   have hcard_Px' : (n_x : ℕ) - gx ≤ Px'.card := by
     have hpart : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card + Px'.card = P_x.card := by
@@ -684,7 +684,7 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
     have hq := h_quot_X y hyP
     refine ⟨?_, ?_⟩
     · simpa [hdiff_x] using hq.1
-    · exact PS_descend_evalY (hA := hA) (hB := hB) y hyG (quot_X y) hq.2
+    · exact ps_descend_eval_y (hA := hA) (hB := hB) y hyG (quot_X y) hq.2
   have hquotY' : ∀ x ∈ Px', (quot_Y x).natDegree ≤ (by' - ay') ∧
       Polynomial.Bivariate.evalX x B1 = (quot_Y x) * Polynomial.Bivariate.evalX x A1 := by
     intro x hx
@@ -693,7 +693,7 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
     have hq := h_quot_Y x hxP
     refine ⟨?_, ?_⟩
     · simpa [hdiff_y] using hq.1
-    · exact PS_descend_evalX (hA := hA) (hB := hB) x hxG (quot_Y x) hq.2
+    · exact ps_descend_eval_x (hA := hA) (hB := hB) x hxG (quot_Y x) hq.2
   -- degree bounds for A1,B1 under adjusted parameters
   have h_ax' : ax' ≥ Polynomial.Bivariate.degreeX A1 := by
     have hsum : gx + Polynomial.Bivariate.degreeX A1 ≤ a_x := by
@@ -784,12 +784,12 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
   have hconst : Polynomial.Bivariate.degreeX A1 = 0 ∧ Polynomial.Bivariate.natDegreeY A1 = 0 := by
     classical
     simpa [ax', ay', bx', by', nx', ny'] using
-      (PS_coprime_case_constant (F := F) ax' ay' bx' by' nx' ny' hbxax' hbyay' A1 B1
+      (ps_coprime_case_constant (F := F) ax' ay' bx' by' nx' ny' hbxax' hbyay' A1 B1
         hA1 hB1 hrel h_ax' h_bx' h_ay' h_by'
         Px' Py' quot_X quot_Y hcard_Px'' hcard_Py''
-        hquotX' hquotY' h_le_1')
+        h_quot_X' h_quot_Y' h_le_1')
   -- get B1 = P1 * A1
-  rcases PS_exists_P_of_degreeX_eq_zero_natDegreeY_eq_zero (A := A1) (B := B1) hA1 hconst.1 hconst.2 with
+  rcases ps_exists_p_of_degree_x_eq_zero_nat_degree_y_eq_zero (A := A1) (B := B1) hA1 hconst.1 hconst.2 with
     ⟨P1, hB1fac⟩
   refine ⟨P1, ?_⟩
   -- assemble
@@ -802,9 +802,12 @@ lemma PS_exists_P_nonzero {F : Type} [Field F]
       simp [mul_left_comm, mul_comm]
     _ = P1 * A := by
       simp [hA]
+  where
+    h_quot_X' := hquotX'
+    h_quot_Y' := hquotY'
 
 
-lemma PS_exists_P {F : Type} [Field F]
+lemma ps_exists_p {F : Type} [Field F]
     (a_x a_y b_x b_y : ℕ) (n_x n_y : ℕ+)
     (h_bx_ge_ax : b_x ≥ a_x) (h_by_ge_ay : b_y ≥ a_y)
     (A B : F[X][Y])
@@ -834,7 +837,7 @@ lemma PS_exists_P {F : Type} [Field F]
     · have hA : A = 0 := hA0
 
       have hBx_lt : b_x < (n_x : ℕ) :=
-        PS_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+        ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
       have hBx_lt_card : b_x < P_x.card := lt_of_lt_of_le hBx_lt h_card_Px
 
       have h_evalX_B_zero : ∀ x ∈ P_x, Polynomial.Bivariate.evalX x B = 0 := by
@@ -843,7 +846,7 @@ lemma PS_exists_P {F : Type} [Field F]
             Polynomial.Bivariate.evalX x B =
               (quot_Y x) * (Polynomial.Bivariate.evalX x A) :=
           (h_quot_Y x hx).2
-        simpa [hA, PS_evalX_eq_map] using hEq
+        simpa [hA, ps_eval_x_eq_map] using hEq
 
       have hB_eq : B = 0 := by
         by_contra hB_ne
@@ -851,7 +854,7 @@ lemma PS_exists_P {F : Type} [Field F]
         have hcard_le :
             (P_x.filter (fun x => Polynomial.Bivariate.evalX x B = 0)).card ≤
               Polynomial.Bivariate.degreeX B :=
-          PS_card_evalX_eq_zero_le_degreeX (A := B) hB_ne P_x
+          ps_card_eval_x_eq_zero_le_degree_x (A := B) hB_ne P_x
 
         have hfilter_eq :
             P_x.filter (fun x => Polynomial.Bivariate.evalX x B = 0) = P_x := by
@@ -875,7 +878,7 @@ lemma PS_exists_P {F : Type} [Field F]
 
     · have hA : A ≠ 0 := by exact hA0
       exact
-        PS_exists_P_nonzero (a_x := a_x) (a_y := a_y) (b_x := b_x) (b_y := b_y)
+        ps_exists_p_nonzero (a_x := a_x) (a_y := a_y) (b_x := b_x) (b_y := b_y)
           (n_x := n_x) (n_y := n_y) (h_bx_ge_ax := h_bx_ge_ax) (h_by_ge_ay := h_by_ge_ay)
           (A := A) (B := B) (hA0 := hA) (hB0 := hB) (h_f_degX := h_f_degX)
           (h_g_degX := h_g_degX) (h_f_degY := h_f_degY) (h_g_degY := h_g_degY)
