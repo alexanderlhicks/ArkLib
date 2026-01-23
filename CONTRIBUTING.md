@@ -127,7 +127,7 @@ When translating theorem statements into names, we use standard mappings for sym
 | `-` | `neg` / `sub` | `⁻¹`| `inv` | `/` | `div` |
 | `∑` | `sum` | `∏` | `prod` | `•` | `smul` |
 
-> **Note**: Mathlib and ArkLib standardize on `≤` (`le`) and `<` (`lt`). Avoid `≥` (`ge`) and `>` (`gt`) in theorem statements unless necessary for argument ordering.
+> **Note**: In adherence with mathlib, we standardize on `≤` (`le`) and `<` (`lt`). Avoid `≥` (`ge`) and `>` (`gt`) in theorem statements unless necessary for argument ordering.
 
 ### Syntax and Formatting
 
