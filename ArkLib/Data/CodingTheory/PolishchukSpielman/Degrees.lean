@@ -543,14 +543,14 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
     (h_f_degY : a_y ≥ Polynomial.Bivariate.natDegreeY A)
     (h_g_degY : b_y ≥ Polynomial.Bivariate.natDegreeY B)
     (P_x P_y : Finset F) [Nonempty P_x] [Nonempty P_y]
-    (quot_X : F → F[X]) (quot_Y : F → F[X])
+    (quot_x : F → F[X]) (quot_y : F → F[X])
     (h_card_Px : n_x ≤ P_x.card) (h_card_Py : n_y ≤ P_y.card)
-    (h_quot_X : ∀ y ∈ P_y,
-      (quot_X y).natDegree ≤ (b_x - a_x) ∧
-        Polynomial.Bivariate.evalY y B = (quot_X y) * (Polynomial.Bivariate.evalY y A))
-    (h_quot_Y : ∀ x ∈ P_x,
-      (quot_Y x).natDegree ≤ (b_y - a_y) ∧
-        Polynomial.Bivariate.evalX x B = (quot_Y x) * (Polynomial.Bivariate.evalX x A))
+    (h_quot_x : ∀ y ∈ P_y,
+      (quot_x y).natDegree ≤ (b_x - a_x) ∧
+        Polynomial.Bivariate.evalY y B = (quot_x y) * (Polynomial.Bivariate.evalY y A))
+    (h_quot_y : ∀ x ∈ P_x,
+      (quot_y x).natDegree ≤ (b_y - a_y) ∧
+        Polynomial.Bivariate.evalX x B = (quot_y x) * (Polynomial.Bivariate.evalX x A))
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) :
     Polynomial.Bivariate.degreeX P ≤ b_x - a_x ∧
       Polynomial.Bivariate.natDegreeY P ≤ b_y - a_y := by
@@ -589,27 +589,27 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
       simp [evalX_eq_map, Polynomial.map_mul]
 
     -- filtered set in Y
-    let Py0 : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y A = 0)
-    let Py' : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y A ≠ 0)
+    let py0 : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y A = 0)
+    let py' : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y A ≠ 0)
 
-    have hPy0_le : Py0.card ≤ Polynomial.Bivariate.natDegreeY A := by
-      simpa [Py0] using
+    have h_py0_le : py0.card ≤ Polynomial.Bivariate.natDegreeY A := by
+      simpa [py0] using
         ps_card_eval_y_eq_zero_le_nat_degree_y (A := A) (hA := hA) (P := P_y)
 
-    have hcard_part : Py0.card + Py'.card = P_y.card := by
-      simpa [Py0, Py'] using
+    have hcard_part : py0.card + py'.card = P_y.card := by
+      simpa [py0, py'] using
         (Finset.filter_card_add_filter_neg_card_eq_card (s := P_y)
           (p := fun y : F => Polynomial.Bivariate.evalY y A = 0))
 
-    have hPy'_ge : P_y.card - Polynomial.Bivariate.natDegreeY A ≤ Py'.card := by
-      have hsub : P_y.card - Polynomial.Bivariate.natDegreeY A ≤ P_y.card - Py0.card :=
-        tsub_le_tsub_left hPy0_le P_y.card
-      have hPy0_sub : Py'.card = P_y.card - Py0.card := by
-        -- subtract Py0.card from partition equation
-        have htmp := congrArg (fun t => t - Py0.card) hcard_part
+    have h_py'_ge : P_y.card - Polynomial.Bivariate.natDegreeY A ≤ py'.card := by
+      have hsub : P_y.card - Polynomial.Bivariate.natDegreeY A ≤ P_y.card - py0.card :=
+        tsub_le_tsub_left h_py0_le P_y.card
+      have h_py0_sub : py'.card = P_y.card - py0.card := by
+        -- subtract py0.card from partition equation
+        have htmp := congrArg (fun t => t - py0.card) hcard_part
         simpa [Nat.add_sub_cancel_left] using htmp
       -- rewrite
-      simpa [hPy0_sub] using hsub
+      simpa [h_py0_sub] using hsub
 
     have hby_lt_ny : b_y < (n_y : ℕ) :=
       ps_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
@@ -633,29 +633,29 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
       simpa [hdegY] using hBN
 
     have hnatDegY_P_le :
-        Polynomial.Bivariate.nat_degree_y P ≤ b_y - Polynomial.Bivariate.natDegreeY A :=
+        Polynomial.Bivariate.natDegreeY P ≤ b_y - Polynomial.Bivariate.natDegreeY A :=
       le_tsub_of_add_le_right hsumY
 
     have hbsubY : b_y - Polynomial.Bivariate.natDegreeY A
     < P_y.card - Polynomial.Bivariate.natDegreeY A :=
       tsub_lt_tsub_right_of_le hdegA_le_by hby_lt_card
 
-    have hPy'_card : py'.card > Polynomial.Bivariate.natDegreeY P := by
+    have h_py'_card : py'.card > Polynomial.Bivariate.natDegreeY P := by
       have hlt : Polynomial.Bivariate.natDegreeY P < P_y.card - Polynomial.Bivariate.natDegreeY A :=
         lt_of_le_of_lt hnatDegY_P_le hbsubY
-      have hlt' : Polynomial.Bivariate.natDegreeY P < py'.card := lt_of_lt_of_le hlt hPy'_ge
+      have hlt' : Polynomial.Bivariate.natDegreeY P < py'.card := lt_of_lt_of_le hlt h_py'_ge
       exact hlt'
 
     -- choose y preserving degreeX
-    rcases ps_exists_y_preserve_degree_x (F := F) (B := P) (hB := hP) (P_y := py') hPy'_card with
+    rcases ps_exists_y_preserve_degree_x (F := F) (B := P) (hB := hP) (P_y := py') h_py'_card with
       ⟨y, hyPy', hydegX⟩
 
     have hyP_y : y ∈ P_y := (Finset.mem_filter.mp hyPy').1
     have hyA0 : Polynomial.Bivariate.evalY y A ≠ 0 := (Finset.mem_filter.mp hyPy').2
 
-    have hquotX_deg : (quot_X y).natDegree ≤ b_x - a_x := (h_quot_X y hyP_y).1
-    have hquotX_eq : Polynomial.Bivariate.evalY y B = (quot_X y) * Polynomial.Bivariate.evalY y A :=
-      (h_quot_X y hyP_y).2
+    have h_quot_x_deg : (quot_x y).natDegree ≤ b_x - a_x := (h_quot_x y hyP_y).1
+    have h_quot_x_eq : Polynomial.Bivariate.evalY y B = (quot_x y) * Polynomial.Bivariate.evalY y A :=
+      (h_quot_x y hyP_y).2
 
     have hBA_evalY :
         Polynomial.Bivariate.evalY y B =
@@ -667,41 +667,41 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
           -- evalY is Polynomial.eval
           simp [Polynomial.Bivariate.evalY, Polynomial.eval_mul]
 
-    have hEvalY_P_eq_quot : Polynomial.Bivariate.evalY y P = quot_X y := by
+    have hEvalY_P_eq_quot : Polynomial.Bivariate.evalY y P = quot_x y := by
       apply mul_right_cancel₀ hyA0
       -- cancel the common right factor
       calc
         Polynomial.Bivariate.evalY y P * Polynomial.Bivariate.evalY y A
         = Polynomial.Bivariate.evalY y B := by
           simp [hBA_evalY]
-        _ = quot_X y * Polynomial.Bivariate.evalY y A := hquotX_eq
+        _ = quot_x y * Polynomial.Bivariate.evalY y A := h_quot_x_eq
 
     have hdegX_P_le : Polynomial.Bivariate.degreeX P ≤ b_x - a_x := by
       -- hydegX : (evalY y P).natDegree = degreeX P
       have hdegX' : Polynomial.Bivariate.degreeX P
       = (Polynomial.Bivariate.evalY y P).natDegree := hydegX.symm
       rw [hdegX']
-      simpa [hEvalY_P_eq_quot] using hquotX_deg
+      simpa [hEvalY_P_eq_quot] using h_quot_x_deg
 
     -- Now the X-direction
-    let Px0 : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A = 0)
-    let Px' : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A ≠ 0)
+    let px0 : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A = 0)
+    let px' : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A ≠ 0)
 
-    have hPx0_le : Px0.card ≤ Polynomial.Bivariate.degreeX A := by
-      simpa [Px0] using ps_card_eval_x_eq_zero_le_degree_x (A := A) (hA := hA) (P := P_x)
+    have h_px0_le : px0.card ≤ Polynomial.Bivariate.degreeX A := by
+      simpa [px0] using ps_card_eval_x_eq_zero_le_degree_x (A := A) (hA := hA) (P := P_x)
 
-    have hcard_partX : Px0.card + Px'.card = P_x.card := by
-      simpa [Px0, Px'] using
+    have hcard_partX : px0.card + px'.card = P_x.card := by
+      simpa [px0, px'] using
         (Finset.filter_card_add_filter_neg_card_eq_card (s := P_x)
           (p := fun x : F => Polynomial.Bivariate.evalX x A = 0))
 
-    have hPx'_ge : P_x.card - Polynomial.Bivariate.degreeX A ≤ Px'.card := by
-      have hsub : P_x.card - Polynomial.Bivariate.degreeX A ≤ P_x.card - Px0.card :=
-        tsub_le_tsub_left hPx0_le P_x.card
-      have hPx0_sub : Px'.card = P_x.card - Px0.card := by
-        have htmp := congrArg (fun t => t - Px0.card) hcard_partX
+    have h_px'_ge : P_x.card - Polynomial.Bivariate.degreeX A ≤ px'.card := by
+      have hsub : P_x.card - Polynomial.Bivariate.degreeX A ≤ P_x.card - px0.card :=
+        tsub_le_tsub_left h_px0_le P_x.card
+      have h_px0_sub : px'.card = P_x.card - px0.card := by
+        have htmp := congrArg (fun t => t - px0.card) hcard_partX
         simpa [Nat.add_sub_cancel_left] using htmp
-      simpa [hPx0_sub] using hsub
+      simpa [h_px0_sub] using hsub
 
     have hbx_lt_nx : b_x < (n_x : ℕ) :=
       ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
@@ -721,21 +721,21 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
         tsub_le_tsub_left (show Polynomial.Bivariate.degreeX A ≤ a_x from h_f_degX) b_x
       exact le_trans hdegX_P_le h1
 
-    have hPx'_card : px'.card > Polynomial.Bivariate.degreeX P := by
+    have h_px'_card : px'.card > Polynomial.Bivariate.degreeX P := by
       have hlt : Polynomial.Bivariate.degreeX P < P_x.card - Polynomial.Bivariate.degreeX A :=
         lt_of_le_of_lt hdegX_P_le' hbsubX
-      have hlt' : Polynomial.Bivariate.degreeX P < px'.card := lt_of_lt_of_le hlt hPx'_ge
+      have hlt' : Polynomial.Bivariate.degreeX P < px'.card := lt_of_lt_of_le hlt h_px'_ge
       exact hlt'
 
-    rcases ps_exists_x_preserve_nat_degree_y (F := F) (B := P) (hB := hP) (P_x := px') hPx'_card with
+    rcases ps_exists_x_preserve_nat_degree_y (F := F) (B := P) (hB := hP) (P_x := px') h_px'_card with
       ⟨x, hxPx', hxdegY⟩
 
     have hxP_x : x ∈ P_x := (Finset.mem_filter.mp hxPx').1
     have hxA0 : Polynomial.Bivariate.evalX x A ≠ 0 := (Finset.mem_filter.mp hxPx').2
 
-    have hquotY_deg : (quot_Y x).natDegree ≤ b_y - a_y := (h_quot_Y x hxP_x).1
-    have hquotY_eq : Polynomial.Bivariate.evalX x B = (quot_Y x) * Polynomial.Bivariate.evalX x A :=
-      (h_quot_Y x hxP_x).2
+    have h_quot_y_deg : (quot_y x).natDegree ≤ b_y - a_y := (h_quot_y x hxP_x).1
+    have h_quot_y_eq : Polynomial.Bivariate.evalX x B = (quot_y x) * Polynomial.Bivariate.evalX x A :=
+      (h_quot_y x hxP_x).2
 
     have hBA_evalX :
         Polynomial.Bivariate.evalX x B =
@@ -746,20 +746,20 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
         _ = Polynomial.Bivariate.evalX x P * Polynomial.Bivariate.evalX x A := by
           simp [evalX_mul]
 
-    have hEvalX_P_eq_quot : Polynomial.Bivariate.evalX x P = quot_Y x := by
+    have hEvalX_P_eq_quot : Polynomial.Bivariate.evalX x P = quot_y x := by
       apply mul_right_cancel₀ hxA0
       calc
         Polynomial.Bivariate.evalX x P * Polynomial.Bivariate.evalX x A
         = Polynomial.Bivariate.evalX x B := by
           simp [hBA_evalX]
-        _ = quot_Y x * Polynomial.Bivariate.evalX x A := hquotY_eq
+        _ = quot_y x * Polynomial.Bivariate.evalX x A := h_quot_y_eq
 
     have hdegY_P_le : Polynomial.Bivariate.natDegreeY P ≤ b_y - a_y := by
       -- hxdegY : (evalX x P).natDegree = natDegreeY P
       have hdegY' : Polynomial.Bivariate.natDegreeY P
       = (Polynomial.Bivariate.evalX x P).natDegree := by exact id (Eq.symm hxdegY)
       rw [hdegY']
-      simpa [hEvalX_P_eq_quot] using hquotY_deg
+      simpa [hEvalX_P_eq_quot] using h_quot_y_deg
 
     exact ⟨hdegX_P_le, hdegY_P_le⟩
 

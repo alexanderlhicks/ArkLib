@@ -73,13 +73,13 @@ lemma ps_exists_qx_of_cancel {F : Type} [Field F] [DecidableEq F]
     (hA : A ≠ 0)
     (hBA : B = P * A)
     (P_x : Finset F) (h_card_Px : n_x ≤ P_x.card)
-    (quot_Y : F → F[X])
-    (h_quot_Y : ∀ x ∈ P_x,
-      Polynomial.Bivariate.evalX x B = (quot_Y x) * (Polynomial.Bivariate.evalX x A))
+    (quot_y : F → F[X])
+    (h_quot_y : ∀ x ∈ P_x,
+      Polynomial.Bivariate.evalX x B = (quot_y x) * (Polynomial.Bivariate.evalX x A))
     (h_f_degX : a_x ≥ Polynomial.Bivariate.degreeX A) :
     ∃ Q_x : Finset F,
       Q_x.card ≥ (n_x : ℕ) - a_x ∧ Q_x ⊆ P_x ∧
-        ∀ x ∈ Q_x, Polynomial.Bivariate.evalX x P = quot_Y x := by
+        ∀ x ∈ Q_x, Polynomial.Bivariate.evalX x P = quot_y x := by
   classical
   let Q_x : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x A ≠ 0)
   refine ⟨Q_x, ?_, ?_, ?_⟩
@@ -117,11 +117,11 @@ lemma ps_exists_qx_of_cancel {F : Type} [Field F] [DecidableEq F]
       grind only [= Finset.mem_filter, = degreeX_as_weighted_deg, ← Bivariate.mul_ne_zero,
         quotient_nezero]
     have hquot : Polynomial.Bivariate.evalX x B =
-        (quot_Y x) * Polynomial.Bivariate.evalX x A := by
-      exact h_quot_Y x hxP
+        (quot_y x) * Polynomial.Bivariate.evalX x A := by
+      exact h_quot_y x hxP
     have hcancel_eq :
         Polynomial.Bivariate.evalX x P * Polynomial.Bivariate.evalX x A =
-          (quot_Y x) * Polynomial.Bivariate.evalX x A := by
+          (quot_y x) * Polynomial.Bivariate.evalX x A := by
       grind only
     exact mul_right_cancel₀ hxA hcancel_eq
 
@@ -131,13 +131,13 @@ lemma ps_exists_qy_of_cancel {F : Type} [Field F] [DecidableEq F]
     (hA : A ≠ 0)
     (hBA : B = P * A)
     (P_y : Finset F) (h_card_Py : n_y ≤ P_y.card)
-    (quot_X : F → F[X])
-    (h_quot_X : ∀ y ∈ P_y,
-      Polynomial.Bivariate.evalY y B = (quot_X y) * (Polynomial.Bivariate.evalY y A))
+    (quot_x : F → F[X])
+    (h_quot_x : ∀ y ∈ P_y,
+      Polynomial.Bivariate.evalY y B = (quot_x y) * (Polynomial.Bivariate.evalY y A))
     (h_f_degY : a_y ≥ Polynomial.Bivariate.natDegreeY A) :
     ∃ Q_y : Finset F,
       Q_y.card ≥ (n_y : ℕ) - a_y ∧ Q_y ⊆ P_y ∧
-        ∀ y ∈ Q_y, Polynomial.Bivariate.evalY y P = quot_X y := by
+        ∀ y ∈ Q_y, Polynomial.Bivariate.evalY y P = quot_x y := by
   classical
   let Q_y : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y A ≠ 0)
   refine ⟨Q_y, ?_, ?_, ?_⟩
@@ -170,21 +170,21 @@ lemma ps_exists_qy_of_cancel {F : Type} [Field F] [DecidableEq F]
     intro y hy
     have hyP : y ∈ P_y := (Finset.mem_filter.mp hy).1
     have hyA : Polynomial.Bivariate.evalY y A ≠ 0 := (Finset.mem_filter.mp hy).2
-    have hquot : Polynomial.Bivariate.evalY y B = (quot_X y) * Polynomial.Bivariate.evalY y A :=
-      h_quot_X y hyP
+    have hquot : Polynomial.Bivariate.evalY y B = (quot_x y) * Polynomial.Bivariate.evalY y A :=
+      h_quot_x y hyP
     have hquot' :
-    Polynomial.Bivariate.evalY y (P * A) = (quot_X y) * Polynomial.Bivariate.evalY y A := by
+    Polynomial.Bivariate.evalY y (P * A) = (quot_x y) * Polynomial.Bivariate.evalY y A := by
       simpa [hBA] using hquot
     have hmul : Polynomial.Bivariate.evalY y (P * A) =
         Polynomial.Bivariate.evalY y P * Polynomial.Bivariate.evalY y A := by
       simp [Polynomial.Bivariate.evalY]
     have hcancel :
         Polynomial.Bivariate.evalY y P * Polynomial.Bivariate.evalY y A =
-          (quot_X y) * Polynomial.Bivariate.evalY y A := by
+          (quot_x y) * Polynomial.Bivariate.evalY y A := by
       calc
         Polynomial.Bivariate.evalY y P * Polynomial.Bivariate.evalY y A =
             Polynomial.Bivariate.evalY y (P * A) := by simpa using hmul.symm
-        _ = (quot_X y) * Polynomial.Bivariate.evalY y A := hquot'
+        _ = (quot_x y) * Polynomial.Bivariate.evalY y A := hquot'
     exact mul_right_cancel₀ hyA hcancel
 
 
@@ -201,14 +201,14 @@ lemma ps_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
     (h_f_degY : a_y ≥ Polynomial.Bivariate.natDegreeY A)
     (h_g_degY : b_y ≥ Polynomial.Bivariate.natDegreeY B)
     (P_x P_y : Finset F) [Nonempty P_x] [Nonempty P_y]
-    (quot_X quot_Y : F → F[X])
+    (quot_x quot_y : F → F[X])
     (h_card_Px : n_x ≤ P_x.card) (h_card_Py : n_y ≤ P_y.card)
-    (h_quot_X : ∀ y ∈ P_y,
-      (quot_X y).natDegree ≤ (b_x - a_x) ∧
-        Polynomial.Bivariate.evalY y B = (quot_X y) * (Polynomial.Bivariate.evalY y A))
-    (h_quot_Y : ∀ x ∈ P_x,
-      (quot_Y x).natDegree ≤ (b_y - a_y) ∧
-        Polynomial.Bivariate.evalX x B = (quot_Y x) * (Polynomial.Bivariate.evalX x A))
+    (h_quot_x : ∀ y ∈ P_y,
+      (quot_x y).natDegree ≤ (b_x - a_x) ∧
+        Polynomial.Bivariate.evalY y B = (quot_x y) * (Polynomial.Bivariate.evalY y A))
+    (h_quot_y : ∀ x ∈ P_x,
+      (quot_y x).natDegree ≤ (b_y - a_y) ∧
+        Polynomial.Bivariate.evalX x B = (quot_y x) * (Polynomial.Bivariate.evalX x A))
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) :
     Polynomial.Bivariate.degreeX A = 0 ∧ Polynomial.Bivariate.natDegreeY A = 0 := by
   classical
@@ -289,16 +289,16 @@ lemma ps_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       simpa using (hcop.pow (m := mY) (n := mY))
     have hdiv : ∀ x ∈ P_x, (X - C x) ^ mY ∣ RY := by
       intro x hx
-      rcases h_quot_Y x hx with ⟨hdegQ, hQ⟩
+      rcases h_quot_y x hx with ⟨hdegQ, hQ⟩
       have h :=
-        ps_resultant_dvd_pow_eval_x (A := A) (B := B) (x := x) (Q := quot_Y x) (n := b_y)
+        ps_resultant_dvd_pow_eval_x (A := A) (B := B) (x := x) (Q := quot_y x) (n := b_y)
           (hmn := by
             -- natDegreeY A ≤ b_y
             simpa [hmY.symm] using hmY_le_by)
           (hn := by
             simpa using h_g_degY)
           (hQdeg := by
-            have h1 : (quot_Y x).natDegree ≤ b_y - a_y := hdegQ
+            have h1 : (quot_y x).natDegree ≤ b_y - a_y := hdegQ
             have h2 : b_y - a_y ≤ b_y - mY := by
               exact Nat.sub_le_sub_left hmY_le_ay b_y
             exact le_trans h1 h2)
@@ -323,16 +323,16 @@ lemma ps_coprime_case_constant {F : Type} [Field F] [DecidableEq F]
       simpa using (hcop.pow (m := mX) (n := mX))
     have hdiv : ∀ y ∈ P_y, (X - C y) ^ mX ∣ RX := by
       intro y hy
-      rcases h_quot_X y hy with ⟨hdegQ, hQ⟩
+      rcases h_quot_x y hy with ⟨hdegQ, hQ⟩
       have h :=
-        ps_resultant_dvd_pow_eval_y (A := A) (B := B) (y := y) (Q := quot_X y) (n := b_x)
+        ps_resultant_dvd_pow_eval_y (A := A) (B := B) (y := y) (Q := quot_x y) (n := b_x)
           (hmn := by
             -- degreeX A ≤ b_x
             simpa [hmX.symm] using hmX_le_bx)
           (hn := by
             simpa using h_g_degX)
           (hQdeg := by
-            have h1 : (quot_X y).natDegree ≤ b_x - a_x := hdegQ
+            have h1 : (quot_x y).natDegree ≤ b_x - a_x := hdegQ
             have h2 : b_x - a_x ≤ b_x - mX := by
               exact Nat.sub_le_sub_left hmX_le_ax b_x
             exact le_trans h1 h2)
@@ -562,14 +562,14 @@ lemma ps_exists_p_nonzero {F : Type} [Field F]
     (h_f_degY : a_y ≥ Polynomial.Bivariate.natDegreeY A)
     (h_g_degY : b_y ≥ Polynomial.Bivariate.natDegreeY B)
     (P_x P_y : Finset F) [Nonempty P_x] [Nonempty P_y]
-    (quot_X : F → F[X]) (quot_Y : F → F[X])
+    (quot_x quot_y : F → F[X])
     (h_card_Px : n_x ≤ P_x.card) (h_card_Py : n_y ≤ P_y.card)
-    (h_quot_X : ∀ y ∈ P_y,
-      (quot_X y).natDegree ≤ (b_x - a_x) ∧
-        Polynomial.Bivariate.evalY y B = (quot_X y) * (Polynomial.Bivariate.evalY y A))
-    (h_quot_Y : ∀ x ∈ P_x,
-      (quot_Y x).natDegree ≤ (b_y - a_y) ∧
-        Polynomial.Bivariate.evalX x B = (quot_Y x) * (Polynomial.Bivariate.evalX x A))
+    (h_quot_x : ∀ y ∈ P_y,
+      (quot_x y).natDegree ≤ (b_x - a_x) ∧
+        Polynomial.Bivariate.evalY y B = (quot_x y) * (Polynomial.Bivariate.evalY y A))
+    (h_quot_y : ∀ x ∈ P_x,
+      (quot_y x).natDegree ≤ (b_y - a_y) ∧
+        Polynomial.Bivariate.evalX x B = (quot_y x) * (Polynomial.Bivariate.evalX x A))
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) :
     ∃ P : F[X][Y], B = P * A := by
   classical
@@ -579,232 +579,230 @@ lemma ps_exists_p_nonzero {F : Type} [Field F]
     apply hA0
     simp [hA, hG]
     -- degrees of the gcd factor
-    set g_x : ℕ := Polynomial.Bivariate.degreeX G
-    set g_y : ℕ := Polynomial.Bivariate.natDegreeY G
-    have hdegX_A : Polynomial.Bivariate.degreeX A = g_x + Polynomial.Bivariate.degreeX A1 := by
-      rw [hA]
-      simpa [g_x] using
-        (Polynomial.Bivariate.degreeX_mul (F := F) (f := G) (g := A1) hG0 hA1)
-    have hdegY_A : Polynomial.Bivariate.natDegreeY A = g_y + Polynomial.Bivariate.natDegreeY A1 := by
-      rw [hA]
-      simpa [g_y] using
-        (Polynomial.Bivariate.degreeY_mul (F := F) (f := G) (g := A1) hG0 hA1)
-    have hdegX_B : Polynomial.Bivariate.degreeX B = g_x + Polynomial.Bivariate.degreeX B1 := by
-      rw [hB]
-      simpa [g_x] using
-        (Polynomial.Bivariate.degreeX_mul (F := F) (f := G) (g := B1) hG0 hB1)
-    have hdegY_B : Polynomial.Bivariate.natDegreeY B = g_y + Polynomial.Bivariate.natDegreeY B1 := by
-      rw [hB]
-      simpa [g_y] using
-        (Polynomial.Bivariate.degreeY_mul (F := F) (f := G) (g := B1) hG0 hB1)
+  set g_x : ℕ := Polynomial.Bivariate.degreeX G
+  set g_y : ℕ := Polynomial.Bivariate.natDegreeY G
+  have hdegX_A : Polynomial.Bivariate.degreeX A = g_x + Polynomial.Bivariate.degreeX A1 := by
+    rw [hA]
+    simpa [g_x] using
+      (Polynomial.Bivariate.degreeX_mul (F := F) (f := G) (g := A1) hG0 hA1)
+  have hdegY_A : Polynomial.Bivariate.natDegreeY A = g_y + Polynomial.Bivariate.natDegreeY A1 := by
+    rw [hA]
+    simpa [g_y] using
+      (Polynomial.Bivariate.degreeY_mul (F := F) (f := G) (g := A1) hG0 hA1)
+  have hdegX_B : Polynomial.Bivariate.degreeX B = g_x + Polynomial.Bivariate.degreeX B1 := by
+    rw [hB]
+    simpa [g_x] using
+      (Polynomial.Bivariate.degreeX_mul (F := F) (f := G) (g := B1) hG0 hB1)
+  have hdegY_B : Polynomial.Bivariate.natDegreeY B = g_y + Polynomial.Bivariate.natDegreeY B1 := by
+    rw [hB]
+    simpa [g_y] using
+      (Polynomial.Bivariate.degreeY_mul (F := F) (f := G) (g := B1) hG0 hB1)
     -- inequalities gx < n_x and gy < n_y
-    have hbxltnx : b_x < (n_x : ℕ) :=
-      ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
-    have hbyltny : b_y < (n_y : ℕ) :=
-      ps_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
-    have hgx_le_degA : g_x ≤ Polynomial.Bivariate.degreeX A := by
-      simp [hdegX_A]
-    have hgy_le_degYA : g_y ≤ Polynomial.Bivariate.natDegreeY A := by
-      simp [hdegY_A]
-    have hgx_le_ax : g_x ≤ a_x := le_trans hgx_le_degA h_f_degX
-    have hgy_le_ay : g_y ≤ a_y := le_trans hgy_le_degYA h_f_degY
-    have hgx_le_bx : g_x ≤ b_x := le_trans hgx_le_ax h_bx_ge_ax
-    have hgy_le_by : g_y ≤ b_y := le_trans hgy_le_ay h_by_ge_ay
-    have hx_lt_nx : g_x < (n_x : ℕ) := lt_of_le_of_lt hgx_le_bx hbxltnx
-    have hy_lt_ny : g_y < (n_y : ℕ) := lt_of_le_of_lt hgy_le_by hbyltny
-    -- filtered sets
-    let Px' : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x G ≠ 0)
-    let Py' : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y G ≠ 0)
-    -- card bounds on zeros
-    have hcard_zero_x : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card ≤ g_x := by
-      simpa [g_x] using ps_card_eval_x_eq_zero_le_degree_x (A := G) hG0 P_x
-    have hcard_zero_y : (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card ≤ g_y := by
-      simpa [g_y] using ps_card_eval_y_eq_zero_le_nat_degree_y (A := G) hG0 P_y
+  have hbxltnx : b_x < (n_x : ℕ) :=
+    ps_bx_lt_nx (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+  have hbyltny : b_y < (n_y : ℕ) :=
+    ps_by_lt_ny (b_x := b_x) (b_y := b_y) (n_x := n_x) (n_y := n_y) h_le_1
+  have hgx_le_degA : g_x ≤ Polynomial.Bivariate.degreeX A := by
+    simp [hdegX_A]
+  have hgy_le_degYA : g_y ≤ Polynomial.Bivariate.natDegreeY A := by
+    simp [hdegY_A]
+  have hgx_le_ax : g_x ≤ a_x := le_trans hgx_le_degA h_f_degX
+  have hgy_le_ay : g_y ≤ a_y := le_trans hgy_le_degYA h_f_degY
+  have hgx_le_bx : g_x ≤ b_x := le_trans hgx_le_ax h_bx_ge_ax
+  have hgy_le_by : g_y ≤ b_y := le_trans hgy_le_ay h_by_ge_ay
+  have hx_lt_nx : g_x < (n_x : ℕ) := lt_of_le_of_lt hgx_le_bx hbxltnx
+  have hy_lt_ny : g_y < (n_y : ℕ) := lt_of_le_of_lt hgy_le_by hbyltny
+  -- filtered sets
+  let Px' : Finset F := P_x.filter (fun x => Polynomial.Bivariate.evalX x G ≠ 0)
+  let Py' : Finset F := P_y.filter (fun y => Polynomial.Bivariate.evalY y G ≠ 0)
+  -- card bounds on zeros
+  have hcard_zero_x : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card ≤ g_x := by
+    simpa [g_x] using ps_card_eval_x_eq_zero_le_degree_x (A := G) hG0 P_x
+  have hcard_zero_y : (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card ≤ g_y := by
+    simpa [g_y] using ps_card_eval_y_eq_zero_le_nat_degree_y (A := G) hG0 P_y
     -- card lower bounds on filtered sets
-    have hcard_Px' : (n_x : ℕ) - g_x ≤ Px'.card := by
-      have hpart : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card + Px'.card = P_x.card := by
-        simpa [Px'] using
-          (Finset.filter_card_add_filter_neg_card_eq_card (s := P_x)
-            (p := fun x => Polynomial.Bivariate.evalX x G = 0))
-      have hPx'_eq : Px'.card = P_x.card - (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card := by
-        have := congrArg (fun t => t - (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card) hpart
-        simpa [Nat.add_sub_cancel_left] using this
-      have h1 : (n_x : ℕ) - g_x ≤ P_x.card - g_x := Nat.sub_le_sub_right h_card_Px g_x
-      have h2 : P_x.card - g_x ≤ Px'.card := by
-        simpa [hPx'_eq] using (Nat.sub_le_sub_left hcard_zero_x P_x.card)
-      exact le_trans h1 h2
-    have hcard_Py' : (n_y : ℕ) - g_y ≤ Py'.card := by
-      have hpart : (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card + Py'.card = P_y.card := by
-        simpa [Py'] using
-          (Finset.filter_card_add_filter_neg_card_eq_card (s := P_y)
-            (p := fun y => Polynomial.Bivariate.evalY y G = 0))
-      have hPy'_eq : Py'.card = P_y.card - (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card := by
-        have := congrArg (fun t => t - (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card) hpart
-        simpa [Nat.add_sub_cancel_left] using this
-      have h1 : (n_y : ℕ) - g_y ≤ P_y.card - g_y := Nat.sub_le_sub_right h_card_Py g_y
-      have h2 : P_y.card - g_y ≤ Py'.card := by
-        simpa [hPy'_eq] using (Nat.sub_le_sub_left hcard_zero_y P_y.card)
-      exact le_trans h1 h2
+  have hcard_Px' : (n_x : ℕ) - g_x ≤ Px'.card := by
+    have hpart : (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card + Px'.card = P_x.card := by
+      simpa [Px'] using
+        (Finset.filter_card_add_filter_neg_card_eq_card (s := P_x)
+          (p := fun x => Polynomial.Bivariate.evalX x G = 0))
+    have hPx'_eq : Px'.card = P_x.card - (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card := by
+      have := congrArg (fun t => t - (P_x.filter (fun x => Polynomial.Bivariate.evalX x G = 0)).card) hpart
+      simpa [Nat.add_sub_cancel_left] using this
+    have h1 : (n_x : ℕ) - g_x ≤ P_x.card - g_x := Nat.sub_le_sub_right h_card_Px g_x
+    have h2 : P_x.card - g_x ≤ Px'.card := by
+      simpa [hPx'_eq] using (Nat.sub_le_sub_left hcard_zero_x P_x.card)
+    exact le_trans h1 h2
+  have hcard_Py' : (n_y : ℕ) - g_y ≤ Py'.card := by
+    have hpart : (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card + Py'.card = P_y.card := by
+      simpa [Py'] using
+        (Finset.filter_card_add_filter_neg_card_eq_card (s := P_y)
+          (p := fun y => Polynomial.Bivariate.evalY y G = 0))
+    have hPy'_eq : Py'.card = P_y.card - (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card := by
+      have := congrArg (fun t => t - (P_y.filter (fun y => Polynomial.Bivariate.evalY y G = 0)).card) hpart
+      simpa [Nat.add_sub_cancel_left] using this
+    have h1 : (n_y : ℕ) - g_y ≤ P_y.card - g_y := Nat.sub_le_sub_right h_card_Py g_y
+    have h2 : P_y.card - g_y ≤ Py'.card := by
+      simpa [hPy'_eq] using (Nat.sub_le_sub_left hcard_zero_y P_y.card)
+    exact le_trans h1 h2
     -- Nonempty instances for filtered sets
-    have hxpos : 0 < Px'.card := lt_of_lt_of_le (Nat.sub_pos_of_lt hx_lt_nx) hcard_Px'
-    have hypos : 0 < Py'.card := lt_of_lt_of_le (Nat.sub_pos_of_lt hy_lt_ny) hcard_Py'
-    haveI : Nonempty Px' := by
-      classical
-      rcases Finset.card_pos.mp hxpos with ⟨x, hx⟩
-      exact ⟨⟨x, hx⟩⟩
-    haveI : Nonempty Py' := by
-      classical
-      rcases Finset.card_pos.mp hypos with ⟨y, hy⟩
-      exact ⟨⟨y, hy⟩⟩
-    -- adjusted parameters
-    let ax' : ℕ := a_x - g_x
-    let ay' : ℕ := a_y - g_y
-    let bx' : ℕ := b_x - g_x
-    let by' : ℕ := b_y - g_y
-    let nx' : ℕ+ := ⟨(n_x : ℕ) - g_x, Nat.sub_pos_of_lt hx_lt_nx⟩
-    let ny' : ℕ+ := ⟨(n_y : ℕ) - g_y, Nat.sub_pos_of_lt hy_lt_ny⟩
-    have hbxax' : bx' ≥ ax' := by
-      -- bx' ≥ ax' ↔ ax' ≤ bx'
-      simpa [bx', ax'] using (Nat.sub_le_sub_right h_bx_ge_ax g_x)
-    have hbyay' : by' ≥ ay' := by
-      simpa [by', ay'] using (Nat.sub_le_sub_right h_by_ge_ay g_y)
-    -- simplify differences bx' - ax' and by' - ay'
-    have hdiff_x : bx' - ax' = b_x - a_x := by
-      simpa [bx', ax'] using
-        (tsub_tsub_tsub_cancel_right (a := b_x) (b := a_x) (c := g_x) hgx_le_ax)
-    have hdiff_y : by' - ay' = b_y - a_y := by
-      simpa [by', ay'] using
-        (tsub_tsub_tsub_cancel_right (a := b_y) (b := a_y) (c := g_y) hgy_le_ay)
-    -- descend quotient hypotheses to A1,B1
-    have hquotX' : ∀ y ∈ Py', (quot_X y).natDegree ≤ (bx' - ax') ∧
-        Polynomial.Bivariate.evalY y B1 = (quot_X y) * Polynomial.Bivariate.evalY y A1 := by
-      intro y hy
-      have hyP : y ∈ P_y := (Finset.mem_filter.mp hy).1
-      have hyG : Polynomial.Bivariate.evalY y G ≠ 0 := (Finset.mem_filter.mp hy).2
-      have hq := h_quot_X y hyP
-      refine ⟨?_, ?_⟩
-      · simpa [hdiff_x] using hq.1
-      · exact ps_descend_eval_y (hA := hA) (hB := hB) y hyG (quot_X y) hq.2
-    have hquotY' : ∀ x ∈ Px', (quot_Y x).natDegree ≤ (by' - ay') ∧
-        Polynomial.Bivariate.evalX x B1 = (quot_Y x) * Polynomial.Bivariate.evalX x A1 := by
-      intro x hx
-      have hxP : x ∈ P_x := (Finset.mem_filter.mp hx).1
-      have hxG : Polynomial.Bivariate.evalX x G ≠ 0 := (Finset.mem_filter.mp hx).2
-      have hq := h_quot_Y x hxP
-      refine ⟨?_, ?_⟩
-      · simpa [hdiff_y] using hq.1
-      · exact ps_descend_eval_x (hA := hA) (hB := hB) x hxG (quot_Y x) hq.2
-    -- degree bounds for A1,B1 under adjusted parameters
-    have h_ax' : ax' ≥ Polynomial.Bivariate.degreeX A1 := by
-      have hsum : g_x + Polynomial.Bivariate.degreeX A1 ≤ a_x := by
-        simpa [hdegX_A] using h_f_degX
-      have : Polynomial.Bivariate.degreeX A1 ≤ a_x - g_x := le_tsub_of_add_le_left hsum
-      simpa [ax', ge_iff_le] using this
-    have h_ay' : ay' ≥ Polynomial.Bivariate.natDegreeY A1 := by
-      have hsum : g_y + Polynomial.Bivariate.natDegreeY A1 ≤ a_y := by
-        simpa [hdegY_A] using h_f_degY
-      have : Polynomial.Bivariate.natDegreeY A1 ≤ a_y - g_y := le_tsub_of_add_le_left hsum
-      simpa [ay', ge_iff_le] using this
-    have h_bx' : bx' ≥ Polynomial.Bivariate.degreeX B1 := by
-      have hsum : g_x + Polynomial.Bivariate.degreeX B1 ≤ b_x := by
-        simpa [hdegX_B] using h_g_degX
-      have : Polynomial.Bivariate.degreeX B1 ≤ b_x - g_x := le_tsub_of_add_le_left hsum
-      simpa [bx', ge_iff_le] using this
-    have h_by' : by' ≥ Polynomial.Bivariate.natDegreeY B1 := by
-      have hsum : g_y + Polynomial.Bivariate.natDegreeY B1 ≤ b_y := by
-        simpa [hdegY_B] using h_g_degY
-      have : Polynomial.Bivariate.natDegreeY B1 ≤ b_y - g_y := le_tsub_of_add_le_left hsum
-      simpa [by', ge_iff_le] using this
-    -- card bounds in the form needed (using nx',ny')
-    have hcard_Px'' : nx' ≤ Px'.card := by
-      simpa [nx'] using hcard_Px'
-    have hcard_Py'' : ny' ≤ Py'.card := by
-      simpa [ny'] using hcard_Py'
-    -- inequality for adjusted ratios
-    have hxfrac : (bx' : ℚ) / (nx' : ℚ) ≤ (b_x : ℚ) / (n_x : ℚ) := by
-      have hn1 : (0 : ℚ) < (n_x : ℚ) := by
-        exact_mod_cast n_x.pos
-      have hn2 : (0 : ℚ) < (nx' : ℚ) := by
-        exact_mod_cast nx'.pos
-      -- use div_le_div_iff₀
-      refine (div_le_div_iff₀ hn2 hn1).2 ?_
-      -- show (bx')*n_x ≤ b_x*nx'
-      have hbx'cast : (bx' : ℚ) = (b_x : ℚ) - (g_x : ℚ) := by
-        -- bx' = b_x - gx, and gx ≤ b_x
-        have : g_x ≤ b_x := hgx_le_bx
-        simp [bx', Nat.cast_sub this]
-      have hnx'cast : (nx' : ℚ) = (n_x : ℚ) - (g_x : ℚ) := by
-        have : g_x ≤ (n_x : ℕ) := le_of_lt hx_lt_nx
-        simp [nx', Nat.cast_sub this]
-      -- start from gx*b_x ≤ gx*n_x
-      have hbn : (b_x : ℚ) ≤ (n_x : ℚ) := by
-        exact_mod_cast (le_of_lt hbxltnx)
-      have hgx_nonneg : (0 : ℚ) ≤ (g_x : ℚ) := by
-        exact_mod_cast (Nat.zero_le g_x)
-      have hmul : (g_x : ℚ) * (b_x : ℚ) ≤ (g_x : ℚ) * (n_x : ℚ) :=
-        mul_le_mul_of_nonneg_left hbn hgx_nonneg
-      have hsub : (b_x : ℚ) * (n_x : ℚ) - (g_x : ℚ) * (n_x : ℚ) ≤
-          (b_x : ℚ) * (n_x : ℚ) - (g_x : ℚ) * (b_x : ℚ) := by
-        -- subtract the inequality from (b_x*n_x)
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (sub_le_sub_left hmul ((b_x : ℚ) * (n_x : ℚ)))
-      -- rewrite into the desired form
-      rw [hbx'cast, hnx'cast]
-      simpa [sub_mul, mul_sub, mul_assoc, mul_left_comm, mul_comm] using hsub
-    have hyfrac : (by' : ℚ) / (ny' : ℚ) ≤ (b_y : ℚ) / (n_y : ℚ) := by
-      have hn1 : (0 : ℚ) < (n_y : ℚ) := by
-        exact_mod_cast n_y.pos
-      have hn2 : (0 : ℚ) < (ny' : ℚ) := by
-        exact_mod_cast ny'.pos
-      refine (div_le_div_iff₀ hn2 hn1).2 ?_
-      have hby'cast : (by' : ℚ) = (b_y : ℚ) - (g_y : ℚ) := by
-        have : g_y ≤ b_y := hgy_le_by
-        simp [by', Nat.cast_sub this]
-      have hny'cast : (ny' : ℚ) = (n_y : ℚ) - (g_y : ℚ) := by
-        have : g_y ≤ (n_y : ℕ) := le_of_lt hy_lt_ny
-        simp [ny', Nat.cast_sub this]
-      have hbn : (b_y : ℚ) ≤ (n_y : ℚ) := by
-        exact_mod_cast (le_of_lt hbyltny)
-      have hgy_nonneg : (0 : ℚ) ≤ (g_y : ℚ) := by
-        exact_mod_cast (Nat.zero_le g_y)
-      have hmul : (g_y : ℚ) * (b_y : ℚ) ≤ (g_y : ℚ) * (n_y : ℚ) :=
-        mul_le_mul_of_nonneg_left hbn hgy_nonneg
-      have hsub : (b_y : ℚ) * (n_y : ℚ) - (g_y : ℚ) * (n_y : ℚ) ≤
-          (b_y : ℚ) * (n_y : ℚ) - (g_y : ℚ) * (b_y : ℚ) := by
-        simpa [mul_assoc, mul_left_comm, mul_comm] using
-          (sub_le_sub_left hmul ((b_y : ℚ) * (n_y : ℚ)))
-      rw [hby'cast, hny'cast]
-      simpa [sub_mul, mul_sub, mul_assoc, mul_left_comm, mul_comm] using hsub
+  have hxpos : 0 < Px'.card := lt_of_lt_of_le (Nat.sub_pos_of_lt hx_lt_nx) hcard_Px'
+  have hypos : 0 < Py'.card := lt_of_lt_of_le (Nat.sub_pos_of_lt hy_lt_ny) hcard_Py'
+  haveI : Nonempty Px' := by
+    classical
+    rcases Finset.card_pos.mp hxpos with ⟨x, hx⟩
+    exact ⟨⟨x, hx⟩⟩
+  haveI : Nonempty Py' := by
+    classical
+    rcases Finset.card_pos.mp hypos with ⟨y, hy⟩
+    exact ⟨⟨y, hy⟩⟩
+  -- adjusted parameters
+  let ax' : ℕ := a_x - g_x
+  let ay' : ℕ := a_y - g_y
+  let bx' : ℕ := b_x - g_x
+  let by' : ℕ := b_y - g_y
+  let nx' : ℕ+ := ⟨(n_x : ℕ) - g_x, Nat.sub_pos_of_lt hx_lt_nx⟩
+  let ny' : ℕ+ := ⟨(n_y : ℕ) - g_y, Nat.sub_pos_of_lt hy_lt_ny⟩
+  have hbxax' : bx' ≥ ax' := by
+    -- bx' ≥ ax' ↔ ax' ≤ bx'
+    simpa [bx', ax'] using (Nat.sub_le_sub_right h_bx_ge_ax g_x)
+  have hbyay' : by' ≥ ay' := by
+    simpa [by', ay'] using (Nat.sub_le_sub_right h_by_ge_ay g_y)
+  -- simplify differences bx' - ax' and by' - ay'
+  have hdiff_x : bx' - ax' = b_x - a_x := by
+    simpa [bx', ax'] using
+      (tsub_tsub_tsub_cancel_right (a := b_x) (b := a_x) (c := g_x) hgx_le_ax)
+  have hdiff_y : by' - ay' = b_y - a_y := by
+    simpa [by', ay'] using
+      (tsub_tsub_tsub_cancel_right (a := b_y) (b := a_y) (c := g_y) hgy_le_ay)
+  -- descend quotient hypotheses to A1,B1
+  have hquotX' : ∀ y ∈ Py', (quot_x y).natDegree ≤ (bx' - ax') ∧
+      Polynomial.Bivariate.evalY y B1 = (quot_x y) * Polynomial.Bivariate.evalY y A1 := by
+    intro y hy
+    have hyP : y ∈ P_y := (Finset.mem_filter.mp hy).1
+    have hyG : Polynomial.Bivariate.evalY y G ≠ 0 := (Finset.mem_filter.mp hy).2
+    have hq := h_quot_x y hyP
+    refine ⟨?_, ?_⟩
+    · simpa [hdiff_x] using hq.1
+    · exact ps_descend_eval_y (hA := hA) (hB := hB) y hyG (quot_x y) hq.2
+  have hquotY' : ∀ x ∈ Px', (quot_y x).natDegree ≤ (by' - ay') ∧
+      Polynomial.Bivariate.evalX x B1 = (quot_y x) * Polynomial.Bivariate.evalX x A1 := by
+    intro x hx
+    have hxP : x ∈ P_x := (Finset.mem_filter.mp hx).1
+    have hxG : Polynomial.Bivariate.evalX x G ≠ 0 := (Finset.mem_filter.mp hx).2
+    have hq := h_quot_y x hxP
+    refine ⟨?_, ?_⟩
+    · simpa [hdiff_y] using hq.1
+    · exact ps_descend_eval_x (hA := hA) (hB := hB) x hxG (quot_y x) hq.2
+  -- degree bounds for A1,B1 under adjusted parameters
+  have h_ax' : ax' ≥ Polynomial.Bivariate.degreeX A1 := by
+    have hsum : g_x + Polynomial.Bivariate.degreeX A1 ≤ a_x := by
+      simpa [hdegX_A] using h_f_degX
+    have : Polynomial.Bivariate.degreeX A1 ≤ a_x - g_x := le_tsub_of_add_le_left hsum
+    simpa [ax', ge_iff_le] using this
+  have h_ay' : ay' ≥ Polynomial.Bivariate.natDegreeY A1 := by
+    have hsum : g_y + Polynomial.Bivariate.natDegreeY A1 ≤ a_y := by
+      simpa [hdegY_A] using h_f_degY
+    have : Polynomial.Bivariate.natDegreeY A1 ≤ a_y - g_y := le_tsub_of_add_le_left hsum
+    simpa [ay', ge_iff_le] using this
+  have h_bx' : bx' ≥ Polynomial.Bivariate.degreeX B1 := by
+    have hsum : g_x + Polynomial.Bivariate.degreeX B1 ≤ b_x := by
+      simpa [hdegX_B] using h_g_degX
+    have : Polynomial.Bivariate.degreeX B1 ≤ b_x - g_x := le_tsub_of_add_le_left hsum
+    simpa [bx', ge_iff_le] using this
+  have h_by' : by' ≥ Polynomial.Bivariate.natDegreeY B1 := by
+    have hsum : g_y + Polynomial.Bivariate.natDegreeY B1 ≤ b_y := by
+      simpa [hdegY_B] using h_g_degY
+    have : Polynomial.Bivariate.natDegreeY B1 ≤ b_y - g_y := le_tsub_of_add_le_left hsum
+    simpa [by', ge_iff_le] using this
+  -- card bounds in the form needed (using nx',ny')
+  have hcard_Px'' : nx' ≤ Px'.card := by
+    simpa [nx'] using hcard_Px'
+  have hcard_Py'' : ny' ≤ Py'.card := by
+    simpa [ny'] using hcard_Py'
+  -- inequality for adjusted ratios
+  have hxfrac : (bx' : ℚ) / (nx' : ℚ) ≤ (b_x : ℚ) / (n_x : ℚ) := by
+    have hn1 : (0 : ℚ) < (n_x : ℚ) := by
+      exact_mod_cast n_x.pos
+    have hn2 : (0 : ℚ) < (nx' : ℚ) := by
+      exact_mod_cast nx'.pos
+    -- use div_le_div_iff₀
+    refine (div_le_div_iff₀ hn2 hn1).2 ?_
+    -- show (bx')*n_x ≤ b_x*nx'
+    have hbx'cast : (bx' : ℚ) = (b_x : ℚ) - (g_x : ℚ) := by
+      -- bx' = b_x - gx, and gx ≤ b_x
+      have : g_x ≤ b_x := hgx_le_bx
+      simp [bx', Nat.cast_sub this]
+    have hnx'cast : (nx' : ℚ) = (n_x : ℚ) - (g_x : ℚ) := by
+      have : g_x ≤ (n_x : ℕ) := le_of_lt hx_lt_nx
+      simp [nx', Nat.cast_sub this]
+    -- start from gx*b_x ≤ gx*n_x
+    have hbn : (b_x : ℚ) ≤ (n_x : ℚ) := by
+      exact_mod_cast (le_of_lt hbxltnx)
+    have hgx_nonneg : (0 : ℚ) ≤ (g_x : ℚ) := by
+      exact_mod_cast (Nat.zero_le g_x)
+    have hmul : (g_x : ℚ) * (b_x : ℚ) ≤ (g_x : ℚ) * (n_x : ℚ) :=
+      mul_le_mul_of_nonneg_left hbn hgx_nonneg
+    have hsub : (b_x : ℚ) * (n_x : ℚ) - (g_x : ℚ) * (n_x : ℚ) ≤
+        (b_x : ℚ) * (n_x : ℚ) - (g_x : ℚ) * (b_x : ℚ) := by
+      -- subtract the inequality from (b_x*n_x)
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (sub_le_sub_left hmul ((b_x : ℚ) * (n_x : ℚ)))
+    -- rewrite into the desired form
+    rw [hbx'cast, hnx'cast]
+    simpa [sub_mul, mul_sub, mul_assoc, mul_left_comm, mul_comm] using hsub
+  have hyfrac : (by' : ℚ) / (ny' : ℚ) ≤ (b_y : ℚ) / (n_y : ℚ) := by
+    have hn1 : (0 : ℚ) < (n_y : ℚ) := by
+      exact_mod_cast n_y.pos
+    have hn2 : (0 : ℚ) < (ny' : ℚ) := by
+      exact_mod_cast ny'.pos
+    refine (div_le_div_iff₀ hn2 hn1).2 ?_
+    have hby'cast : (by' : ℚ) = (b_y : ℚ) - (g_y : ℚ) := by
+      have : g_y ≤ b_y := hgy_le_by
+      simp [by', Nat.cast_sub this]
+    have hny'cast : (ny' : ℚ) = (n_y : ℚ) - (g_y : ℚ) := by
+      have : g_y ≤ (n_y : ℕ) := le_of_lt hy_lt_ny
+      simp [ny', Nat.cast_sub this]
+    have hbn : (b_y : ℚ) ≤ (n_y : ℚ) := by
+      exact_mod_cast (le_of_lt hbyltny)
+    have hgy_nonneg : (0 : ℚ) ≤ (g_y : ℚ) := by
+      exact_mod_cast (Nat.zero_le g_y)
+    have hmul : (g_y : ℚ) * (b_y : ℚ) ≤ (g_y : ℚ) * (n_y : ℚ) :=
+      mul_le_mul_of_nonneg_left hbn hgy_nonneg
+    have hsub : (b_y : ℚ) * (n_y : ℚ) - (g_y : ℚ) * (n_y : ℚ) ≤
+        (b_y : ℚ) * (n_y : ℚ) - (g_y : ℚ) * (b_y : ℚ) := by
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        (sub_le_sub_left hmul ((b_y : ℚ) * (n_y : ℚ)))
+    rw [hby'cast, hny'cast]
+    simpa [sub_mul, mul_sub, mul_assoc, mul_left_comm, mul_comm] using hsub
+
   have h_le_1' : (1 : ℚ) > (bx' : ℚ) / (nx' : ℚ) + (by' : ℚ) / (ny' : ℚ) := by
     have hsum_le : (bx' : ℚ) / (nx' : ℚ) + (by' : ℚ) / (ny' : ℚ) ≤
-        (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ) := by
+      (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ) := by
       exact add_le_add hxfrac hyfrac
     exact lt_of_le_of_lt hsum_le h_le_1
-  -- apply coprime-case lemma to A1,B1
+-- apply coprime-case lemma to A1,B1
   have hconst : Polynomial.Bivariate.degreeX A1 = 0 ∧ Polynomial.Bivariate.natDegreeY A1 = 0 := by
     classical
     simpa [ax', ay', bx', by', nx', ny'] using
-      (ps_coprime_case_constant (F := F) ax' ay' bx' by' nx' ny' hbxax' hbyay' A1 B1
-        hA1 hB1 hrel h_ax' h_bx' h_ay' h_by'
-        Px' Py' quot_X quot_Y hcard_Px'' hcard_Py''
-        h_quot_X' h_quot_Y' h_le_1')
-  -- get B1 = P1 * A1
+          (ps_coprime_case_constant (F := F) ax' ay' bx' by' nx' ny' hbxax' hbyay' A1 B1
+            hA1 hB1 hrel h_ax' h_bx' h_ay' h_by'
+            Px' Py' quot_x quot_y hcard_Px'' hcard_Py''
+            hquotX' hquotY' h_le_1')
+-- get B1 = P1 * A1
   rcases ps_exists_p_of_degree_x_eq_zero_nat_degree_y_eq_zero (A := A1) (B := B1) hA1 hconst.1 hconst.2 with
     ⟨P1, hB1fac⟩
   refine ⟨P1, ?_⟩
-  -- assemble
+-- assemble
   calc
-    B = G * B1 := by
-      simp [hB]
-    _ = G * (P1 * A1) := by
-      simp [hB1fac]
-    _ = P1 * (G * A1) := by
-      simp [mul_left_comm, mul_comm]
-    _ = P1 * A := by
-      simp [hA]
-  where
-    h_quot_X' := hquotX'
-    h_quot_Y' := hquotY'
+  B = G * B1 := by
+    simp [hB]
+  _ = G * (P1 * A1) := by
+    simp [hB1fac]
+  _ = P1 * (G * A1) := by
+    simp [mul_left_comm, mul_comm]
+  _ = P1 * A := by
+    simp [hA]
 
 
 lemma ps_exists_p {F : Type} [Field F]
@@ -816,14 +814,14 @@ lemma ps_exists_p {F : Type} [Field F]
     (h_f_degY : a_y ≥ Polynomial.Bivariate.natDegreeY A)
     (h_g_degY : b_y ≥ Polynomial.Bivariate.natDegreeY B)
     (P_x P_y : Finset F) [Nonempty P_x] [Nonempty P_y]
-    (quot_X : F → F[X]) (quot_Y : F → F[X])
+    (quot_x : F → F[X]) (quot_y : F → F[X])
     (h_card_Px : n_x ≤ P_x.card) (h_card_Py : n_y ≤ P_y.card)
-    (h_quot_X : ∀ y ∈ P_y,
-      (quot_X y).natDegree ≤ (b_x - a_x) ∧
-        Polynomial.Bivariate.evalY y B = (quot_X y) * (Polynomial.Bivariate.evalY y A))
-    (h_quot_Y : ∀ x ∈ P_x,
-      (quot_Y x).natDegree ≤ (b_y - a_y) ∧
-        Polynomial.Bivariate.evalX x B = (quot_Y x) * (Polynomial.Bivariate.evalX x A))
+    (h_quot_x : ∀ y ∈ P_y,
+      (quot_x y).natDegree ≤ (b_x - a_x) ∧
+        Polynomial.Bivariate.evalY y B = (quot_x y) * (Polynomial.Bivariate.evalY y A))
+    (h_quot_y : ∀ x ∈ P_x,
+      (quot_y x).natDegree ≤ (b_y - a_y) ∧
+        Polynomial.Bivariate.evalX x B = (quot_y x) * (Polynomial.Bivariate.evalX x A))
     (h_le_1 : 1 > (b_x : ℚ) / (n_x : ℚ) + (b_y : ℚ) / (n_y : ℚ)) :
     ∃ P : F[X][Y], B = P * A := by
   classical
@@ -844,8 +842,8 @@ lemma ps_exists_p {F : Type} [Field F]
         intro x hx
         have hEq :
             Polynomial.Bivariate.evalX x B =
-              (quot_Y x) * (Polynomial.Bivariate.evalX x A) :=
-          (h_quot_Y x hx).2
+              (quot_y x) * (Polynomial.Bivariate.evalX x A) :=
+          (h_quot_y x hx).2
         simpa [hA, ps_eval_x_eq_map] using hEq
 
       have hB_eq : B = 0 := by
@@ -882,6 +880,6 @@ lemma ps_exists_p {F : Type} [Field F]
           (n_x := n_x) (n_y := n_y) (h_bx_ge_ax := h_bx_ge_ax) (h_by_ge_ay := h_by_ge_ay)
           (A := A) (B := B) (hA0 := hA) (hB0 := hB) (h_f_degX := h_f_degX)
           (h_g_degX := h_g_degX) (h_f_degY := h_f_degY) (h_g_degY := h_g_degY)
-          (P_x := P_x) (P_y := P_y) (quot_X := quot_X) (quot_Y := quot_Y)
-          (h_card_Px := h_card_Px) (h_card_Py := h_card_Py) (h_quot_X := h_quot_X)
-          (h_quot_Y := h_quot_Y) (h_le_1 := h_le_1)
+          (P_x := P_x) (P_y := P_y) (quot_x := quot_x) (quot_y := quot_y)
+          (h_card_Px := h_card_Px) (h_card_Py := h_card_Py) (h_quot_x := h_quot_x)
+          (h_quot_y := h_quot_y) (h_le_1 := h_le_1)
