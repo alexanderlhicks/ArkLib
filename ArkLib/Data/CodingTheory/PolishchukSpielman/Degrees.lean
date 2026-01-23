@@ -640,14 +640,14 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
     < P_y.card - Polynomial.Bivariate.natDegreeY A :=
       tsub_lt_tsub_right_of_le hdegA_le_by hby_lt_card
 
-    have hPy'_card : Py'.card > Polynomial.Bivariate.natDegreeY P := by
+    have hPy'_card : py'.card > Polynomial.Bivariate.natDegreeY P := by
       have hlt : Polynomial.Bivariate.natDegreeY P < P_y.card - Polynomial.Bivariate.natDegreeY A :=
         lt_of_le_of_lt hnatDegY_P_le hbsubY
-      have hlt' : Polynomial.Bivariate.natDegreeY P < Py'.card := lt_of_lt_of_le hlt hPy'_ge
+      have hlt' : Polynomial.Bivariate.natDegreeY P < py'.card := lt_of_lt_of_le hlt hPy'_ge
       exact hlt'
 
     -- choose y preserving degreeX
-    rcases ps_exists_y_preserve_degree_x (F := F) (B := P) (hB := hP) (P_y := Py') hPy'_card with
+    rcases ps_exists_y_preserve_degree_x (F := F) (B := P) (hB := hP) (P_y := py') hPy'_card with
       ⟨y, hyPy', hydegX⟩
 
     have hyP_y : y ∈ P_y := (Finset.mem_filter.mp hyPy').1
@@ -721,13 +721,13 @@ lemma ps_degree_bounds_of_mul {F : Type} [Field F]
         tsub_le_tsub_left (show Polynomial.Bivariate.degreeX A ≤ a_x from h_f_degX) b_x
       exact le_trans hdegX_P_le h1
 
-    have hPx'_card : Px'.card > Polynomial.Bivariate.degreeX P := by
+    have hPx'_card : px'.card > Polynomial.Bivariate.degreeX P := by
       have hlt : Polynomial.Bivariate.degreeX P < P_x.card - Polynomial.Bivariate.degreeX A :=
         lt_of_le_of_lt hdegX_P_le' hbsubX
-      have hlt' : Polynomial.Bivariate.degreeX P < Px'.card := lt_of_lt_of_le hlt hPx'_ge
+      have hlt' : Polynomial.Bivariate.degreeX P < px'.card := lt_of_lt_of_le hlt hPx'_ge
       exact hlt'
 
-    rcases ps_exists_x_preserve_nat_degree_y (F := F) (B := P) (hB := hP) (P_x := Px') hPx'_card with
+    rcases ps_exists_x_preserve_nat_degree_y (F := F) (B := P) (hB := hP) (P_x := px') hPx'_card with
       ⟨x, hxPx', hxdegY⟩
 
     have hxP_x : x ∈ P_x := (Finset.mem_filter.mp hxPx').1
