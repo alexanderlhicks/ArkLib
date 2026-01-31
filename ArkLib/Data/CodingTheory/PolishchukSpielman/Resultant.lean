@@ -12,7 +12,7 @@ import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 # Resultants and Sylvester matrices for Polishchuk-Spielman
 
 This file contains auxiliary lemmas regarding resultants and Sylvester matrices
-of bivariate polynomials, used in the Polishchuk-Spielman algorithm [BCIKS20].
+of bivariate polynomials, used in the Polishchuk-Spielman lemma [BCIKS20].
 
 ## Main results
 

@@ -14,7 +14,7 @@ import Mathlib.RingTheory.SimpleModule.Basic
 
 This file contains auxiliary lemmas regarding degree bounds, evaluation, and
 variable swapping for bivariate polynomials, used in the Polishchuk-Spielman
-algorithm [BCIKS20].
+lemma [BCIKS20].
 
 ## Main results
 

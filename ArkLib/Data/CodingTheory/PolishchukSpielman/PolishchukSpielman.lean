@@ -9,19 +9,33 @@ import ArkLib.Data.CodingTheory.PolishchukSpielman.Existence
 import ArkLib.Data.CodingTheory.PolishchukSpielman.Resultant
 
 /-!
-# Polishchuk-Spielman algorithm
+# Polishchuk-Spielman lemma
 
-This file defines the main theorem for the Polishchuk-Spielman algorithm [PS94],
-which provides an efficient decoding method for Reed-Solomon codes.
+This file proves the Polishchuk-Spielman lemma, which provides a criterion for when one
+bivariate polynomial divides another based on their univariate restrictions. This lemma
+is a key component in the efficiency of the Polishchuk-Spielman decoding algorithm [PS94]
+for Reed-Solomon codes.
+
+## Implementation notes
+
+This formalization follows the corrected statement given in Lemma 4.3 of [BCIKS20].
+The original version in [Spi95, Lemma 4.2.18] (and implicitly [PS94]) contained a flaw
+regarding the degrees of the quotient polynomials (see [BCIKS20, Appendix D]).
+This version explicitly requires that the univariate quotients have degrees bounded by
+the difference of the global degrees.
 
 ## Main results
 
-- `polishchuk_spielman`: The main theorem stating the existence of the
-  interpolating polynomial $Q(X, Y)$ and the error locator polynomial $E(X)$.
+- `polishchuk_spielman`: The Polishchuk-Spielman lemma. It states that if $A(X, Y)$
+  divides $B(X, Y)$ when restricted to a grid of vertical and horizontal lines,
+  with the univariate quotients having suitably bounded degrees, and if the degrees
+  satisfy $\frac{\deg_X B}{|P_x|} + \frac{\deg_Y B}{|P_y|} < 1$, then $A(X, Y)$
+  divides $B(X, Y)$ globally.
 
 ## References
 
 * [Polishchuk, A., and Spielman, D., *Nearly-linear size holographic proofs*][PS94]
+* [Spielman, D., *Computationally Efficient Error-Correcting Codes and Holographic Proofs*][Spi95]
 * [Ben-Sasson, E., Carmon, D., Ishai, Y., Kopparty, S., and Saraf, S., *Proximity Gaps
     for Reed-Solomon Codes*][BCIKS20]
 

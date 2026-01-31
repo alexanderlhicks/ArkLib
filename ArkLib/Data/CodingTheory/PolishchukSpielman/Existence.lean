@@ -13,7 +13,7 @@ import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 # Existence of polynomials for Polishchuk-Spielman
 
 This file contains the core existence proofs for the polynomials $P$ and $Q$
-required by the Polishchuk-Spielman algorithm [BCIKS20].
+required by the Polishchuk-Spielman lemma [BCIKS20].
 
 ## Main results
 
