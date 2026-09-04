@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Quang Dao, Justin Thaler
 -/
 
-import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalConstraintKernel
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalIntermediateSpace
 import Mathlib.Algebra.MvPolynomial.Equiv
 
 /-!
@@ -29,7 +29,7 @@ namespace ReedSolomon.HiddenDerivative
 open MvPolynomial
 
 variable {F : Type*} [Field F]
-variable {d m : ℕ}
+variable {d m M W : ℕ}
 
 /-- The coefficient of `T^n`, with all remaining local variables kept as multivariate
 polynomial variables. -/
@@ -103,9 +103,14 @@ theorem localTCoefficient_zero_localJetSum (hd : 0 < d) :
       intro hval
       apply hj
       exact Fin.ext hval
-    simp [localTCoefficient, localT, localY]
-    intro hzero
-    exact (hjval hzero.symm).elim
+    rw [localTCoefficient]
+    simp only [map_mul, map_pow, localT, localY,
+      MvPolynomial.optionEquivLeft_C, MvPolynomial.optionEquivLeft_X_none,
+      MvPolynomial.optionEquivLeft_X_some, Polynomial.mul_coeff_zero]
+    rw [Polynomial.coeff_X_pow]
+    split_ifs with hzero
+    · exact (hjval hzero.symm).elim
+    · simp
   · simp
 
 /-- The constant coefficient of the hidden error is the nonzero polynomial `U - Y₁`. -/
@@ -217,5 +222,103 @@ theorem truncateLocalT_sum_exhibitedKernelFactor_mul_eq_zero_iff
     exact hzero r.val r.isLt r rfl
   · intro hG
     simp [hG]
+
+/-! ### Finite exhibited family -/
+
+/-- One bounded source rectangle for every `T`-slice below `m`, using the canonical contact
+threshold in each slice. -/
+abbrev ExhibitedKernelFamilySource (F : Type*) [Field F]
+    (hd : 0 < d) (m M W : ℕ) :=
+  ∀ r : Fin m,
+    kernelSliceSourceSpace F hd r.val M W (contactThreshold d m r.val)
+
+/-- The exact dimension of the finite source family, with the multiplication order used by the
+certified residual-rank count. -/
+theorem finrank_exhibitedKernelFamilySource (hd : 0 < d) :
+    Module.finrank F (ExhibitedKernelFamilySource F hd m M W) =
+      ∑ r ∈ Finset.range m,
+        weightedHigherJetCount d (W + r) *
+          exhibitedKernelContactCount r M (contactThreshold d m r) := by
+  rw [Module.finrank_pi_fintype]
+  simp_rw [finrank_kernelSliceSourceSpace (F := F) hd]
+  simpa only [Nat.mul_comm] using
+    (Fin.sum_univ_eq_sum_range
+      (fun r ↦ weightedHigherJetCount d (W + r) *
+        exhibitedKernelContactCount r M (contactThreshold d m r)) m)
+
+/-- Sum the canonically truncated bounded multipliers inside the exact intermediate space. -/
+def exhibitedKernelFamilyMap (hd : 0 < d) :
+    ExhibitedKernelFamilySource F hd m M W →ₗ[F]
+      localIntermediateSpace F hd m M W where
+  toFun G := ∑ r : Fin m, boundedExhibitedKernelMap (R := F) hd r.isLt (G r)
+  map_add' G H := by
+    simp only [Pi.add_apply, map_add, Finset.sum_add_distrib]
+  map_smul' a G := by
+    simp only [Pi.smul_apply, RingHom.id_apply, map_smul, Finset.smul_sum]
+
+/-- The underlying polynomial of the finite family map is the truncation of the sum of its
+exhibited factors. -/
+@[simp]
+theorem exhibitedKernelFamilyMap_apply (hd : 0 < d)
+    (G : ExhibitedKernelFamilySource F hd m M W) :
+    (exhibitedKernelFamilyMap hd G : LocalPolynomial F d) =
+      truncateLocalT (R := F) (d := d) m
+        (∑ r : Fin m,
+          exhibitedKernelFactor d r.val (contactThreshold d m r.val) * (G r).1) := by
+  simp only [exhibitedKernelFamilyMap, LinearMap.coe_mk, AddHom.coe_mk,
+    Submodule.coe_sum, boundedExhibitedKernelMap_apply,
+    exhibitedKernelMultiplier_apply, map_sum]
+
+/-- The exhibited family, now valued in the kernel of the restricted intermediate map. -/
+def exhibitedKernelFamilyKernelMap (hd : 0 < d) :
+    ExhibitedKernelFamilySource F hd m M W →ₗ[F]
+      LinearMap.ker (intermediateConstraintMap (R := F) hd m M W) :=
+  (exhibitedKernelFamilyMap hd).codRestrict
+    (LinearMap.ker (intermediateConstraintMap (R := F) hd m M W)) fun G ↦ by
+      rw [LinearMap.mem_ker]
+      change intermediateConstraintMap (R := F) hd m M W
+        (∑ r : Fin m, boundedExhibitedKernelMap (R := F) hd r.isLt (G r)) = 0
+      rw [map_sum]
+      apply Finset.sum_eq_zero
+      intro r _
+      exact intermediateConstraintMap_boundedExhibitedKernelMap_eq_zero hd r.isLt (G r)
+
+@[simp]
+theorem exhibitedKernelFamilyKernelMap_apply (hd : 0 < d)
+    (G : ExhibitedKernelFamilySource F hd m M W) :
+    (exhibitedKernelFamilyKernelMap hd G : localIntermediateSpace F hd m M W) =
+      exhibitedKernelFamilyMap hd G :=
+  rfl
+
+/-- The finite exhibited family is a direct sum inside the intermediate space. -/
+theorem exhibitedKernelFamilyMap_injective (hd : 0 < d) :
+    Function.Injective (exhibitedKernelFamilyMap (F := F) (m := m) (M := M) (W := W) hd) := by
+  intro G H hGH
+  have hzero : exhibitedKernelFamilyMap (F := F) (m := m) (M := M) (W := W) hd
+      (G - H) = 0 := by
+    rw [map_sub, hGH, sub_self]
+  have hpoly := congrArg
+    (fun P : localIntermediateSpace F hd m M W ↦ (P : LocalPolynomial F d)) hzero
+  rw [exhibitedKernelFamilyMap_apply] at hpoly
+  have hfree : ∀ r : Fin m, IsLocalTFree (((G - H) r).1) := by
+    intro r e he
+    exact tDegree_eq_zero_of_mem_kernelSliceSourceSpace hd ((G - H) r).2 he
+  have hslices :=
+    (truncateLocalT_sum_exhibitedKernelFactor_mul_eq_zero_iff
+      (F := F) hd (fun r : Fin m ↦ contactThreshold d m r.val)
+        (fun r : Fin m ↦ ((G - H) r).1) hfree).mp hpoly
+  apply sub_eq_zero.mp
+  funext r
+  apply Subtype.ext
+  exact hslices r
+
+/-- The exact finite family injects into the exhibited portion of `ker Γ`. This proves only the
+lower bound on the kernel dimension needed for the certified rank upper bound. -/
+theorem exhibitedKernelFamilyKernelMap_injective (hd : 0 < d) :
+    Function.Injective
+      (exhibitedKernelFamilyKernelMap (F := F) (m := m) (M := M) (W := W) hd) := by
+  intro G H hGH
+  apply exhibitedKernelFamilyMap_injective hd
+  exact congrArg Subtype.val hGH
 
 end ReedSolomon.HiddenDerivative
