@@ -21,6 +21,8 @@ namespace AllRateListDecoding
 
 noncomputable section
 
+local instance lowOrderCanaryPrimeFive : Fact (Nat.Prime 5) := ⟨by decide⟩
+
 private def quarterCanaryDomain : Fin 4 ↪ ZMod 5 where
   toFun i := (i : ℕ)
   inj' i j hij := by
@@ -33,7 +35,8 @@ private def quarterCanaryReceived : Fin 4 → ZMod 5 := fun i =>
   if (i : ℕ) < 2 then 0 else 1
 
 private def constantMessage (a : ZMod 5) : ListDecoding.MessagePolynomial (ZMod 5) 1 :=
-  ⟨Polynomial.C a, by simp [Polynomial.mem_degreeLT]⟩
+  ⟨Polynomial.C a, Polynomial.mem_degreeLT.mpr
+    (Polynomial.degree_C_le.trans_lt (by norm_num))⟩
 
 /-- Two distinct constant polynomials meet the quarter-gap threshold in the same received word. -/
 example :
@@ -50,8 +53,10 @@ example :
     norm_num [constantMessage] at hcoeff
   · norm_num [agreeingPolynomials, agreementThreshold, quarterCanaryDomain,
       quarterCanaryReceived, constantMessage, ReedSolomon.evalOnPoints, Code.agree]
+    decide
   · norm_num [agreeingPolynomials, agreementThreshold, quarterCanaryDomain,
       quarterCanaryReceived, constantMessage, ReedSolomon.evalOnPoints, Code.agree]
+    decide
 
 end
 end AllRateListDecoding

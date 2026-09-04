@@ -241,7 +241,7 @@ private lemma exactAgreementDecoder_encard_eq
 /-- At a capacity gap of at least one quarter, every received word has at most `blockLength`
 agreeing degree-bounded polynomials. This is the pointwise order-zero counting checkpoint. -/
 theorem agreeingPolynomials_encard_le_blockLength_of_quarter
-    {F : Type*} [Field F] [Fintype F] [DecidableEq F]
+    {F : Type*} [Field F] [Finite F] [DecidableEq F]
     {delta : ℝ} (hdelta : (1 / 4 : ℝ) ≤ delta)
     {blockLength messageDim : ℕ} (domain : Fin blockLength ↪ F)
     (hBlockLength : 0 < blockLength) (hMessageDim : 0 < messageDim)
@@ -249,6 +249,7 @@ theorem agreeingPolynomials_encard_le_blockLength_of_quarter
     (agreeingPolynomials domain messageDim
       (agreementThreshold delta blockLength messageDim) received).encard ≤
         (blockLength : ℕ∞) := by
+  let := Fintype.ofFinite F
   rw [exactAgreementDecoder_encard_eq domain received]
   exact_mod_cast exactAgreementDecoder_card_le_blockLength hdelta domain hBlockLength
     hMessageDim hMessageDimLe received
@@ -256,13 +257,14 @@ theorem agreeingPolynomials_encard_le_blockLength_of_quarter
 /-- At a capacity gap of at least one half, every received word has at most one agreeing
 degree-bounded polynomial. -/
 theorem agreeingPolynomials_encard_le_one_of_half
-    {F : Type*} [Field F] [Fintype F] [DecidableEq F]
+    {F : Type*} [Field F] [Finite F] [DecidableEq F]
     {delta : ℝ} (hdelta : (1 / 2 : ℝ) ≤ delta)
     {blockLength messageDim : ℕ} (domain : Fin blockLength ↪ F)
     (hMessageDim : 0 < messageDim) (hMessageDimLe : messageDim ≤ blockLength)
     (received : Fin blockLength → F) :
     (agreeingPolynomials domain messageDim
       (agreementThreshold delta blockLength messageDim) received).encard ≤ 1 := by
+  let := Fintype.ofFinite F
   rw [exactAgreementDecoder_encard_eq domain received]
   exact_mod_cast exactAgreementDecoder_card_le_one domain hMessageDim hMessageDimLe
     (agreementThreshold_half_gap hdelta blockLength messageDim hMessageDim) received

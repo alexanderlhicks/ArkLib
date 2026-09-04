@@ -113,6 +113,7 @@ import ArkLib.Data.CodingTheory.ListDecodability.Bounds.LargeAlphabet.Pigeonhole
 import ArkLib.Data.CodingTheory.ListDecodability.Bounds.Linear
 import ArkLib.Data.CodingTheory.ListDecodability.Bounds.ReedSolomon
 import ArkLib.Data.CodingTheory.ListDecodability.Bounds.SubspaceDesign
+import ArkLib.Data.CodingTheory.ListDecodability.PairAgreementBound
 import ArkLib.Data.CodingTheory.PolishchukSpielman
 import ArkLib.Data.CodingTheory.PolishchukSpielman.Degrees
 import ArkLib.Data.CodingTheory.PolishchukSpielman.Existence
@@ -183,6 +184,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.ConstructionCont
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorFiniteCertificate
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorRateBins
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegime
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegimeCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RateCover
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.UniformThresholds
 import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
@@ -194,6 +197,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialSpecial
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialSpecializationDegreeCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DonorInterpolationBridge
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DonorPortCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.ExactCharacteristicBudget
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.ExactCharacteristicBudgetCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.GlobalDimension
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.GlobalInterpolation
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.GlobalMultiplicity
@@ -203,12 +208,15 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.InterpolationDimens
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.InterpolationIndex
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.InterpolationIndexCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.InterpolationSpace
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.KernelSliceIndependence
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalConstraintKernel
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalConstraintKernelCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalConstraintMap
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalContact
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalContactCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalIdentity
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalIntermediateSpace
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalRank
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.Basic
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorLattice
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorScaledLattice
@@ -229,6 +237,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Regular
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLifting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLiftingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularWitnessCounting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RootCount
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RootCountCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SingularRecursion
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SingularRecursionCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SpecializationDegree
