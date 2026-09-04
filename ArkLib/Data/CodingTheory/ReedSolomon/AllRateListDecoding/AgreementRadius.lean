@@ -172,6 +172,32 @@ def CapacityGapCertificate.ofDecoderCertificateAndPointwiseBound
     (lambda_le_of_forall_agreeingPolynomials_encard_le
       hdelta hBlockLength domain listBound hBound)
 
+/-- Package finite pointwise lists as an extensional exact decoder and its matching capacity-gap
+certificate. This construction uses classical finite-set extraction; it asserts neither an
+executable interpolation/root algorithm nor a running-time bound. -/
+def CapacityGapCertificate.ofPointwiseBound
+    {delta : ℝ} (hdelta : 0 ≤ delta) {n q k bound : ℕ}
+    (hn : 0 < n) (domain : Fin n ↪ ZMod q)
+    (hBound : ∀ received : Fin n → ZMod q,
+      (agreeingPolynomials domain k (agreementThreshold delta n k) received).encard ≤
+        (bound : ℕ∞)) : CapacityGapCertificate delta domain k bound := by
+  classical
+  let finiteList := fun received ↦ Set.finite_of_encard_le_coe (hBound received)
+  let certificate : DecoderCertificate domain k (agreementThreshold delta n k) bound := {
+    decoder := fun received ↦ (finiteList received).toFinset
+    isExact := by
+      intro received p
+      simp only [Set.Finite.mem_toFinset]
+      rfl
+    card_le := by
+      intro received
+      have h := hBound received
+      rw [(finiteList received).encard_eq_coe_toFinset_card] at h
+      exact_mod_cast h
+  }
+  exact CapacityGapCertificate.ofDecoderCertificateAndPointwiseBound
+    hdelta hn domain certificate hBound
+
 end
 end AllRateListDecoding
 end ReedSolomon

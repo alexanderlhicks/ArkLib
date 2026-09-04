@@ -21,7 +21,7 @@ noncomputable section
 
 open Polynomial
 
-local instance : Fact (Nat.Prime 7) := ⟨Nat.prime_seven⟩
+local instance globalMultiplicityPrimeSeven : Fact (Nat.Prime 7) := ⟨Nat.prime_seven⟩
 
 private def nonconsecutivePoints : Fin 2 ↪ ZMod 7 where
   toFun i := if i = 0 then 1 else 4

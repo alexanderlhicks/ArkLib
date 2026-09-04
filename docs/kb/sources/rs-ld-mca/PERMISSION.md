@@ -86,6 +86,14 @@ Subsequent adaptations, from the same pinned donor revision `9699ee7...`, are re
 |---|---|---|---|
 | `RSListDecoding/Lemmas/GlobalBudgets.lean` | [`RootFinding/SpecializationDegree.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/RootFinding/SpecializationDegree.lean) | `14568bfd` | Kai Zhe Zheng and Quang Dao; specialization bounds generalized to commutative semirings |
 | `RSListDecoding/Lemmas/Contact.lean` | [`LocalContact.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/LocalContact.lean) | `c88abc18` | Kai Zhe Zheng and Quang Dao; monomial divisibility adapted and composed with ArkLib's canonical specialization |
+| `RSListDecoding/Defs/ScaledLattice.lean` and `RSListDecoding/Lemmas/ScaledLattice.lean` | [`Parameters/DonorScaledLattice.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/DonorScaledLattice.lean) | `2da2d754`, documentation `c59c3bc8` | Kai Zhe Zheng, Pratyush Mishra, and Quang Dao |
+| `RSListDecoding/Lemmas/ScaledShellDiscrete.lean` | [`Parameters/DonorShellDiscrete.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/DonorShellDiscrete.lean) | `c59c3bc8` | Kai Zhe Zheng, Pratyush Mishra, and Quang Dao |
+| `RSListDecoding/Lemmas/ScaledShell.lean` | [`Parameters/DonorLattice.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/DonorLattice.lean) | `c59c3bc8`, comment `ad5ca87b` | Kai Zhe Zheng, Pratyush Mishra, and Quang Dao |
+| Scalar comparison in `RSListDecoding/Lemmas/RankArithmetic.lean` and cancellation in `RSListDecoding/Lemmas/DimensionComparison.lean` | [`DonorInterpolationBridge.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/DonorInterpolationBridge.lean) | `301597fb` | Kai Zhe Zheng, Pratyush Mishra, and Quang Dao; the certified-kernel residual arithmetic is ArkLib-specific |
+
+[`DonorFiniteCertificate.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/DonorFiniteCertificate.lean)
+at `dab8a72c` is ArkLib-specific uniform finite-bin assembly consuming these estimates, not a
+further donor port. These adaptations do not import the donor's root-counting or runtime axioms.
 
 ## Evidence needed to upgrade this record
 

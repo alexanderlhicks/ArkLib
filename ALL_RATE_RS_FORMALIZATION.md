@@ -269,6 +269,21 @@ Generic Hasse-derivative, polynomial-divisibility, weighted-support, and finite-
 
 Every node below has a narrow owner and an explicit acceptance condition in Section 7. Nodes at the same horizontal level should be assigned concurrently whenever worktrees are available.
 
+### Current execution limit (user override, 2026-09-04)
+
+The dependency graph describes available work, not permission to run every lane simultaneously.
+To reduce usage, existing conversations may finish their current bounded objectives, then must
+stop. They must not start follow-on objectives or spawn further subagents. After those lanes
+drain, the central orchestrator will use at most **three durable worker conversations**, without
+automatic nested fan-out. The central orchestrator remains the sole integration owner.
+
+The endpoint is the paper's **Theorem 1.1** at source pin `9e4d648`: deterministic all-rate
+decoding with gap-only parameters, the stated derivative orders, and the stated list bounds.
+The coarse qualitative combinatorial capstone is an intermediate checkpoint, not completion of
+the algorithmic or explicit-parameter claims. Work needed for those claims stays on the path;
+independent lower bounds, shrinking gaps, broader characteristic results, and unrelated rank
+refinements are deferred. Existing drafts are preserved for later reuse.
+
 ```mermaid
 flowchart TD
     P0["P0: provenance and source pins"]
@@ -284,6 +299,7 @@ flowchart TD
     L1["L1: local multiplicity/contact lemma"]
     I0["I0: finite interpolation band"]
     I1["I1: differential specialization and degree"]
+    I1a["I1a: exact interpolant characteristic budget"]
     I2["I2: local constraint map"]
     I3["I3: intermediate map and exhibited kernel"]
     I4["I4: local rank upper bound"]
@@ -367,6 +383,9 @@ flowchart TD
     C0 --> I4
     I0 --> I5
     I1 --> I5
+    I0 --> I1a
+    I1 --> I1a
+    I1a --> U3
     I4 --> I5
     U3 --> I5
     I5 --> I6
@@ -388,6 +407,8 @@ flowchart TD
     F4 --> V1
     V0 --> V1
     V1 --> V2
+    V2 --> U3
+    C1 --> U3
     V2 --> V3
 
     F1 --> R0
@@ -499,13 +520,13 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 | L0 | Connect actual polynomials and Hasse jets to the hidden local substitution, including the normalized error divisible by `T^d`. | F1, F3 | landed (`33f1f3ac`, `592458da`) | The theorem specializes a genuine `P` and proves the exact divisibility used by local constraints. |
 | L1 | Turn the local identity into order-`m` contact at an agreement point. | L0 | landed (`c88abc18`) | No characteristic restriction beyond the algebraic identity; all truncation indices are checked. |
 | I0 | Define the exact finite interpolation monomial band and its coefficient space. | F0, F3 | landed (`9b188640`, bridge `3ba5aaf7`) | Fintype and basis are explicit; zero-weight variables have finite caps; evaluator agrees with paper weights. Under the necessary boundary `0 < d < D`, the proof-facing index is equivalent to `C0`'s executable dimension index and its finrank is the exact nested count. |
-| I1 | Define differential specialization `Y_j ↦ P^[j]` and prove its degree bound. | F0, F1 | active; contributor proof in review | Uses exact derivative weights where possible; proves strict `< mA`, including all floor and ceiling cases. |
+| I1 | Define differential specialization `Y_j ↦ P^[j]` and prove its degree bound. | F0, F1 | landed (`c6b6ffe3`) | Uses exact derivative weights; proves strict `< mA`, including zero-budget and tight-degree boundary canaries. |
 | I1a | Bound each jet degree of an arbitrary exact-space interpolant below the characteristic. | I0, I1 | active; `ExactCharacteristicBudget` owned by I1 coordinator | The cap-free space does not inherit donor `B`. Prove the exact floor bound with denominator `D-d`, then discharge it using the strengthened uniform block threshold. |
 | I2 | Define local and global homogeneous linear constraint maps. | I0, L0 | landed (`f7bcfac0`, followup `359e5702`) | Coordinate and polynomial formulations are equivalent; executable enumeration remains D0. |
 | I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | active; algebraic kernel foundation in review | The map factorization is explicit; truncated kernel elements belong to the finite space and are independent; no claim equates the upper bound with true rank. |
 | I4 | Derive the certified local-rank upper bound. | I3, C0 | active | Exact finite sum is proved; the distinction between `Φ` and `Γ` is maintained. |
-| I5 | Prove existence of a nonzero global interpolant from the strict dimension inequality. | I0, I1, I4, U3 | conditional kernel extraction landed (`acaf53cf`); rank premise pending | Finrank comparison and nonzero-kernel extraction are axiom-clean; interpolation polynomial satisfies every local constraint. The numerical rank premise must still be proved by I4/U3. |
-| I6 | Prove that `A` agreements force the specialized differential polynomial to vanish identically. | I5, L1 | queued | Establishes `mA` total root multiplicity and strict specialization degree; arbitrary distinct evaluation points are used correctly. |
+| I5 | Prove existence of a nonzero global interpolant from the strict dimension inequality. | I0, I1, I4, U3 | conditional extraction and local-to-global rank sum landed (`acaf53cf`, `ffd39435`) | Nonzero-kernel extraction and the actual local-rank sum are axiom-clean. I4 must still connect the concrete local map to the certified numerical bound used by U3. |
+| I6 | Prove that `A` agreements force the specialized differential polynomial to vanish identically. | I1, I5, L1 | landed (`7c6061d8`, exact-space composition `97810ec6`) | Establishes `mA` total root multiplicity and strict specialization degree; arbitrary distinct evaluation points and excess agreements are covered. |
 | D0 | Give a checked finite-field linear solver for interpolation. | I0, I2 | queued | Returned nonzero coefficient vector lies in the kernel whenever the dimension certificate holds. |
 
 ### 7.3 Uniform all-rate parameters
@@ -526,12 +547,12 @@ Route A is the preferred phase-one path. Its output may have a very poor non-exp
 | ID | Work package | Depends on | Initial status | Acceptance condition |
 |---|---|---|---|---|
 | C0 | Formalize exact finite counting functions for bands, shells, and local-rank sums. | F0 | landed (`7935aaa5`, registration `2d8216d9`) | Finite sums correspond bijectively to interpolation indices; small numerical instances are executable canaries. |
-| C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | active; donor lattice coordinator | Floors and ceilings are included; the shell threshold is included when selecting the shared order, not assumed from V1's scalar certificate. |
+| C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | integrated; final independent audit and full validation pending (`2da2d754`, `c59c3bc8`, `ad5ca87b`) | Floors and ceilings are included; the shell threshold is included when selecting the shared order, not assumed from V1's scalar certificate. |
 | U0 | Formalize fixed-fraction additive padding `K = k + floor(λδn)` and its rate-uniform inequalities. | S0 | landed (`d2a067bf`, boundary repair `bd0f4376`) | Midpoint padding proves `d < K-1`, positive ambient rate, and the uniform ratio `1/(1-δ/2)>1`, with every floor and positivity condition explicit. |
 | U0a | Formalize the manuscript's adaptive qualitative padding `ρ₀ = δ(1-δ)/2`, `K = max{k, ceil(ρ₀n)}`, and uniform geometry. | S0, U0 | active in separate adaptive-padding files | Proves `K < A`, a positive ambient-rate lower bound, and agreement-to-ambient-rate ratio at least `1/(1-δ)`, uniformly over every `0 ≤ k/n ≤ 1-δ`. Reuse U0 without changing its contract. |
 | U1 | Prove a local-rank power saving whenever the ratio exceeds one. | U0a, C1 | queued | Derives `O(d^{-s})` for some `s(δ) > 0`; no small-agreement hypothesis. The fixed-fraction `U0` package may supply an alternate corollary. |
 | U2 | Extract one finite `d(δ)` and `N(δ)` independent of the rate. | U0a, U1 | queued | Quantifier order passes the uniformity test; all side conditions such as `D > d` and individual degrees are included. |
-| U3 | Package a finite interpolation certificate valid for all rates and all `n ≥ N(δ)`. | U2 or V0-V2 plus C1; C0, I1a | active on donor route | Strict dimension-versus-rank inequality is available in exactly the form required by `I5`; the shared threshold also bounds every exact-space jet degree below the characteristic. |
+| U3 | Package a finite interpolation certificate valid for all rates and all `n ≥ N(δ)`. | U2 or V0-V2 plus C1; C0, I1a | integrated; final independent audit and full validation pending (`301597fb`, `dab8a72c`) | Chooses `d,N` before all rates and fields; proves `n × certifiedRankBound < actual exact-space finrank` and the numerical exact-degree floor `< q`. I4 supplies actual rank ≤ certified bound; I1a connects the floor to each jet degree. |
 
 Phase one should use the simplest sound padding and lattice argument, such as midpoint or fixed-fraction padding. Optimizing `λ`, asymmetric bands, or the derivative exponent belongs in `O0` and `O1` after the qualitative theorem composes.
 
@@ -545,7 +566,7 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
 | R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | landed (`71207d79`, `f93a5dc2`, iteration `e9876723`) | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Independently audited iteration proves fixed-jet uniqueness, including arbitrary highest active jet. |
 | R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed and independently audited (`de44a070`) | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
-| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; regular-branch composition passes strict Lean; recursive total count pending | The new `regularBranch_counting_pow_le` discharges jet injectivity from R2 and weighted exceptional-point bounds. Singular-branch partition and total count remain assigned to the root-count coordinator. |
+| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | regular counting and recursive composition landed (`8fe16cca`, `41860246`); extension capstone active | Regular counting discharges jet injectivity from R2. Recursive counting has an explicit regular-branch budget, exact partition, and injective singular transport. The capstone discharges that budget and chooses a cubic witness field. |
 | R5 | Construct a finite extension large enough for witnesses. | R4 | foundation landed (`0144f9fd`) | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
 | R6 | Descend the root count to base-field solutions. | R5 | active; extension transport and cardinality descent landed (`481b7a52`, `2cc0dacb`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
 | R7 | Implement and verify root enumeration. | R2, R3, R5 | active; executable regular-jet continuation first | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. Full recursion/enumeration remains after the regular continuation stage. |
@@ -822,7 +843,8 @@ Until those choices are made, contributors should prioritize the axiom-clean all
 ### Live conversation ownership
 
 The central integration owner is conversation `01a06c48-8980-76a2-b439-9872f827bfcd`.
-The following conversations are active as of the 2026-09-04 orchestration checkpoint. New
+The following roster records active and recently completed conversations at the 2026-09-04
+orchestration checkpoint; the paper-alignment lane is currently idle. New
 coordinators use Astra at medium effort and delegate independent implementation to Sol at high
 effort. Each coordinator must report its actual workers, exclusive file claims, frozen source
 revisions, and remaining proof obligations to the central owner. A conversation's existence is
@@ -830,13 +852,13 @@ not evidence that its proof has landed.
 
 | Conversation | Owned work | Immediate checkpoint |
 |---|---|---|
-| `01a06c48-8980-76a2-b439-9872f827bfcd` (central) | Canonical integration, tracker, cross-lane audits; `RootFinding/RegularCounting.lean` | Discharge witness-count injectivity using audited R2 and integrate verified slices |
+| `01a06c48-8980-76a2-b439-9872f827bfcd` (central) | Canonical integration, tracker, cross-lane audits; `RootFinding/RegularCounting.lean`; final `Main.lean` | Integrate audited slices and compose the final uniform theorem |
 | `01a06db8-998a-7363-bc14-c4a6a8c54ca0` | I1 specialization degree; I1a exact characteristic budget; N2 obstruction | `DifferentialSpecializationDegree`, `ExactCharacteristicBudget`, `CharacteristicObstruction`, and necessary canaries |
-| `01a06de1-5ce7-72d0-afb8-c0172ed2491b` | U0 ambient padding | Uniform explicit ratio above one and `d < D = K-1`, with rounding proved |
+| `01a06de1-5ce7-72d0-afb8-c0172ed2491b` | U0 complete; U0a adaptive ambient padding active | `AdaptiveAmbientPadding` and rounding/degree canaries |
 | `01a06d8e-408d-7ea0-90cc-a8c6dd11c9a5` | Paper/source alignment and corrected quantitative contracts | Frozen source pin and independently reviewed statement changes |
 | `01a06e29-8dc6-7e21-a11a-0f8b1203f145` | I2-I4 local map, kernel, finite intermediate spaces, independence, rank | Recover staged map/kernel slice, then `LocalIntermediateSpace`, `KernelSliceIndependence`, `LocalRank` |
 | `01a06e29-de18-7dc3-93e5-2244de7106f4` | R2 independent audit; recursive root count and finite-extension assembly | Audit `deb7c75f`; recover `RecursiveCounting`; assemble `RootCount` |
-| `01a06e2a-2f6d-7370-a4ed-eb061bfc77a7` | L1/I5/I6 contact, multiplicity, global interpolation | `LocalContact`, `GlobalMultiplicity`, `GlobalInterpolation`, and necessary canaries |
+| `01a06e2a-2f6d-7370-a4ed-eb061bfc77a7` | L1/I5/I6 complete; agreeing-message/root-count bridge active | `InterpolantListBound` converts actual high-agreement messages into bounded differential solutions; central retains final `Main.lean` |
 | `01a06e2d-ce39-7550-a572-52e85a001414` | C1/U3 donor lattice estimates and finite certificate | `DonorLattice`, `DonorScaledLattice`, `DonorShellDiscrete`, `DonorInterpolationBridge`, `DonorFiniteCertificate` |
 | `01a06e30-fb30-71c1-a2cf-f9a45fd4a740` | Elementary large-gap list bounds and exact-capacity bad ball | `LowOrderRegime`, `ExactCapacityBadBall`, and generic `ListDecodability/PairAgreementBound` |
 | `01a06e37-2d7e-7251-9641-d101d3b5f4e2` | R7 executable continuation from a regular initial jet | `ExecutableRegularLift` and canaries; effective coefficient search and honest operation counts |
@@ -864,7 +886,8 @@ before duplicating them:
 - `R4-R6` support: the independently audited finite-field counting, extension, and descent
   infrastructure is integrated. The separant-specialization degree bridge is now integrated in
   the current checkpoint. Regular-branch jet injectivity is now discharged by R2; the active
-  remainder is recursive total counting followed by the finite-extension capstone.
+  recursive total counting is integrated. The active remainder is the unconditional
+  finite-extension capstone, initially targeting `2*(d+1)*q^(3d+2)`.
 - `U0`: midpoint padding is integrated with an independently audited uniform ratio and a canary
   separating `d<K` from `d<K-1` at the exact boundary.
 - `U0a`: the same external coordinator is now implementing the paper-adaptive `max`-padding
@@ -872,8 +895,9 @@ before duplicating them:
 
 The first qualitative theorem's current critical-path lanes are all assigned above. Additional
 contributors should request a narrow helper or independent audit from the relevant owner before
-editing. Useful openings are the exact-capacity bad-ball construction (`N0`), universal agreement
-bounds (`N3`), and independent continuous and discrete sharp-constant certificates (`O0-O1`).
+editing. `N0` and `N3` are already assigned to the elementary-bound lane. Useful openings are
+independent continuous and discrete sharp-constant certificates (`O0-O1`) and executable
+interpolation (`D0`), after checking interfaces and ownership with the central orchestrator.
 The latter must use the repinned `169/25` contract and a new asymmetric-band index. The adaptive
 padding node `U0a` follows U0; the exact-rank node `N2b` waits for the asymmetric support interface.
 Executable enumeration and cost-model development remain a separate longer path. Contributors
@@ -901,7 +925,10 @@ lower bound. It does **not** transfer the donor's total-degree cap `B` to every 
 larger space. Since I5 extracts an arbitrary exact-space kernel vector, the final root contract must
 instead use the exact support bound
 `jetDegree Q j ≤ floor((m*A-1)/(D-j)) ≤ floor((m*A-1)/(D-d))` with `d < D`.
-I1a owns this bound. The uniform certificate must enlarge the block threshold so that, for example,
-`a_min*n ≥ 2*(d+2)` gives `D-d ≥ a_min*n/2` and `n > ceil(2m/a_min)` makes every jet degree less
-than `q`. These thresholds are selected before the rate. Treating donor `B<q` alone as sufficient
-for a cap-free exact interpolant would leave a gap in M0.
+I1a owns this bound. The new `DonorFiniteCertificate` strengthens the common block threshold
+using the donor threshold at order `2d+3`, while retaining derivative order `d`. This forces
+`D-d > d^3 = m`; together with `A ≤ n`, it gives the exact floor `< n ≤ q`.
+Both thresholds are selected before the rate. Treating donor `B<q` alone as sufficient for a
+cap-free exact interpolant would leave a gap in M0. The coefficient field is arbitrary in the
+numerical certificate; the prime-field frontend must separately identify its characteristic
+with `q` when applying the root theorem.
