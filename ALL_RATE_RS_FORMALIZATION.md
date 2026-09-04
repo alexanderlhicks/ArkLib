@@ -977,9 +977,9 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Independent audit of endpoint constants and band-to-construction/root bridge | Read-only audit; mass-bound epoch complete |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Direct affine solve for the unique regular lifting coefficient | `HiddenDerivative/RootFinding/ExecutableRegularCoefficient.lean` |
 | B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Prescribed finite parameters and strict global band comparison | `AllRateListDecoding/BandParameterAssembly.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed costed row-add-multiple operation and solution/kernel preservation | `ArkLib/Data/Matrix/RowReductionMachine.lean` and minimal canaries |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Costed pivot lookup, factor calculation, and delegated target-row elimination | `ArkLib/Data/Matrix/PivotEliminationMachine.lean` |
 | Central | Construction and quantitative capstone assembly, integration, audits, tracker, validation and push | `AllRateListDecoding/BandConstruction.lean`, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
@@ -1071,7 +1071,7 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   source admissions remain 183, with no explicit axioms/native-trust additions. Central reviewed
   event-to-band implication directions, factorial fibers, the shifted-square proof and zero variance,
   conditional normalized-rank assumptions, and ambient flooring/feasibility boundaries.
-- `BandMassBound.lean` source `d9c81cd6` derives the actual `29/100` lattice-mass bound from
+- Checkpoint `8c98a423`: `BandMassBound.lean` source `d9c81cd6` derives the actual `29/100` lattice-mass bound from
   elementary prescribed-parameter inequalities. It retains the discrete variance correction,
   bounds the reciprocal-square sum by `329/200` using twelve exact terms and a telescoping tail,
   and proves the asymmetric Cantelli losses with rational arithmetic. Stars and bars and the
@@ -1100,6 +1100,20 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   Worker A independently audited the endpoint comparison, individual-jet bound, and construction
   bridge; Worker B independently audited the quotient/Cantelli/ambient foundations, including
   finite rounding, signed and zero-variance cases. Neither audit found a correctness blocker.
+- `RowReductionMachine.lean` and its canaries, source `b8b4434d`, implement one elementary
+  row operation with explicit lockstep scan and output reversal. Equal length `n` uses `n`
+  additions, `n` multiplications, `4n+2` transitions, `19n+5` modeled data accesses, and one
+  output-handle event. Unequal rows reject explicitly after their common prefix. Mathematical
+  bridges identify the result with `Matrix.updateRow`, preserve inhomogeneous solutions and
+  kernels for distinct source/target rows, and identify transvection multiplication. This does
+  not implement pivot search, row extraction/writeback, or full Gaussian elimination.
+  Full central validation passed with 547 umbrella imports and no new axiom/sorry taint;
+  six principal row/matrix endpoints use only baseline logical axioms. The source inventory
+  adds five concrete examples and no admissions or native-trust constructs.
+- Worker A independently audited the multivariate evaluator's closed transitions, exact cost
+  formula, value refinement, and canaries, with no correctness findings. Direct regular lifting
+  is now being optimized to solve an affine coefficient equation instead of scanning the field;
+  its residual evaluations still require operational cost refinement before any runtime claim.
 
 ### Next critical-path work
 

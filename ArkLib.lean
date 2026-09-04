@@ -340,6 +340,8 @@ import ArkLib.Data.Lattices.CyclotomicRing.Subfield.TraceVanishing
 import ArkLib.Data.Lattices.ModuleSIS
 import ArkLib.Data.Lattices.Vectors
 import ArkLib.Data.Matrix.Basic
+import ArkLib.Data.Matrix.RowReductionMachine
+import ArkLib.Data.Matrix.RowReductionMachineCanary
 import ArkLib.Data.Matrix.Sparse
 import ArkLib.Data.Matrix.Vandermonde
 import ArkLib.Data.Misc.Basic
