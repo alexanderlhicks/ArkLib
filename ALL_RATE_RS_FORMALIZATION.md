@@ -1,6 +1,7 @@
 # All-rate Reed-Solomon capacity formalization
 
-Status: active planning and integration tracker  
+Status: qualitative capstone proved and pushed; explicit parameters and algorithm remain active
+
 Last updated: 2026-09-04  
 Integration branch: `quang/all-rate-rs-capacity-formalization`  
 Fork: <https://github.com/quangvdao/ArkLib>  
@@ -9,7 +10,14 @@ Normative paper: `quangvdao/all-rate-rs-list-decoding@9e4d6488ead94be47cca69e5be
 
 This document is the single source of truth for formalizing the all-rate hidden-derivative Reed-Solomon list-decoding theorem. It is deliberately kept on the integration branch with the proof. It records the theorem contract, provenance, dependencies, ownership boundaries, risks, and completion gates for a long-running multi-contributor effort.
 
-The fork and this branch are public because GitHub forks of the public ArkLib repository are public. No result should be described as verified or announced from this branch until the gold completion gate below passes.
+The fork and this branch are public because GitHub forks of the public ArkLib repository are public.
+Do not claim verification of the full paper result, announce it, or open an upstream PR before
+the gold completion gate passes. Progress reports must name the narrower statements actually checked.
+
+The first milestone is commit `81096328`: `qualitative_all_rate` and
+`uniform_hidden_derivative_construction` pass the full validation gate and principal-axiom audit.
+This certifies the scoped qualitative list/construction results, not full Theorem 1.1 or permission
+to announce the full paper result. The concrete lifting vectors pass 14 compiled runtime checks.
 
 ## 1. Mission and non-negotiable scope
 
@@ -619,7 +627,7 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 | V0 | Define a finite `δ/2`-mesh covering every feasible rate in `[0,1-δ]`. | S0 | landed (`12fc714d`, canaries `9c410fbb`) | Every feasible `k/n` has a positive bin endpoint `a` with `k/n ≤ a ≤ k/n+δ/2`; endpoints give valid `ε_a,θ_a ∈ (0,1)`. |
 | V1 | Instantiate the donor free-order theorem in every rate bin. | V0, F4 | landed (`cd549256`, canaries `1813e28d`) | Proves `(1-θ_a)ε_a=a`, ambient containment, and threshold monotonicity with exact floors and ceilings. |
 | V2 | Take finite maxima of derivative and block-length thresholds. | V1 | landed (`1e0634e8`, `cd549256`; canaries `9c410fbb`, `1813e28d`) | Produces `d(δ),N(δ)` before `n,k,q`; uniformly discharges `d<K`, `B<q`, and `mA≤q²` from `n≥N,q≥n`. The consumer theorem reuses the same witnesses at the zero and top feasible rates. |
-| V3 | Replace the donor root axiom by `R6` and package the uniform additive-gap theorem. | V2, F2, I6, R6 | review: uniform construction integrated (`a7caaac5`); capstone under validation | Exact list theorem has the required quantifier order, arbitrary evaluation points, and no project axioms. |
+| V3 | Replace the donor root axiom by `R6` and package the uniform additive-gap theorem. | V2, F2, I6, R6 | landed (`81096328`; full validation and independent statement audit) | Exact list theorem has the required quantifier order, arbitrary evaluation points, and no project axioms. |
 
 Route A is the preferred phase-one path. Its output may have a very poor non-explicit dependency on `δ`, but that is allowed because it preserves every qualitative strengthening.
 
@@ -661,7 +669,7 @@ This lane is expected to be the main schedule risk. ArkLib's existing Hensel cod
 | D1 | Construct ambient candidate decoder from interpolation and differential roots. | D0, I6, R6 | queued | Every high-agreement message appears among candidates. |
 | D2 | Filter candidates by degree `< k` and exact agreement threshold. | F2, D1 | queued | Filter is executable; soundness, completeness, and cardinality monotonicity are proved. |
 | D3 | Prove exact decoder theorem. | D2, R7 | queued | Decoder output equals the target finite set for every input satisfying hypotheses. |
-| M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | review: actual uniform construction and canonical list composition in `Main.lean` | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
+| M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | landed (`81096328`; full validation and independent statement audit) | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
 | M1 | Compose the algorithmic theorem. | M0, D3 | queued | Exact output and list bound are proved; runtime is claimed only if formally modeled. |
 | O0 | Add a separate asymmetric-band index and certificate with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and `C_- ≤ |c| active: band index integrated (`fe32c8e6`); local-rank proof owned by B | C0, I4, U0a, S0.1 | queued | Reproduces the finite certificate without changing the landed cap-free index or the qualitative `m = d³` package consumed by active work. Its `floor(δn/2)` quantitative padding is distinct from, but should reuse the max-branch geometry API of, `U0a`. |
 | O1 | Prove `d(δ) = ceil(exp((169/25)/δ))` for `0 < δ < 1/4`. | O0 | queued | Every numerical inequality is kernel-checked; `169/25`, not a decimal approximation, occurs in proof terms. |
@@ -855,6 +863,9 @@ At least one audit worktree should verify that the proof breaks when each of the
 
 ## 12. Initial audit ledger
 
+This table preserves the initial inventory and early checkpoints, not current worker assignments.
+Section 15 records the current integration state and remaining obligations.
+
 | Item | Result as of 2026-09-04 |
 |---|---|
 | Personal fork | Created at `quangvdao/ArkLib`; public due to GitHub fork rules. |
@@ -887,6 +898,21 @@ At least one audit worktree should verify that the proof breaks when each of the
 | Root-counting support | Landed from the independently audited support head `89afd10c` as canonical commits `0144f9fd` through `a06e228b`: explicit sufficiently large finite extensions, specialization/solution transport, one-way base-field descent, generic root-dependent witness double counting, exact fixed-point regular-jet fibre bounds, and the canonical separant-bad-point adapter. No full root theorem or runtime theorem is claimed yet. |
 | Differential specialization degree | Landed at `14568bfd`: generalizes the authorized donor's prime-field proof to arbitrary commutative semirings, proves specialization degree is at most exact differential weighted degree, proves separants cannot increase that budget, and supplies the root-counting wrapper with the canonical exceptional-point bound. A tight `X²Y₁³`, `P=X⁵` canary attains weighted degree `14`. |
 
+### Recent independent review evidence
+
+- `81096328`: A audited the capstone's quantifier order, original-degree embedding, zero-message
+  case, finite cardinality, characteristic budgets, and oversized threshold branch. A supplied
+  the subsequent default-heartbeat elaboration repair; central rechecked and fully validated it.
+- Root source `951e25e5`: C independently checked recursive regular/singular counting, finite
+  extension transport, cancellation, `t=0`, `H=0`, and the exact field-size limitations.
+- Band sources `3ce3fcf2` and `3762f5fa`: central checked the signed support inequalities,
+  `r=i-h` coordinate conversion and `d+1` denominator, finite image/rank direction, and the
+  explicit discrete simplex packing and `/162` rounding estimate.
+- Horner source `0ac29623`: central checked the closed instruction set, independently charged
+  step relation, two-way interpreter/trace correspondence, actual terminating program, exact
+  operation vector, and the explicit coefficient-preparation boundary. This is a subroutine
+  cost theorem, not a decoder-runtime theorem.
+
 ## 13. Decisions already made
 
 The following project decisions do not need to be revisited unless a formal obstruction is found:
@@ -898,7 +924,7 @@ The following project decisions do not need to be revisited unless a formal obst
 5. The prior autoformalization is reused with explicit credit and independent review, not trusted wholesale.
 6. ArkLib's canonical Reed-Solomon and list-decoding interfaces remain the public API.
 7. Runtime is separated from combinatorial existence until an honest executable cost model exists.
-8. Optimized constants and shrinking-gap results are layered refinements over a stable qualitative core.
+8. Optimized constants are required for the final target; shrinking-gap results are deferred.
 9. No announcement or upstream PR is made before the independent axiom and statement audits pass.
 10. The strong prime-field theorem uses `d = 0` for every `δ ≥ 1/4`; list-size exponents and
     derivative order are separate contract data.
@@ -912,12 +938,15 @@ The following project decisions do not need to be revisited unless a formal obst
 These questions do not block phase-one proof work, but should be resolved before publication or upstream submission:
 
 1. Can direct evidence of the `kz99/rs-ld-mca` permission grant, including its grantor and scope, be archived or linked from [`docs/kb/sources/rs-ld-mca/PERMISSION.md`](docs/kb/sources/rs-ld-mca/PERMISSION.md)? The durable storage location is now fixed, but the direct grant and license-compatibility terms remain unrecorded.
-2. Should the first upstream artifact expose only the axiom-clean combinatorial theorem, or wait for the fully verified executable decoder and cost theorem?
-3. Quantitative lower bounds, exact local-rank refinements, and the small-characteristic obstruction
-   should default to a second refinement release after `M0` and its audits. Override this only if an
-   external publication deadline requires a single synchronized theorem suite.
+2. Approve the explicit-integer-threshold algorithm interface described in Section 2.2, or agree
+   on a represented-gap alternative, before amending the manuscript. The user has been asked;
+   no paper change is authorized by the tracking note alone. The literal arbitrary-real-gap
+   rounding operation cannot remain hidden in an ordinary finite executable program.
 
-Until those choices are made, contributors should prioritize the axiom-clean all-rate combinatorial critical path and keep optional results modular.
+The decision to target the full executable theorem with optimized constants has already been made.
+Independent interpolation, counting, and operational-subroutine work continues while the input
+wording is resolved. Optional lower bounds, exact-rank optimality, and characteristic obstructions
+are not on the current work queue.
 
 ## 15. Next actionable assignments
 
@@ -930,13 +959,13 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Extension root count completed at source `951e25e5`; independent read-only capstone audit now assigned | `RootFinding/ExtensionRootCount.lean` (completed, queued) |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Actual asymmetric-band local-image support and rank bound | `HiddenDerivative/AsymmetricBandLocalRank.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed Horner machine, operational cost semantics, interpreter refinement, and concrete evaluation consumer | `Data/Polynomial/HornerMachine.lean` and its minimal canary |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact finite simplex first and second moments | `HiddenDerivative/Parameters/SimplexMoments.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Weighted geometric upper bound for the band local-rank budget | `HiddenDerivative/AsymmetricBandRankBound.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed agreement-count/threshold machine composed with actual Horner steps | `ReedSolomon/ListDecoding/AgreementMachine.lean` and its minimal canary |
 | Central | Integrate, audit, assemble qualitative capstone, maintain this tracker, validate and push | `AllRateListDecoding/Main.lean`, generated umbrella, runtime harness and integration fixes |
 
 Paths in the first two rows are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`;
-the polynomial machine is under `ArkLib/`. Do not infer ownership from the historical
+the third is relative to `ArkLib/Data/CodingTheory/`. Do not infer ownership from the historical
 wide dependency graph. Ask the central owner before editing a claimed interface.
 
 ### Integrated foundations and current handoffs
@@ -967,16 +996,21 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   regular uniqueness in the executable representation, full enumeration, and runtime remain open.
   Concrete opaque-implementation vectors run in `scripts/RegularLiftRuntime.lean` via
   `lake exe regular-lift-runtime`, not through native proof evaluation.
-- The new `Main.lean` composition is under central validation and independent review.
+- `Main.lean` is proved, independently statement-audited, fully validated and pushed at `81096328`.
   Its scope is the qualitative list theorem plus actual uniform construction, not full Theorem 1.1.
-  New handoffs are not considered validated merely because they appear in a local commit.
+- Extension root counts (`cf791027`, source `951e25e5`), closed Horner-machine adequacy and cost
+  (`95fa420e`, source `0ac29623`), actual band local rank (`73b968e4`, source `3ce3fcf2`), and
+  the discrete `/162` dimension lower bound (`92137deb`, source `3762f5fa`) are in the next
+  integration batch. Central full validation, compiled runtime checks, and the axiom-regression
+  gate passed on this batch; there is no decoder-runtime or full optimized-parameter claim.
 
 ### Next critical-path work
 
-1. Finish the coarse capstone audit and integration. Preserve the exact-list, radius, and
-   oversized-threshold conventions; do not introduce an assumed root-count or rank premise.
-2. Establish the actual band-sensitive local rank bound, simplex moments and concentration,
-   the dimension lower bound, and the explicit `169/25` parameter comparison.
+1. Preserve the completed coarse capstone while integrating the quantitative and operational
+   layers. Do not replace its proved inputs with assumed root-count or rank premises.
+2. Complete simplex moments/concentration, the weighted local-rank numerical estimate, and
+   the explicit `169/25` parameter comparison. The actual local-rank and discrete dimension
+   estimates are already implemented in the current validation batch.
 3. Refine extension root counting to `q^(2d)` and base-field `q^d` with a gap-only jet-degree
    prefactor. The exact manuscript larger-field condition uses a separant-degree bound;
    a stronger sufficient field-size hypothesis alone does not discharge that target.

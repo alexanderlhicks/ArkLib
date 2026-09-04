@@ -195,6 +195,9 @@ import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
 import ArkLib.Data.CodingTheory.ReedSolomon.Folded
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBand
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandDimensionBound
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandLocalRank
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandLocalRankCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Counting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.CountingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialEquation
@@ -234,6 +237,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Executa
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularLift
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularStep
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Extension
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExtensionRootCount
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.JetPrefix
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.JetPrefixCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RecursiveCounting
@@ -337,6 +341,8 @@ import ArkLib.Data.Polynomial.Bivariate
 import ArkLib.Data.Polynomial.ClassicalWronskian
 import ArkLib.Data.Polynomial.FoldedWronskian
 import ArkLib.Data.Polynomial.FoldingPolynomial
+import ArkLib.Data.Polynomial.HornerMachine
+import ArkLib.Data.Polynomial.HornerMachineCanary
 import ArkLib.Data.Polynomial.Indicator
 import ArkLib.Data.Polynomial.Interface
 import ArkLib.Data.Polynomial.Prelims
