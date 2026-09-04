@@ -15,8 +15,9 @@ Mathlib polynomials is used only to state its semantics. The executable construc
 effective equality on field elements and does not choose a polynomial from an existence proof.
 
 The imported iteration kernel scans only next coefficients and performs a final residual and degree
-filter. Completeness for bounded solutions and regular per-stage uniqueness remain unproved in this
-executable layer; the declarative results in `RegularIteration` do not by themselves supply them.
+filter. `RegularLiftCompleteness` proves its exact bounded-solution/initial-jet
+specification and regular per-stage uniqueness by explicit representation bridges. Those results
+do not yet give a closed operational implementation or a runtime bound for the lifting scan.
 -/
 
 namespace ReedSolomon.HiddenDerivative

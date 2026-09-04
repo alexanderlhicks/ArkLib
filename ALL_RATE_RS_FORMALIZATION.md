@@ -920,6 +920,16 @@ Section 15 records the current integration state and remaining obligations.
 - Agreement source `efeac3f2`: central checked the closed outer phases, instruction-by-instruction
   Horner composition, exact operation vector, fuel boundary, and explicit representation bridge
   to `Code.agree`. Input preparation, field bit costs, and candidate enumeration remain excluded.
+- Variance source `82774989` and the reduced-separant root-count patch: C independently checked
+  signed weights, zero-dimensional/zero-budget simplices, exact rational moments, saturated
+  natural subtraction, descendant-to-root inequalities, `H=0`, and finite-extension transport.
+  The strict budget agrees with `LargeFieldCondition` after proving `K>0` and rewriting `D+1=K`.
+  No correctness blocker was found; this does not discharge the remaining parameter choices.
+- Executable completeness source `0f195163`: central checked coefficient truncation, the
+  residual/jet invariants, both directions of the final exact filter, and nonvacuous unique
+  regular continuation. A regular truncated solution need not solve the full differential equation;
+  the final residual and degree checks are retained. Scalar parameter source `3d334fac` was
+  reviewed for window rounding, positivity of denominators, width-floor error, and harmonic bounds.
 
 ## 13. Decisions already made
 
@@ -967,12 +977,13 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact weighted simplex variance and finite concentration interface | `HiddenDerivative/Parameters/SimplexVariance.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Band endpoint, harmonic, and floor-error parameter inequalities | `HiddenDerivative/Parameters/BandParameterBounds.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Completeness and unique continuation in executable regular lifting | `HiddenDerivative/RootFinding/ExecutableRegularLiftCompleteness.lean` |
-| Central | Global band interpolation bridge, integration, audits, tracker, validation and push | `HiddenDerivative/AsymmetricBandInterpolation.lean`, `AllRateListDecoding/Main.lean`, generated umbrella and integration fixes |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Asymmetric finite Cantelli bounds and band-event composition | `HiddenDerivative/Parameters/SimplexCantelli.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Normalized rank estimate, explicitly conditional on the band mass bound | `HiddenDerivative/AsymmetricBandNormalizedRank.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed costed scalar multivariate evaluation for root tests and interpolation | `ArkLib/Data/MvPolynomial/EvaluationMachine.lean` and minimal canaries |
+| Central | Reduced-separant root bound, integration, audits, tracker, validation and push | `HiddenDerivative/RootFinding/SeparantRootCount.lean`, `SpecializationDegree.lean`, generated umbrella and integration fixes |
 
-Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`.
+Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
+except C's explicitly repository-relative path.
 Do not infer ownership from the historical
 wide dependency graph. Ask the central owner before editing a claimed interface.
 
@@ -1010,7 +1021,7 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   (`95fa420e`, source `0ac29623`), actual band local rank (`73b968e4`, source `3ce3fcf2`), and
   the discrete `/162` dimension lower bound (`92137deb`, source `3762f5fa`) were fully validated
   and pushed in checkpoint `7fc3f495`. There is no decoder-runtime or full optimized-parameter claim.
-- Current reviewed integration batch: exact finite simplex moments (`58f3b907`), the weighted
+- Checkpoint `5b6c6afb` integrates exact finite simplex moments (source `58f3b907`), the weighted
   geometric band-rank estimate retaining `choose(d,2)` and both reciprocal error terms
   (`0cd409a9`), and the closed agreement machine (`efeac3f2`). For `n` coefficient cells and
   `m` positions, agreement testing executes `m*(3*n+6)+1` modeled transitions, `m*n` field
@@ -1026,19 +1037,38 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   Its six principal theorem checks depend only on `propext`, `Classical.choice`, and `Quot.sound`.
   C separately reviewed the global-band bridge; the six added concrete examples cover the simplex
   split and agreement-machine value, threshold, empty-input, and short-fuel boundaries.
+- Next reviewed batch: exact signed-weight simplex variance and one-sided finite Chebyshev
+  (`82774989`), concrete regular-lifting completeness and unique regular continuation (`0f195163`),
+  and band endpoint/width-floor/harmonic numerical bounds (`3d334fac`). Completeness characterizes
+  exactly the bounded centered solutions with the supplied initial jet, including `D < r`;
+  it does not infer that a regular prefix survives the final full-equation filter.
+- `SeparantRootCount.lean` uses the removed derivative weight at every singular-chain equation.
+  If `weightedDegree Q < L`, its exceptional-point budget is exactly
+  `max(0,L+d-(D+1))`. Thus the extension theorem needs `2*max(0,L+d-(D+1)) <= q^e`, matching
+  the manuscript's reduced large-field budget with `L=m*A` and `K=D+1`. The prefactor remains
+  `2*(d+1)*t²`; a gap-only bound on `t` and construction assembly are still required.
+- The variance/parameter/completeness/separant batch passed full central `validate.sh --axioms`
+  with 536 umbrella imports, no non-sorry warnings, and no new kernel taint. Eight principal
+  theorem audits use only the baseline logical axioms. Source admissions remain 183; zero
+  explicit axioms/native-trust additions. The completeness file is named `RegularLiftCompleteness`
+  so its generated import meets the repository's line limit; its declarations are unchanged.
+- Queued for the following checkpoint: A's `SimplexBandCounting.lean` source `0af7e50a` proves
+  exact quotient-event transport with factorial fiber bound and a two-sided Chebyshev consumer.
+  It has worker validation but is not yet centrally integrated. The sharper asymmetric Cantelli
+  step is active because symmetric Chebyshev is insufficient for the target `29/100` mass bound.
 
 ### Next critical-path work
 
 1. Preserve the completed coarse capstone while integrating the quantitative and operational
    layers. Do not replace its proved inputs with assumed root-count or rank premises.
-2. Complete weighted variance/concentration and the explicit `169/25` parameter comparison.
-   The exact simplex moments and weighted local-rank numerical estimate are implemented.
+2. Complete concentration-event transport and the explicit `169/25` parameter comparison.
+   The exact weighted variance, weighted local-rank estimate, and scalar rounding bounds are implemented.
    In the finite simplex, variance contains `S*(S+d)` rather than `S²`; transporting a good event
    through the quotient/remainder lattice map also requires a fiber bound, not an assumption
    that the image distribution is uniform. Neither optimized concentration constant is proved yet.
-3. Refine extension root counting to `q^(2d)` and base-field `q^d` with a gap-only jet-degree
-   prefactor. The exact manuscript larger-field condition uses a separant-degree bound;
-   a stronger sufficient field-size hypothesis alone does not discharge that target.
+3. Assemble extension root counting at `q^(2d)` and base-field `q^d` with a gap-only jet-degree
+   prefactor. The reduced-separant field-size theorem is implemented; a construction-independent
+   bound on `t` still needs to be connected to the chosen interpolation parameters.
 4. Build executable interpolation, regular/singular root enumeration, extension construction,
    and final filtering from costed subroutines. Prove termination, exact output, and cost for
    the same program. Include the efficient order-zero route.

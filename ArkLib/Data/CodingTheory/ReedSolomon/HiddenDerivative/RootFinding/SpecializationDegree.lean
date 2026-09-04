@@ -75,11 +75,12 @@ theorem natDegree_differentialSpecialization_le [CommSemiring F]
     _ ≤ differentialWeightedDegree D Q :=
       MvPolynomial.le_weightedTotalDegree _ hu
 
-/-- Partial differentiation cannot increase a natural-valued weighted total degree. -/
-theorem weightedTotalDegree_pderiv_le [CommSemiring F]
+/-- Partial differentiation removes the differentiated variable's full weight.
+Natural subtraction also covers a zero derivative or a weight larger than the original degree. -/
+theorem weightedTotalDegree_pderiv_le_sub [CommSemiring F]
     (weight : JetVariable d → ℕ) (v : JetVariable d) (Q : DifferentialPolynomial F d) :
     (MvPolynomial.pderiv v Q).weightedTotalDegree weight ≤
-      Q.weightedTotalDegree weight := by
+      Q.weightedTotalDegree weight - weight v := by
   classical
   rw [MvPolynomial.weightedTotalDegree]
   apply Finset.sup_le
@@ -92,13 +93,26 @@ theorem weightedTotalDegree_pderiv_le [CommSemiring F]
     exact hcoeff rfl
   have hsupport : u + Finsupp.single v 1 ∈ Q.support :=
     MvPolynomial.mem_support_iff.mpr horiginal
-  calc
-    Finsupp.weight weight u ≤
-        Finsupp.weight weight (u + Finsupp.single v 1) := by
-      rw [map_add]
-      exact Nat.le_add_right _ _
-    _ ≤ Q.weightedTotalDegree weight :=
-      MvPolynomial.le_weightedTotalDegree weight hsupport
+  have h := MvPolynomial.le_weightedTotalDegree weight hsupport
+  rw [map_add, Finsupp.weight_single] at h
+  simp only [one_smul] at h
+  omega
+
+/-- Partial differentiation cannot increase a natural-valued weighted total degree. -/
+theorem weightedTotalDegree_pderiv_le [CommSemiring F]
+    (weight : JetVariable d → ℕ) (v : JetVariable d) (Q : DifferentialPolynomial F d) :
+    (MvPolynomial.pderiv v Q).weightedTotalDegree weight ≤
+      Q.weightedTotalDegree weight :=
+  (weightedTotalDegree_pderiv_le_sub weight v Q).trans (Nat.sub_le _ _)
+
+/-- The separant specialization saves the full `D-s` degree of its differentiated jet. -/
+theorem natDegree_differentialSpecialization_separant_le_sub [CommSemiring F]
+    (Q : DifferentialPolynomial F d) (s : Fin (d + 1)) (P : F[X])
+    (hP : P.natDegree ≤ D) :
+    (differentialSpecialization (separant Q s) P).natDegree ≤
+      differentialWeightedDegree D Q - (D - s.val) :=
+  (natDegree_differentialSpecialization_le (separant Q s) P hP).trans
+    (weightedTotalDegree_pderiv_le_sub (differentialWeight D) (some s) Q)
 
 /-- Specializing a separant has degree at most the original differential polynomial's weighted
 degree. -/
