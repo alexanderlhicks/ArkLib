@@ -178,6 +178,7 @@ import ArkLib.Data.CodingTheory.ProximityGenerator.TensorGenerator
 import ArkLib.Data.CodingTheory.ReedSolomon
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AgreementRadius
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorRateBins
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RateCover
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.UniformThresholds
 import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
