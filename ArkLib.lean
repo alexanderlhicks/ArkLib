@@ -190,6 +190,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.Basic
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.FreeOrder
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescent
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescentCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLifting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLiftingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.ScopedGlobalDimension
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Substitution
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Variables
@@ -430,6 +432,7 @@ import ArkLib.ToMathlib.InformationTheory.Hamming
 import ArkLib.ToMathlib.LinearAlgebra.FiniteDimensional
 import ArkLib.ToMathlib.LinearAlgebra.Matrix.Determinant
 import ArkLib.ToMathlib.List.Basic
+import ArkLib.ToMathlib.MvPolynomial.FirstOrderTaylor
 import ArkLib.ToMathlib.MvPolynomial.PDeriv
 import ArkLib.ToMathlib.Polynomial.AevalXPow
 import ArkLib.ToMathlib.Polynomial.CompositionDegree
@@ -443,6 +446,7 @@ import ArkLib.ToMathlib.Polynomial.HasseTaylor.Forward
 import ArkLib.ToMathlib.Polynomial.HasseTaylor.ForwardCanary
 import ArkLib.ToMathlib.Polynomial.HasseTaylor.JetDivisibility
 import ArkLib.ToMathlib.Polynomial.HasseTaylor.JetDivisibilityCanary
+import ArkLib.ToMathlib.Polynomial.HasseTaylor.Lifting
 import ArkLib.ToMathlib.Polynomial.HasseTaylor.Shift
 import ArkLib.ToMathlib.Polynomial.HasseTaylor.ShiftCanary
 import ArkLib.ToMathlib.Polynomial.NatDegreeOfSum
