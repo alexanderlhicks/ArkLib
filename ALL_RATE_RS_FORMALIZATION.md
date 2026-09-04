@@ -69,6 +69,52 @@ There is a decoder that returns exactly the degree-`< k` polynomials meeting the
 
 The first combinatorial capstone need not claim runtime. A runtime theorem is accepted only after its algorithm and cost model are represented faithfully in Lean. Informal extraction from noncomputable existence is not an algorithmic theorem.
 
+The operational acceptance gate, clarified with the user on 2026-09-04, requires:
+
+- A closed program representation, or an equivalent operational semantics, with no arbitrary
+  Lean callback or zero-cost pure computation hiding work relevant to the stated model.
+- Execution correctness and a cost bound for the **same program**, plus interpreter refinement.
+- Explicit accounting for field arithmetic and for control, data access, enumeration, and output
+  under the specified machine model. Keep the cost components separate before taking a total.
+- Polynomial evaluation, Gaussian elimination, finite-field enumeration, natural-number casts,
+  and extension construction implemented as subroutines, not unexplained unit-cost primitives.
+- A clear distinction between algebraic operation counts, modeled machine steps, concrete bit
+  complexity, and the actual runtime of Lean-compiled code. None automatically proves the next.
+
+An unrestricted oracle/free monad does not alone meet this gate: arbitrary work may occur in
+pure values or continuations. Existing scan counters count predicates only. The instrumented
+Hasse routine has a value-refinement proof but lacks an operational adequacy bridge. Neither
+is accepted as a decoder runtime certificate. The first closed-program consumer is Horner
+evaluation; input representation conversion remains an explicit obligation.
+
+#### Real-gap input issue: required statement repair
+
+An independent operational audit on 2026-09-04 found that the literal manuscript input list
+`(n,k,q,domain,y)`, followed by `A = k + ceil(delta*n)` for every arbitrary fixed real `delta`,
+cannot describe a finite computable program without additional input conventions. At `k=1`,
+received words with exactly `a` zero entries reveal whether the zero polynomial is returned.
+Exactness therefore recovers `1+ceil(delta*n)` for every sufficiently large `n`. Dividing the
+recovered ceiling by `n` approximates `delta` within `1/n`, which would make `delta` computable.
+This contradicts the literal claim for a noncomputable real gap, even before imposing runtime.
+
+The recommended computational interface supplies the **integer agreement threshold `A`** as
+input. For every real `0 < delta < 1`, choose finite construction parameters and complexity
+constants before all instance inputs, and require `k + delta*n <= A`. The decoder returns exactly
+the degree-`<k` messages with at least `A` agreements. The mathematical threshold theorem remains
+the specialization `A = k + ceil(delta*n)`; computing that value from an arbitrary real is not
+claimed. A represented rational-gap frontend is another possible implementation.
+
+This repair also applies to parameter selection: `K = max(k,floor(delta*n/2))` and the real band
+cutoffs cannot be free computational steps. A possible route is finite certified search over
+integer parameters, with existence supplied by the real analysis and the search cost proved.
+That route is a proposal, not an implemented or verified algorithm. Gap-only natural parameters
+may be fixed once per gap; they cannot encode unbounded real-rounding information.
+
+The current extensional list and construction contracts remain valid. The manuscript wording and
+the eventual algorithmic contract must be reconciled explicitly before the gold gate. Do not
+report the literal no-threshold-input executable statement as proved, and do not silently replace
+the exact list by a superset to evade the issue.
+
 ### 2.3 Uniformity test
 
 Two separate quantifier orders make the two uniformity claims visible:
@@ -538,7 +584,7 @@ Status values are `blocked`, `queued`, `active`, `review`, and `landed`. A node 
 | ID | Work package | Depends on | Status | Acceptance condition |
 |---|---|---|---|---|
 | P0 | Record provenance, permission, source commits, and citation keys. | None | active (project-owner attestation recorded; direct grant evidence pending) | Every imported file names its source and commit; bibliography entries build; permission record is durable. |
-| S0 | Freeze the qualitative prime-field combinatorial and exact-decoder statements. | None | landed (`7715c089`) | Quantifier order visibly gives `d = d(δ)` before all code parameters; edge cases and radius conversion are explicit. |
+| S0 | Freeze the qualitative prime-field combinatorial and exact-decoder statements. | None | landed; central statement repair `47acb020` | Separate list-only and actual order-indexed construction contracts; gap-only witnesses precede every instance parameter; edge cases and radius conversion are explicit. |
 | S0.1 | Freeze quantitative contracts matching paper snapshot `9e4d648`: split order-zero and asymmetric-band regimes, then compose them. | None | landed (paper-alignment checkpoint) | `d = 0` above gap `1/4` does not imply a constant list bound; order-zero multiplicity is not gap-only; the small-gap statement uses `169/25`, the optimized multiplicity, and the corrected larger-field condition. Any later paper change reopens this node before dependent work starts. |
 | F0 | Integrate and re-audit PR 857 weighted-support API. | P0 | landed (`5bc284d7`) | Head `f37f25ba` is represented without regressions; no zero-weight finrank theorem is misapplied. |
 | F1 | Integrate and re-audit PR 856 Hasse-Taylor API. | P0 | landed (`611afa07`) | Head `0c6d0a40` is represented; characteristic-safe identities and divisibility canaries pass. |
@@ -556,11 +602,11 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 | L1 | Turn the local identity into order-`m` contact at an agreement point. | L0 | landed (`c88abc18`) | No characteristic restriction beyond the algebraic identity; all truncation indices are checked. |
 | I0 | Define the exact finite interpolation monomial band and its coefficient space. | F0, F3 | landed (`9b188640`, bridge `3ba5aaf7`) | Fintype and basis are explicit; zero-weight variables have finite caps; evaluator agrees with paper weights. Under the necessary boundary `0 < d < D`, the proof-facing index is equivalent to `C0`'s executable dimension index and its finrank is the exact nested count. |
 | I1 | Define differential specialization `Y_j ↦ P^[j]` and prove its degree bound. | F0, F1 | landed (`c6b6ffe3`) | Uses exact derivative weights; proves strict `< mA`, including zero-budget and tight-degree boundary canaries. |
-| I1a | Bound each jet degree of an arbitrary exact-space interpolant below the characteristic. | I0, I1 | active; `ExactCharacteristicBudget` owned by I1 coordinator | The cap-free space does not inherit donor `B`. Prove the exact floor bound with denominator `D-d`, then discharge it using the strengthened uniform block threshold. |
+| I1a | Bound each jet degree of an arbitrary exact-space interpolant below the characteristic. | I0, I1 | landed (`8b030497`, `4e5ffc81`; validated `3a551066`) | The cap-free space does not inherit donor `B`. Prove the exact floor bound with denominator `D-d`, then discharge it using the strengthened uniform block threshold. |
 | I2 | Define local and global homogeneous linear constraint maps. | I0, L0 | landed (`f7bcfac0`, followup `359e5702`) | Coordinate and polynomial formulations are equivalent; executable enumeration remains D0. |
-| I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | active; algebraic kernel foundation in review | The map factorization is explicit; truncated kernel elements belong to the finite space and are independent; no claim equates the upper bound with true rank. |
-| I4 | Derive the certified local-rank upper bound. | I3, C0 | active | Exact finite sum is proved; the distinction between `Φ` and `Γ` is maintained. |
-| I5 | Prove existence of a nonzero global interpolant from the strict dimension inequality. | I0, I1, I4, U3 | conditional extraction and local-to-global rank sum landed (`acaf53cf`, `ffd39435`) | Nonzero-kernel extraction and the actual local-rank sum are axiom-clean. I4 must still connect the concrete local map to the certified numerical bound used by U3. |
+| I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | landed (`0004a411`, `03d49d10`; validated `3a551066`) | The map factorization is explicit; truncated kernel elements belong to the finite space and are independent; no claim equates the upper bound with true rank. |
+| I4 | Derive the certified local-rank upper bound. | I3, C0 | landed (`ee53ab7b`; validated `3a551066`) | Exact finite sum is proved; the distinction between `Φ` and `Γ` is maintained. |
+| I5 | Prove existence of a nonzero global interpolant from the strict dimension inequality. | I0, I1, I4, U3 | landed (`acaf53cf`, `ffd39435`, actual rank connected at `ee53ab7b`) | Nonzero-kernel extraction and the actual local-rank sum are axiom-clean. I4 connects the concrete local map to the certified numerical bound used by U3. |
 | I6 | Prove that `A` agreements force the specialized differential polynomial to vanish identically. | I1, I5, L1 | landed (`7c6061d8`, exact-space composition `97810ec6`) | Establishes `mA` total root multiplicity and strict specialization degree; arbitrary distinct evaluation points and excess agreements are covered. |
 | D0 | Give a checked finite-field linear solver for interpolation. | I0, I2 | queued | Returned nonzero coefficient vector lies in the kernel whenever the dimension certificate holds. |
 
@@ -573,7 +619,7 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 | V0 | Define a finite `δ/2`-mesh covering every feasible rate in `[0,1-δ]`. | S0 | landed (`12fc714d`, canaries `9c410fbb`) | Every feasible `k/n` has a positive bin endpoint `a` with `k/n ≤ a ≤ k/n+δ/2`; endpoints give valid `ε_a,θ_a ∈ (0,1)`. |
 | V1 | Instantiate the donor free-order theorem in every rate bin. | V0, F4 | landed (`cd549256`, canaries `1813e28d`) | Proves `(1-θ_a)ε_a=a`, ambient containment, and threshold monotonicity with exact floors and ceilings. |
 | V2 | Take finite maxima of derivative and block-length thresholds. | V1 | landed (`1e0634e8`, `cd549256`; canaries `9c410fbb`, `1813e28d`) | Produces `d(δ),N(δ)` before `n,k,q`; uniformly discharges `d<K`, `B<q`, and `mA≤q²` from `n≥N,q≥n`. The consumer theorem reuses the same witnesses at the zero and top feasible rates. |
-| V3 | Replace the donor root axiom by `R6` and package the uniform additive-gap theorem. | V2, F2, I6, R6 | queued | Exact list theorem has the required quantifier order, arbitrary evaluation points, and no project axioms. |
+| V3 | Replace the donor root axiom by `R6` and package the uniform additive-gap theorem. | V2, F2, I6, R6 | review: uniform construction integrated (`a7caaac5`); capstone under validation | Exact list theorem has the required quantifier order, arbitrary evaluation points, and no project axioms. |
 
 Route A is the preferred phase-one path. Its output may have a very poor non-explicit dependency on `δ`, but that is allowed because it preserves every qualitative strengthening.
 
@@ -582,12 +628,12 @@ Route A is the preferred phase-one path. Its output may have a very poor non-exp
 | ID | Work package | Depends on | Initial status | Acceptance condition |
 |---|---|---|---|---|
 | C0 | Formalize exact finite counting functions for bands, shells, and local-rank sums. | F0 | landed (`7935aaa5`, registration `2d8216d9`) | Finite sums correspond bijectively to interpolation indices; small numerical instances are executable canaries. |
-| C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | integrated; final independent audit and full validation pending (`2da2d754`, `c59c3bc8`, `ad5ca87b`) | Floors and ceilings are included; the shell threshold is included when selecting the shared order, not assumed from V1's scalar certificate. |
+| C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | landed (`2da2d754`, `c59c3bc8`, `ad5ca87b`; validated `c4339d5d`) | Floors and ceilings are included; the shell threshold is included when selecting the shared order, not assumed from V1's scalar certificate. |
 | U0 | Formalize fixed-fraction additive padding `K = k + floor(λδn)` and its rate-uniform inequalities. | S0 | landed (`d2a067bf`, boundary repair `bd0f4376`) | Midpoint padding proves `d < K-1`, positive ambient rate, and the uniform ratio `1/(1-δ/2)>1`, with every floor and positivity condition explicit. |
-| U0a | Formalize the manuscript's adaptive qualitative padding `ρ₀ = δ(1-δ)/2`, `K = max{k, ceil(ρ₀n)}`, and uniform geometry. | S0, U0 | active in separate adaptive-padding files | Proves `K < A`, a positive ambient-rate lower bound, and agreement-to-ambient-rate ratio at least `1/(1-δ)`, uniformly over every `0 ≤ k/n ≤ 1-δ`. Reuse U0 without changing its contract. |
+| U0a | Formalize the manuscript's adaptive qualitative padding `ρ₀ = δ(1-δ)/2`, `K = max{k, ceil(ρ₀n)}`, and uniform geometry. | S0, U0 | completed source `c206686c`; optional coarse-padding alternative, not active | Proves `K < A`, a positive ambient-rate lower bound, and agreement-to-ambient-rate ratio at least `1/(1-δ)`, uniformly over every `0 ≤ k/n ≤ 1-δ`. Reuse U0 without changing its contract. |
 | U1 | Prove a local-rank power saving whenever the ratio exceeds one. | U0a, C1 | queued | Derives `O(d^{-s})` for some `s(δ) > 0`; no small-agreement hypothesis. The fixed-fraction `U0` package may supply an alternate corollary. |
 | U2 | Extract one finite `d(δ)` and `N(δ)` independent of the rate. | U0a, U1 | queued | Quantifier order passes the uniformity test; all side conditions such as `D > d` and individual degrees are included. |
-| U3 | Package a finite interpolation certificate valid for all rates and all `n ≥ N(δ)`. | U2 or V0-V2 plus C1; C0, I1a | integrated; final independent audit and full validation pending (`301597fb`, `dab8a72c`) | Chooses `d,N` before all rates and fields; proves `n × certifiedRankBound < actual exact-space finrank` and the numerical exact-degree floor `< q`. I4 supplies actual rank ≤ certified bound; I1a connects the floor to each jet degree. |
+| U3 | Package a finite interpolation certificate valid for all rates and all `n ≥ N(δ)`. | U2 or V0-V2 plus C1; C0, I1a | landed (`301597fb`, `dab8a72c`; validated `c4339d5d`) | Chooses `d,N` before all rates and fields; proves `n × certifiedRankBound < actual exact-space finrank` and the numerical exact-degree floor `< q`. I4 supplies actual rank ≤ certified bound; I1a connects the floor to each jet degree. |
 
 Phase one should use the simplest sound padding and lattice argument, such as midpoint or fixed-fraction padding. Optimizing `λ`, asymmetric bands, or the derivative exponent belongs in `O0` and `O1` after the qualitative theorem composes.
 
@@ -601,10 +647,10 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
 | R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | landed (`71207d79`, `f93a5dc2`, iteration `e9876723`) | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Independently audited iteration proves fixed-jet uniqueness, including arbitrary highest active jet. |
 | R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed and independently audited (`de44a070`) | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
-| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | regular counting and recursive composition landed (`8fe16cca`, `41860246`); extension capstone active | Regular counting discharges jet injectivity from R2. Recursive counting has an explicit regular-branch budget, exact partition, and injective singular transport. The capstone discharges that budget and chooses a cubic witness field. |
-| R5 | Construct a finite extension large enough for witnesses. | R4 | foundation landed (`0144f9fd`) | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
-| R6 | Descend the root count to base-field solutions. | R5 | active; extension transport and cardinality descent landed (`481b7a52`, `2cc0dacb`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
-| R7 | Implement and verify root enumeration. | R2, R3, R5 | active; executable regular-jet continuation first | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. Full recursion/enumeration remains after the regular continuation stage. |
+| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | landed coarse counting (`41860246`, `d27de4ed`; validated `3a551066`) | Regular counting discharges jet injectivity from R2. Recursive counting has an explicit regular-branch budget, exact partition, and injective singular transport. The capstone discharges that budget and chooses a cubic witness field. |
+| R5 | Construct a finite extension large enough for witnesses. | R4 | landed noncomputable witness-field construction; executable construction remains open | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
+| R6 | Descend the root count to base-field solutions. | R5 | landed coarse root bound (`d27de4ed`; validated `3a551066`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
+| R7 | Implement and verify root enumeration. | R2, R3, R5 | active: executable prefix invariant integrated; full completeness/enumeration/cost open | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. Full recursion/enumeration remains after the regular continuation stage. |
 
 This lane is expected to be the main schedule risk. ArkLib's existing Hensel code is specialized to a different trivariate rational-function setting and is not a substitute. Kai Zhe Zheng's formalization states the needed cardinality and algorithmic results as axioms, so those declarations may guide interfaces but cannot discharge `R1` through `R7`.
 
@@ -615,12 +661,12 @@ This lane is expected to be the main schedule risk. ArkLib's existing Hensel cod
 | D1 | Construct ambient candidate decoder from interpolation and differential roots. | D0, I6, R6 | queued | Every high-agreement message appears among candidates. |
 | D2 | Filter candidates by degree `< k` and exact agreement threshold. | F2, D1 | queued | Filter is executable; soundness, completeness, and cardinality monotonicity are proved. |
 | D3 | Prove exact decoder theorem. | D2, R7 | queued | Decoder output equals the target finite set for every input satisfying hypotheses. |
-| M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | queued | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
+| M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | review: actual uniform construction and canonical list composition in `Main.lean` | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
 | M1 | Compose the algorithmic theorem. | M0, D3 | queued | Exact output and list bound are proved; runtime is claimed only if formally modeled. |
-| O0 | Add a separate asymmetric-band index and certificate with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and `C_- ≤ |c| ≤ C_+`; formalize the variance/Cantelli analysis. | C0, I4, U0a, S0.1 | queued | Reproduces the finite certificate without changing the landed cap-free index or the qualitative `m = d³` package consumed by active work. Its `floor(δn/2)` quantitative padding is distinct from, but should reuse the max-branch geometry API of, `U0a`. |
+| O0 | Add a separate asymmetric-band index and certificate with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and `C_- ≤ |c| active: band index integrated (`fe32c8e6`); local-rank proof owned by B | C0, I4, U0a, S0.1 | queued | Reproduces the finite certificate without changing the landed cap-free index or the qualitative `m = d³` package consumed by active work. Its `floor(δn/2)` quantitative padding is distinct from, but should reuse the max-branch geometry API of, `U0a`. |
 | O1 | Prove `d(δ) = ceil(exp((169/25)/δ))` for `0 < δ < 1/4`. | O0 | queued | Every numerical inequality is kernel-checked; `169/25`, not a decimal approximation, occurs in proof terms. |
-| O2 | Prove the order-zero branch for every `δ ≥ 1/4`: list size `≤ 1` for `δ ≥ 1/2` and `< 4q` below `1/2`. | M0, S0.1 | queued | The bivariate interpolation module is independent of exact hidden-derivative indices requiring `0 < d`; multiplicity `k-1` and the direct `k=1` case are explicit. The `d=1,m=64,M=16` certificate at gap `1/4` is an optional corollary. |
-| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under `q ≥ 2 max{0,mA-K+d}`. | R6, S0.1 | queued | Includes `D < char(F)`, every relevant individual jet degree `< char(F)`, primitive normalization, and fixed-parameter runtime scope. |
+| O2 | Prove the order-zero branch for every `δ ≥ 1/4`: list size `≤ 1` for `δ ≥ 1/2` and `< 4q` below `1/2`. | M0, S0.1 | list bounds landed (`53d3b9b8`, validated `3a551066`); efficient order-zero algorithm open | The bivariate interpolation module is independent of exact hidden-derivative indices requiring `0 < d`; multiplicity `k-1` and the direct `k=1` case are explicit. The `d=1,m=64,M=16` certificate at gap `1/4` is an optional corollary. |
+| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under `q ≥ 2 max{0,mA-K+d}`. | R6, S0.1 | review: extension-exponent source `951e25e5`; gap-only prefactor and exact field condition open | Includes `D < char(F)`, every relevant individual jet degree `< char(F)`, primitive normalization, and fixed-parameter runtime scope. |
 | O4 | Formalize the shrinking-gap result `δ_n = C/log n` for `C > 13.52`. | O0, O1, O3, S0.1 | queued | Gives `d = n^(6.76/C+o(1))`, `m = n^(13.52/C+o(1))`, and list size `exp(n^(6.76/C+o(1)))`. A runtime clause additionally requires M1 with an explicit proved cost model; parameter substitution alone does not prove runtime. |
 | O5 | Formalize primitive-part normalization, first-separant degree, residual-chain bounds, exact resonance counts, and randomized regular-witness enumeration. | M0, R6 | queued | These strengthen rather than replace the generic division-free root theorem; each theorem states its characteristic and algorithmic scope independently. |
 | O6 | Formalize the full local-kernel monomial ideal and the exact finite-matrix block decomposition of the actual local rank. | I4 | queued | Preserve the distinction between the actual local map and the enlarged map. Do not retroactively strengthen `I3-I4` acceptance criteria or block `M0`. |
@@ -875,83 +921,80 @@ Until those choices are made, contributors should prioritize the axiom-clean all
 
 ## 15. Next actionable assignments
 
-### Live conversation ownership
+### Three-worker execution roster
 
-The central integration owner is conversation `01a06c48-8980-76a2-b439-9872f827bfcd`.
-The following roster records active and recently completed conversations at the 2026-09-04
-orchestration checkpoint; the paper-alignment lane is currently idle. New
-coordinators use Astra at medium effort and delegate independent implementation to Sol at high
-effort. Each coordinator must report its actual workers, exclusive file claims, frozen source
-revisions, and remaining proof obligations to the central owner. A conversation's existence is
-not evidence that its proof has landed.
+The central owner is task `01a06c48-8980-76a2-b439-9872f827bfcd`. All earlier
+coordinators have finished their bounded objectives and stopped. Only the following three
+durable Astra/medium workers receive new assignments; they do not spawn nested agents.
+Each epoch ends with a frozen commit, evidence, residual obligations, and a wait for review.
 
-| Conversation | Owned work | Immediate checkpoint |
+| Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| `01a06c48-8980-76a2-b439-9872f827bfcd` (central) | Canonical integration, tracker, cross-lane audits; `RootFinding/RegularCounting.lean`; final `Main.lean` | Integrate audited slices and compose the final uniform theorem |
-| `01a06db8-998a-7363-bc14-c4a6a8c54ca0` | I1 specialization degree; I1a exact characteristic budget; N2 obstruction | `DifferentialSpecializationDegree`, `ExactCharacteristicBudget`, `CharacteristicObstruction`, and necessary canaries |
-| `01a06de1-5ce7-72d0-afb8-c0172ed2491b` | U0 complete; U0a adaptive ambient padding active | `AdaptiveAmbientPadding` and rounding/degree canaries |
-| `01a06d8e-408d-7ea0-90cc-a8c6dd11c9a5` | Paper/source alignment and corrected quantitative contracts | Frozen source pin and independently reviewed statement changes |
-| `01a06e29-8dc6-7e21-a11a-0f8b1203f145` | I2-I4 local map, kernel, finite intermediate spaces, independence, rank | Recover staged map/kernel slice, then `LocalIntermediateSpace`, `KernelSliceIndependence`, `LocalRank` |
-| `01a06e29-de18-7dc3-93e5-2244de7106f4` | R2 independent audit; recursive root count and finite-extension assembly | Audit `deb7c75f`; recover `RecursiveCounting`; assemble `RootCount` |
-| `01a06e2a-2f6d-7370-a4ed-eb061bfc77a7` | L1/I5/I6 complete; agreeing-message/root-count bridge active | `InterpolantListBound` converts actual high-agreement messages into bounded differential solutions; central retains final `Main.lean` |
-| `01a06e2d-ce39-7550-a572-52e85a001414` | C1/U3 donor lattice estimates and finite certificate | `DonorLattice`, `DonorScaledLattice`, `DonorShellDiscrete`, `DonorInterpolationBridge`, `DonorFiniteCertificate` |
-| `01a06e30-fb30-71c1-a2cf-f9a45fd4a740` | Elementary large-gap list bounds and exact-capacity bad ball | `LowOrderRegime`, `ExactCapacityBadBall`, and generic `ListDecodability/PairAgreementBound` |
-| `01a06e37-2d7e-7251-9641-d101d3b5f4e2` | R7 executable continuation from a regular initial jet | `ExecutableRegularLift` and canaries; effective coefficient search and honest operation counts |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Extension root count completed at source `951e25e5`; independent read-only capstone audit now assigned | `RootFinding/ExtensionRootCount.lean` (completed, queued) |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Actual asymmetric-band local-image support and rank bound | `HiddenDerivative/AsymmetricBandLocalRank.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed Horner machine, operational cost semantics, interpreter refinement, and concrete evaluation consumer | `Data/Polynomial/HornerMachine.lean` and its minimal canary |
+| Central | Integrate, audit, assemble qualitative capstone, maintain this tracker, validate and push | `AllRateListDecoding/Main.lean`, generated umbrella, runtime harness and integration fixes |
 
-All new implementation files in this table are under the corresponding
-`ReedSolomon/HiddenDerivative` or `AllRateListDecoding` directory. Coordinators must agree on
-shared interfaces before dependent work starts. Only the central owner updates this tracker or
-regenerates the canonical `ArkLib.lean`. Preserved drafts from interrupted subagents are recovered
-in their existing worktrees rather than discarded or independently reimplemented.
+Paths in the first two rows are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`;
+the polynomial machine is under `ArkLib/`. Do not infer ownership from the historical
+wide dependency graph. Ask the central owner before editing a claimed interface.
 
-### Current proof checkpoints
+### Integrated foundations and current handoffs
 
-The following nodes are already owned as of the latest update. Coordinate with the integration owner
-before duplicating them:
+- Local contact, global multiplicity, exact interpolation dimension, intermediate spaces,
+  kernel independence, actual local-rank upper bounds, and nonzero global interpolation are
+  integrated. The actual-rank endpoint is
+  `finrank_exactLocalConstraintAt_le_certifiedEnlargedRankBound`.
+- Donor lattice estimates and the finite rate cover select `d,N` before all instance
+  parameters. The exact support characteristic budget, rather than the donor rectangle's
+  total-degree cap, is used for arbitrary extracted interpolants.
+- `RootCount.lean` proves the unconditional coarse differential-root bound
+  `2*(d+1)*q^(3*d+2)`, with regular injectivity and singular recursion discharged.
+  Checkpoint `3a551066` passed full validation and the axiom-regression gate and was pushed.
+- `LowOrderRegime.lean` proves the large-gap list-size contracts. Its exhaustive
+  finite-set witness is not an efficient order-zero algorithm.
+- Construction source `e036bb6e` (integrated as `a7caaac5`) proves
+  `uniform_hidden_derivative_construction : UniformHiddenDerivativeConstructionStatement`.
+  It preserves original `k`, chooses the same `d,m=d^3` before all rates, and separately
+  proves the requested threshold's `m*A <= q^2` budget.
+- `InterpolantListBound.lean` source `b7a6a189` is integrated as `27bec844`.
+  It embeds original agreeing messages into actual differential roots.
+- Asymmetric-band source `d922229c` is integrated as `fe32c8e6`: actual finite support,
+  exact dimension count, and a potential local-coordinate index. A counted index alone
+  is not a local-rank theorem; B is proving the necessary image-containment bridge.
+- Executable-lifting source `f85866f2` is integrated as `a24d75b2`: acceptance iff
+  next residual divisibility, survivor invariant, and explicit partial counters. Completeness,
+  regular uniqueness in the executable representation, full enumeration, and runtime remain open.
+  Concrete opaque-implementation vectors run in `scripts/RegularLiftRuntime.lean` via
+  `lake exe regular-lift-runtime`, not through native proof evaluation.
+- The new `Main.lean` composition is under central validation and independent review.
+  Its scope is the qualitative list theorem plus actual uniform construction, not full Theorem 1.1.
+  New handoffs are not considered validated merely because they appear in a local commit.
 
-- `R2`: one-step lifting, arbitrary-highest-jet restriction, and iterated fixed-jet uniqueness
-  are integrated. Iteration at `e9876723` passed independent statement and strict trust review.
-- `R3`: the singular/separant recursion and its well-founded measure are integrated and passed an
-  independent statement/trust audit.
-- `I0`/`C0` bridge: integrated under the necessary boundary `0 < d < D`, with exact cardinality and
-  finrank equalities.
-- `V0-V2`: integrated. The consumer-ready theorem chooses one `d(δ),N(δ)` before all code
-  parameters and returns a complete donor certificate for a covering rate bin. `V3` remains
-  blocked on interpolation existence/specialization and the proved root-count endpoint.
-- `R4-R6` support: the independently audited finite-field counting, extension, and descent
-  infrastructure is integrated. The separant-specialization degree bridge is now integrated in
-  the current checkpoint. Regular-branch jet injectivity is now discharged by R2; the active
-  recursive total counting is integrated. The active remainder is the unconditional
-  finite-extension capstone, initially targeting `2*(d+1)*q^(3d+2)`.
-- `U0`: midpoint padding is integrated with an independently audited uniform ratio and a canary
-  separating `d<K` from `d<K-1` at the exact boundary.
-- `U0a`: the same external coordinator is now implementing the paper-adaptive `max`-padding
-  geometry in separate files, preserving the landed U0 interface.
+### Next critical-path work
 
-The first qualitative theorem's current critical-path lanes are all assigned above. Additional
-contributors should request a narrow helper or independent audit from the relevant owner before
-editing. `N0` and `N3` are already assigned to the elementary-bound lane. Useful openings are
-independent continuous and discrete sharp-constant certificates (`O0-O1`) and executable
-interpolation (`D0`), after checking interfaces and ownership with the central orchestrator.
-The latter must use the repinned `169/25` contract and a new asymmetric-band index. The adaptive
-padding node `U0a` follows U0; the exact-rank node `N2b` waits for the asymmetric support interface.
-Executable enumeration and cost-model development remain a separate longer path. Contributors
-must not duplicate R2, I1-I6, or N2 based on an older version of this assignment list.
+1. Finish the coarse capstone audit and integration. Preserve the exact-list, radius, and
+   oversized-threshold conventions; do not introduce an assumed root-count or rank premise.
+2. Establish the actual band-sensitive local rank bound, simplex moments and concentration,
+   the dimension lower bound, and the explicit `169/25` parameter comparison.
+3. Refine extension root counting to `q^(2d)` and base-field `q^d` with a gap-only jet-degree
+   prefactor. The exact manuscript larger-field condition uses a separant-degree bound;
+   a stronger sufficient field-size hypothesis alone does not discharge that target.
+4. Build executable interpolation, regular/singular root enumeration, extension construction,
+   and final filtering from costed subroutines. Prove termination, exact output, and cost for
+   the same program. Include the efficient order-zero route.
+5. Combine the exact numerical construction with the operational decoder; independently audit
+   statements and trust before claiming Theorem 1.1.
 
-An autoformalization agent should be given this entire document and the following operating
-contract: fetch the current head of `quang/all-rate-rs-capacity-formalization`; name one node and its
-owned files before editing; work on a temporary branch or worktree; do not edit this tracker or
-`ArkLib.lean`; introduce no `sorry`, `admit`, project axiom, `unsafe`, or `native_decide`; run the
-targeted build, trust-zero warning-as-error check, source-trust audit, and `#print axioms`; then
-return a commit hash, exact theorem names, test evidence, and residual assumptions to the integration
-owner. The integration owner alone updates this document, regenerates `ArkLib.lean`, and pushes the
-canonical branch.
+The working estimate is eight integration epochs, with a planning allowance of eight to twelve.
+This is not a guarantee. The closed operational-semantics requirement adds real work, and the
+estimate must be revised from measured handoffs rather than treating partial counters as completion.
+Lower bounds, shrinking gaps, exact-rank optimality, and characteristic refinements remain deferred.
 
-After `F3`, `F4`, and `R0-R1` land, assign `L0-L1`, `I0-I4`, `V0-V3`, and `R2-R3` immediately.
-The root solver and local-rank proof are the two largest schedule risks; keep independent reviewers
-on both rather than concentrating all effort on infrastructure or constants. New optimized or
-limitation work must name `9e4d648` and the `S0.1` checkpoint as prerequisites. Existing qualitative,
-root, and exact-count branches need no mathematical rewrite because of this paper update.
+Contributors should read this document, fetch the integration branch, claim a narrow node and
+files, use a private worktree, preserve the no-new-admissions/no-native-trust boundary, and return
+a frozen commit with exact theorem statements and validation commands. Only the central owner
+updates this tracker, regenerates `ArkLib.lean`, and pushes the integration branch.
 
 ### Interpolation-to-root characteristic seam
 
