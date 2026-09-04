@@ -977,10 +977,10 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact `29/100` band mass bound, retaining finite variance | `HiddenDerivative/Parameters/BandMassBound.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | `6.76/delta` endpoint scalar comparison and numerical prerequisites | `HiddenDerivative/Parameters/BandEndpointComparison.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed costed scalar multivariate evaluation for root tests and interpolation | `ArkLib/Data/MvPolynomial/EvaluationMachine.lean` and minimal canaries |
-| Central | Ambient parameter and construction assembly, integration, audits, tracker, validation and push | `AllRateListDecoding/BandAmbientParameters.lean`, generated umbrella and integration fixes |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Independent audit of endpoint constants and band-to-construction/root bridge | Read-only audit; mass-bound epoch complete |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Prescribed finite parameters and strict global band comparison | `AllRateListDecoding/BandParameterAssembly.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed costed row-add-multiple operation and solution/kernel preservation | `ArkLib/Data/Matrix/RowReductionMachine.lean` and minimal canaries |
+| Central | Construction and quantitative capstone assembly, integration, audits, tracker, validation and push | `AllRateListDecoding/BandConstruction.lean`, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
 except C's explicitly repository-relative path.
@@ -1052,11 +1052,11 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   theorem audits use only the baseline logical axioms. Source admissions remain 183; zero
   explicit axioms/native-trust additions. The completeness file is named `RegularLiftCompleteness`
   so its generated import meets the repository's line limit; its declarations are unchanged.
-- Current reviewed batch: A's `SimplexBandCounting.lean` source `0af7e50a` proves
+- Checkpoint `268cae13`: A's `SimplexBandCounting.lean` source `0af7e50a` proves
   exact quotient-event transport with factorial fiber bound and a two-sided Chebyshev consumer.
   `SimplexCantelli.lean` source `70eb2acf` proves the sharper asymmetric finite tail estimate,
-  including zero variance, and composes it with the actual event/fiber bound. No numerical
-  `29/100` mass premise has been discharged yet.
+  including zero variance, and composes it with the actual event/fiber bound. This checkpoint
+  still left the numerical `29/100` mass premise open; the next batch discharges it below.
 - B's `AsymmetricBandNormalizedRank.lean` source `382f8b37` assembles the actual band-local rank
   bound with constant `15/2` and saving `d^(-g/(2+g))`, explicitly conditional on the `29/100`
   band-cardinality lower bound, `g*m >= 80`, and `d >= 1000`. Harmonic, exponential, and rounding
@@ -1071,19 +1071,49 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   source admissions remain 183, with no explicit axioms/native-trust additions. Central reviewed
   event-to-band implication directions, factorial fibers, the shifted-square proof and zero variance,
   conditional normalized-rank assumptions, and ambient flooring/feasibility boundaries.
+- `BandMassBound.lean` source `d9c81cd6` derives the actual `29/100` lattice-mass bound from
+  elementary prescribed-parameter inequalities. It retains the discrete variance correction,
+  bounds the reciprocal-square sum by `329/200` using twelve exact terms and a telescoping tail,
+  and proves the asymmetric Cantelli losses with rational arithmetic. Stars and bars and the
+  actual factorial fiber bound replace continuous volume and any uniform-image assumption.
+- `BandEndpointComparison.lean` source `0c58d3e7` proves the strict `1215` scalar comparison
+  for `d = ceil(exp(169/(25*delta)))` uniformly over `delta/3 <= rho <= 1-delta`.
+  It derives `d >= 1000`, `169/(25*delta) <= H`, and the needed multiplicity slack.
+  The high-rate endpoint comparison is proved algebraically; its sign is not an assumption.
+- `BandConstruction.lean` extracts actual constructions and exact point-list bounds from the
+  finite band comparison. Every band interpolant has individual jet degree at most `2m`, giving
+  prefactor `8*(d+1)*m²` and exponent `e*d` under the reduced separant witness-field condition.
+  The finite numerical comparison remains an explicit premise in this bridge; Worker B is
+  proving it from the full instance assumptions, including the threshold `n >= 8m`.
+- `EvaluationMachine.lean` and its canaries, source `15de19b3`, implement a closed sparse
+  multivariate evaluator. The trace includes linear variable lookup, repeated-power multiplication,
+  term accumulation, control/data/natural operations, and final emission. Missing variables are
+  literal zero; duplicate terms/indices and zero exponents are processed, not silently normalized.
+  Exact steps are `1 + 2*termCount + sum(min(index,valueCount)+exponent+3)` and total charged
+  cost is at most nine times the steps. Its result refines `MvPolynomial.eval`; input preparation,
+  representation conversion, and bit complexity remain outside this subroutine claim.
+- The mass/endpoint/construction/evaluation batch passed full central `validate.sh --axioms`
+  with 545 umbrella imports, no non-sorry warnings, and no new kernel taint. Source admissions
+  remain 183, with zero explicit axioms/native-trust additions; four new concrete evaluator
+  checks cover arithmetic, out-of-range zero powers, empty input, and insufficient fuel.
+  Nine principal theorem checks at trust zero use only the baseline logical axioms.
+  Worker A independently audited the endpoint comparison, individual-jet bound, and construction
+  bridge; Worker B independently audited the quotient/Cantelli/ambient foundations, including
+  finite rounding, signed and zero-variance cases. Neither audit found a correctness blocker.
 
 ### Next critical-path work
 
 1. Preserve the completed coarse capstone while integrating the quantitative and operational
    layers. Do not replace its proved inputs with assumed root-count or rank premises.
-2. Complete the numerical `29/100` concentration bound and the explicit `169/25` endpoint comparison.
+2. Assemble the completed `29/100` concentration bound and explicit `169/25` endpoint comparison
+   into the actual strict finite rank/dimension certificate at `n >= 8m`.
    Exact finite Cantelli, event transport, normalized local rank, and scalar rounding are implemented.
    In the finite simplex, variance contains `S*(S+d)` rather than `S²`; transporting a good event
    through the quotient/remainder lattice map also requires a fiber bound, not an assumption
-   that the image distribution is uniform. Neither optimized concentration constant is proved yet.
+   that the image distribution is uniform. Both issues are addressed by the finite mass proof.
 3. Assemble extension root counting at `q^(2d)` and base-field `q^d` with a gap-only jet-degree
-   prefactor. The reduced-separant field-size theorem is implemented; a construction-independent
-   bound on `t` still needs to be connected to the chosen interpolation parameters.
+   prefactor. The reduced-separant field-size theorem and band bound `t <= 2m` are implemented;
+   finish their assembly with the prescribed-parameter finite certificate and canonical contracts.
 4. Build executable interpolation, regular/singular root enumeration, extension construction,
    and final filtering from costed subroutines. Prove termination, exact output, and cost for
    the same program. Include the efficient order-zero route.

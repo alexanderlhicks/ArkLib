@@ -181,6 +181,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AgreementRadius
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPadding
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPaddingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandAmbientParameters
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandConstruction
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.ConstructionContracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorConstruction
@@ -229,6 +230,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalContactCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalIdentity
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalIntermediateSpace
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalRank
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.BandEndpointComparison
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.BandMassBound
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.BandParameterBounds
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.Basic
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorLattice
@@ -341,6 +344,8 @@ import ArkLib.Data.Matrix.Sparse
 import ArkLib.Data.Matrix.Vandermonde
 import ArkLib.Data.Misc.Basic
 import ArkLib.Data.MvPolynomial.Degrees
+import ArkLib.Data.MvPolynomial.EvaluationMachine
+import ArkLib.Data.MvPolynomial.EvaluationMachineCanary
 import ArkLib.Data.MvPolynomial.EvenAndOdd
 import ArkLib.Data.MvPolynomial.Interpolation
 import ArkLib.Data.MvPolynomial.LinearMvExtension

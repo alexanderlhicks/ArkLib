@@ -266,6 +266,23 @@ theorem totalJetDegree_lt_of_asymmetricBandEligible (hD : 0 < D)
   push_cast at hweight
   nlinarith
 
+/-- The coarse band weight bounds every individual jet degree without losing `D-d` in the
+denominator. This is useful when the band cutoff is at most `2*m*D`. -/
+theorem jetDegree_le_of_mem_asymmetricBandSpace [CommSemiring F]
+    (hD : 0 < D) {t : ℕ} (hL : L ≤ (D : ℝ) * t)
+    {Q : DifferentialPolynomial F d}
+    (hQ : Q ∈ asymmetricBandSpace F D d m W Cmin Cmax L hD) (j : Fin (d + 1)) :
+    jetDegree Q j ≤ t := by
+  rw [jetDegree, MvPolynomial.degreeOf_le_iff]
+  intro u hu
+  have htotal := totalJetDegree_lt_of_asymmetricBandEligible hD
+    (mem_asymmetricBandSpace_iff.mp hQ u hu)
+  have hcoord : u (some j) ≤ totalJetDegree u := Finsupp.le_degree j u.some
+  have hcoord' : (u (some j) : ℝ) ≤ totalJetDegree u := by exact_mod_cast hcoord
+  have hquot : L / D ≤ t := (div_le_iff₀ (by exact_mod_cast hD : (0 : ℝ) < D)).mpr
+    (by simpa only [mul_comm] using hL)
+  exact_mod_cast (hcoord'.trans htotal.le).trans hquot
+
 /-- Finite coordinates in the proposed local image bound, with `r = i-h`.
 This type counts possible coordinates; membership of the actual local image is a separate
 proof obligation. In particular, its cardinality is not asserted to be an actual rank. -/
