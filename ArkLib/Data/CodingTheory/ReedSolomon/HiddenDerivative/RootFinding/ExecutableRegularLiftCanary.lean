@@ -94,4 +94,15 @@ The scan counts one field enumeration here, and none when the degree bound reque
 #guard effectiveRegularTestCount derivativeMinusX 0 constantOnePrefix 2 == 5
 #guard effectiveRegularTestCount derivativeMinusX 0 constantOnePrefix 1 == 0
 
+/-! The arithmetic run must count visits and multiplications even at zero coefficients.
+The third derivative normalizes to zero but still executes all three coefficient entries. -/
+#guard (effectiveHasseRun 1 forcedQuadratic).result == CPolynomial.X
+#guard [(effectiveHasseRun 1 forcedQuadratic).additions,
+  (effectiveHasseRun 1 forcedQuadratic).multiplications,
+  (effectiveHasseRun 1 forcedQuadratic).visited] == [6, 3, 3]
+#guard (effectiveHasseRun 3 forcedQuadratic).result == 0
+#guard [(effectiveHasseRun 3 forcedQuadratic).additions,
+  (effectiveHasseRun 3 forcedQuadratic).multiplications,
+  (effectiveHasseRun 3 forcedQuadratic).visited] == [15, 3, 3]
+
 end ReedSolomon.HiddenDerivative

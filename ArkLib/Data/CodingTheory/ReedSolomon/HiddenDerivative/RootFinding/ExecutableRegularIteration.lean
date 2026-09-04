@@ -80,9 +80,10 @@ instance {F : Type*} [DecidableEq F] : AddCommMonoid (EffectiveFilterScan F) whe
     (a b : EffectiveFilterScan F) : (a + b).tested = a.tested + b.tested := rfl
 
 private theorem mem_sum_effectiveFilterScan_accepted_iff
-    {A B : Type*} [DecidableEq A] [DecidableEq B]
+    {A B : Type*} [DecidableEq B]
     (s : Finset A) (f : A → EffectiveFilterScan B) (b : B) :
     b ∈ (∑ a ∈ s, f a).accepted ↔ ∃ a ∈ s, b ∈ (f a).accepted := by
+  classical
   induction s using Finset.induction_on with
   | empty => simp
   | @insert a s ha ih =>
@@ -91,9 +92,10 @@ private theorem mem_sum_effectiveFilterScan_accepted_iff
       aesop
 
 private theorem sum_effectiveFilterScan_tested
-    {A B : Type*} [DecidableEq A] [DecidableEq B]
+    {A B : Type*} [DecidableEq B]
     (s : Finset A) (f : A → EffectiveFilterScan B) :
     (∑ a ∈ s, f a).tested = ∑ a ∈ s, (f a).tested := by
+  classical
   induction s using Finset.induction_on with
   | empty => simp
   | @insert a s ha ih => simp [Finset.sum_insert, ha, ih]
@@ -171,7 +173,8 @@ theorem effectiveRegularStageScan_tested
   simp only [sum_effectiveFilterScan_tested (Finset.univ : Finset F)]
   have hterm : ∀ (P : CPolynomial F) (gamma : F),
       (if effectiveResidualCoeff Q center P k gamma = 0 then
-          (⟨{(P, gamma)}, 1⟩ : EffectiveFilterScan (CPolynomial F × F)) else ⟨∅, 1⟩).tested = 1 := by
+          (⟨{(P, gamma)}, 1⟩ : EffectiveFilterScan (CPolynomial F × F))
+        else ⟨∅, 1⟩).tested = 1 := by
     intro P gamma
     split <;> rfl
   simp_rw [hterm]
@@ -284,5 +287,50 @@ theorem mem_effectiveRegularSolutions_iff
       candidate ∈ effectiveRegularPrefixes Q center P D ∧
         candidate.natDegree ≤ D ∧ effectiveResidual Q center candidate = 0 := by
   simp [effectiveRegularSolutions]
+
+/-- With the prefix invariant established on every input, stage membership is exactly the
+existence of a one-coefficient lift satisfying the next residual-divisibility invariant. -/
+theorem mem_effectiveRegularIterationStep_candidates_iff_dvd
+    (Q : CPoly.CMvPolynomial (r + 2) F) (center : F) (k : ℕ)
+    (state : EffectiveRegularIterationState F) (candidate : CPolynomial F) (hk : 0 < k)
+    (hprefix : ∀ P ∈ state.candidates, Polynomial.X ^ k ∣
+      shiftedJetSubstitution center (unshift center P) (semanticEquation Q)) :
+    candidate ∈ (effectiveRegularIterationStep Q center k state).candidates ↔
+      ∃ P ∈ state.candidates, ∃ gamma : F,
+        effectiveRegularCandidate k r P gamma = candidate ∧
+        Polynomial.X ^ (k + 1) ∣ shiftedJetSubstitution center
+          (unshift center candidate) (semanticEquation Q) := by
+  rw [mem_effectiveRegularIterationStep_candidates]
+  constructor
+  · rintro ⟨P, hP, gamma, hgamma, rfl⟩
+    exact ⟨P, hP, gamma, rfl,
+      (mem_effectiveRegularCoefficients_iff_dvd Q center P gamma hk (hprefix P hP)).1
+        hgamma⟩
+  · rintro ⟨P, hP, gamma, rfl, hdiv⟩
+    exact ⟨P, hP, gamma,
+      (mem_effectiveRegularCoefficients_iff_dvd Q center P gamma hk (hprefix P hP)).2
+        hdiv, rfl⟩
+
+/-- Every surviving prefix has the residual divisibility promised by its iteration depth.
+This is invariant preservation, not completeness of the final solution list. -/
+theorem effectiveRegularIteration_residual_dvd
+    (Q : CPoly.CMvPolynomial (r + 2) F) (center : F) (P : CPolynomial F)
+    (hinitial : Polynomial.X ∣
+      shiftedJetSubstitution center (unshift center P) (semanticEquation Q))
+    (steps : ℕ) :
+    ∀ candidate ∈ (effectiveRegularIteration Q center P steps).candidates,
+      Polynomial.X ^ (steps + 1) ∣ shiftedJetSubstitution center
+        (unshift center candidate) (semanticEquation Q) := by
+  induction steps with
+  | zero =>
+      intro candidate hcandidate
+      have heq := (mem_effectiveRegularIteration_zero_iff Q center P candidate).1 hcandidate
+      simpa [heq] using hinitial
+  | succ steps ih =>
+      intro candidate hcandidate
+      obtain ⟨previous, hprevious, gamma, hgamma, rfl⟩ :=
+        (mem_effectiveRegularIteration_succ_candidates Q center P candidate steps).1 hcandidate
+      exact (mem_effectiveRegularCoefficients_iff_dvd Q center previous gamma
+        (Nat.succ_pos steps) (ih previous hprevious)).1 hgamma
 
 end ReedSolomon.HiddenDerivative
