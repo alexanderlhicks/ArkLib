@@ -26,9 +26,9 @@ assert that a regular witness center exists.  The finite-field root count in the
 root-finding layer must produce such a center from the nonzero separant specialization and an
 explicit field-size bound.
 
-The regular-lifting API currently pivots on the literal top coordinate `Fin.last r`.  A later
-adapter must restrict or reindex a leaf with arbitrary highest active jet `s` to that active
-prefix before invoking the lifting theorem.  No such reindexing, root count, or enumeration is
+The regular-lifting API pivots on the literal top coordinate `Fin.last r`.
+`RootFinding.JetPrefix` supplies the companion adapter that restricts an arbitrary highest active
+jet `s` to its active prefix before invoking that theorem.  No root count or enumeration is
 claimed here.
 
 ## References
