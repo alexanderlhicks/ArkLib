@@ -179,6 +179,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AgreementRadius
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPadding
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPaddingCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.ConstructionContracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorFiniteCertificate
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorRateBins

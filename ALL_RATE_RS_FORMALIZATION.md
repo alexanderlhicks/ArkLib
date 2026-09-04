@@ -26,7 +26,11 @@ The project may first prove weaker constants or a worse list-size exponent. It m
 - the list bound has the form `C(δ) q^e(δ)`, with exponent and prefactor independent of `n` once `δ` is fixed;
 - the proof exposes the characteristic hypotheses used by differential root finding.
 
-The initial capstone may use an existential or very large explicit `d(δ)` and the older `q^(4d+6)`-type bound. The optimized derivative order, the `q^(2d)` bound, the order-zero regime for `δ ≥ 1/4`, the optional fixed-parameter order-one certificate at gap `1/4`, and shrinking-gap results are refinement milestones, not excuses to delay the qualitative all-rate theorem.
+The initial checkpoint may use an existential or very large explicit `d(δ)` and a coarse root
+bound. Under the current user instruction, completion means the paper's Theorem 1.1: the optimized
+order, stated list bounds, and deterministic polynomial-time algorithm must ultimately be proved.
+Shrinking-gap results, lower bounds, broader characteristic results, and optional order-one
+certificates are not required for that endpoint.
 
 ## 2. Target theorem contracts
 
@@ -35,7 +39,9 @@ are synchronized in `S0.1`. The following mathematical statements are normative.
 
 ### 2.1 Combinatorial capstone
 
-For every real `δ` with `0 < δ < 1`, there exist natural numbers `d = d(δ)`, `N = N(δ)`, and a list-bound exponent or constant depending only on `δ` such that the following holds.
+For every real `δ` with `0 < δ < 1`, there exist natural numbers `N(δ)`, `B(δ) > 0`, and `E(δ)`
+such that the following holds. The public combinatorial target deliberately has no derivative-order
+parameter: a numerical exponent alone cannot certify a construction's derivative order.
 
 For every `n ≥ N`, every `1 ≤ k ≤ n`, every prime `q ≥ n`, every injection
 
@@ -49,7 +55,11 @@ and every received word `y : Fin n → ZMod q`, define
 A = k + ceil(δ n).
 ```
 
-If `A > n`, the requested list is empty. Otherwise, the set of polynomials `P` with `degree P < k` and at least `A` agreements with `y` has cardinality bounded by a function of `q` and `δ` that is independent of `n`, `k`, `α`, and `y`. The first accepted form may use `q^(4d+6)` or another rigorously derived constant exponent. The refined form should prove `O_δ(q^(2d))`, improving to `O_δ(q^d)` under the paper's larger-field condition.
+If `A > n`, the requested list is empty. Otherwise, the set of polynomials `P` with `degree P < k`
+and at least `A` agreements with `y` has cardinality at most `B(δ) q^E(δ)`. An actual construction
+may justify `E=3d+2` initially, but the combinatorial statement does not identify `E` with an
+interpolant order. The numerical strong target records `O_δ(q^(2d))` and the larger-field
+`O_δ(q^d)` bound; its construction correspondence is also a separate obligation.
 
 The theorem must also be connected to ArkLib's canonical `ReedSolomon.code`, `Code.agree`, `Code.closeCodewordsRel`, and `Code.Lambda` definitions. A corollary should state the corresponding radius `1 - k/n - δ`, with all floor and ceiling conversions proved rather than left implicit.
 
@@ -61,14 +71,39 @@ The first combinatorial capstone need not claim runtime. A runtime theorem is ac
 
 ### 2.3 Uniformity test
 
-The final quantifier order must make rate independence syntactically visible:
+Two separate quantifier orders make the two uniformity claims visible:
 
 ```text
-∀ δ, 0 < δ → δ < 1 →
-  ∃ d N B, ∀ n k q α y, ...
+list bound:    ∀ δ ∈ (0,1), ∃ N B E, ∀ n k q α, Nonempty (CapacityGapCertificate ... (B*q^E))
+construction: ∀ δ ∈ (0,1), ∃ d m N, ∀ n k q α y, Nonempty (HiddenDerivativeConstruction d m ...)
 ```
 
-In particular, `d` must be chosen before `n`, `k`, the rate, `q`, `α`, and `y`. Any theorem with `d` chosen after `k/n` is not the target theorem.
+In the construction target, `d` must be chosen before `n`, `k`, the rate, `q`, `α`, and `y`.
+It indexes the actual differential polynomial and local constraints. Replacing a list exponent's
+dummy `d` by zero and increasing an overhead no longer establishes this construction claim.
+
+### 2.3.1 Central statement audit and repair
+
+The independent user-supplied audit on 2026-09-04 found no error in the exact list, rounding,
+prime-field, or boundary specifications. It identified two real scope gaps and one redundancy:
+
+- The old qualitative `d` occurred only in `2*d + overhead`. It could be set to zero without
+  changing the theorem. `QualitativeAllRateStatement` now uses one exponent `E`; the obsolete
+  duplicate qualitative targets are removed.
+- `ConstructionContracts.lean` separately defines actual order-indexed interpolant witnesses,
+  gap-only construction parameters, and the explicit small-gap construction target. Its
+  `specializes_to_zero` theorem derives the differential identity from the witness constraints.
+- The canonical certificate already implies the pointwise list bound. The target no longer
+  repeats that conjunct; `exists_uniform_pointwise_bound` and the certificate projections expose
+  the consequences.
+- All numerical capstone docstrings explicitly say **extensional exact-list specification; no
+  runtime guarantee**, and cite the exact paper source revision and theorem labels.
+
+The full algorithmic contract is still an open implementation obligation: provide executable
+code, prove output refinement, and justify its operation count. A classical `toFinset` decoder or
+exhaustive `q^k` message search is not a proof of polynomial-time decoding. Neither a freely
+chosen cost field nor a tautological charge equation can discharge that obligation. Theorems
+proving only the list or construction targets must not be reported as full Theorem 1.1.
 
 ### 2.4 Characteristic boundary
 

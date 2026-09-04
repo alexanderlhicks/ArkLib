@@ -11,10 +11,11 @@ import Mathlib.Analysis.SpecialFunctions.Exp
 /-!
 # Contracts for all-rate Reed-Solomon list decoding up to capacity
 
-This module freezes proposition-valued targets for the all-rate strengthening of hidden-derivative
-list decoding. For each positive capacity gap `delta`, all global parameters are chosen before the
-block length, dimension, prime field, evaluation set, and received word. In particular, the
-derivative order depends on `delta` alone and not on the code rate.
+This module freezes extensional list-size targets for all-rate list decoding. For each positive
+capacity gap `delta`, the list prefactor and exponent are chosen before the block length,
+dimension, prime field, evaluation set, and received word. These propositions certify neither
+the derivative order of a construction nor an efficient implementation. Construction witnesses
+are specified separately in `ConstructionContracts.lean`.
 
 The primary finite threshold is
 
@@ -68,14 +69,10 @@ theorem agreeingPolynomials_eq_empty_of_card_lt {F index : Type*} [Semiring F]
   exact (Nat.not_le_of_lt hThreshold)
     (hp.trans (Code.agree_le_card (u := ReedSolomon.evalOnPoints domain p) (v := received)))
 
-/-- A list bound with a gap-dependent prefactor and exponent overhead.
-
-The exponent is written as `2 * derivOrder + exponentOverhead`, so an initial
-`q ^ (4 * derivOrder + 6)` bound is represented by choosing
-`exponentOverhead = 2 * derivOrder + 6`. -/
-def qualitativeListBound
-    (fieldSize derivOrder listFactor exponentOverhead : ℕ) : ℕ :=
-  listFactor * fieldSize ^ (2 * derivOrder + exponentOverhead)
+/-- A polynomial list bound. Both the prefactor and exponent may depend on the gap, but neither
+parameter purports to be a derivative order of an algorithm. -/
+def polynomialListBound (fieldSize listFactor listExponent : ℕ) : ℕ :=
+  listFactor * fieldSize ^ listExponent
 
 /-- A fixed-instance certificate synchronizing exact polynomial decoding and `Code.Lambda`.
 
@@ -148,61 +145,40 @@ theorem CapacityGapCertificate.pointwiseListBound {delta : ℝ}
   · intro hThreshold
     exact agreeingPolynomials_eq_empty_of_card_lt (by simpa using hThreshold) received
 
-/-- **Qualitative all-rate combinatorial target.**
+/-- **Canonical qualitative polynomial-list target; no runtime guarantee.**
 
-For every fixed positive gap, the derivative order, block-length threshold, list prefactor, and
-exponent overhead are selected before every code parameter. The conclusion gives both the
-canonical `Lambda` bound and the exact pointwise polynomial-list bound. -/
-def QualitativeCombinatorialStatement : Prop :=
+This is the extensional list-size content of [DKTZ26, Theorem 1.1 / `thm:intro-main-informal`,
+precise `thm:main`], source revision `9e4d6488ead94be47cca69e5be915b5667143b66`, with
+unoptimized constants. It is not the full algorithmic theorem. The single exponent and prefactor
+depend only on the gap. An actual construction's derivative order is specified separately.
+
+The certificate already implies pointwise, `Lambda`, and oversized-threshold empty-list bounds;
+they are not repeated as independent obligations. The assumptions `0 < messageDim ≤ blockLength`
+imply positive block length, as needed by the relative-radius interpretation. -/
+def QualitativeAllRateStatement : Prop :=
   ∀ delta : ℝ, 0 < delta → delta < 1 →
-    ∃ derivOrder blockLengthThreshold listFactor exponentOverhead : ℕ,
-      0 < listFactor ∧
-      ∀ blockLength messageDim fieldSize : ℕ,
-        blockLengthThreshold ≤ blockLength →
-        0 < messageDim → messageDim ≤ blockLength →
-        fieldSize.Prime → blockLength ≤ fieldSize →
-        ∀ (domain : Fin blockLength ↪ ZMod fieldSize),
-          let listBound := qualitativeListBound fieldSize derivOrder listFactor exponentOverhead
-          Code.Lambda
-              (ReedSolomon.code domain messageDim : Set (Fin blockLength → ZMod fieldSize))
-              (capacityRadius delta blockLength messageDim) ≤ (listBound : ℕ∞) ∧
-            ∀ received : Fin blockLength → ZMod fieldSize,
-              PointwiseListBound delta domain messageDim listBound received
-
-/-- **Qualitative all-rate exact-decoder target.**
-
-This strengthens the combinatorial target with one exact decoder for every evaluation set. Its
-specification quantifies over all received words internally. -/
-def QualitativeExactDecoderStatement : Prop :=
-  ∀ delta : ℝ, 0 < delta → delta < 1 →
-    ∃ derivOrder blockLengthThreshold listFactor exponentOverhead : ℕ,
+    ∃ blockLengthThreshold listFactor listExponent : ℕ,
       0 < listFactor ∧
       ∀ blockLength messageDim fieldSize : ℕ,
         blockLengthThreshold ≤ blockLength →
         0 < messageDim → messageDim ≤ blockLength →
         fieldSize.Prime → blockLength ≤ fieldSize →
         ∀ domain : Fin blockLength ↪ ZMod fieldSize,
-          Nonempty <| CapacityGapCertificate delta domain messageDim
-            (qualitativeListBound fieldSize derivOrder listFactor exponentOverhead)
+          Nonempty (CapacityGapCertificate delta domain messageDim
+            (polynomialListBound fieldSize listFactor listExponent))
 
-/-- **Combined qualitative capstone.**
-
-This is the phase-one target: all rates, arbitrary distinct evaluation points, prime fields of
-size at least the block length, and a derivative order depending only on the fixed capacity gap.
-The constants may be weaker than the manuscript's optimized constants. -/
-def QualitativeAllRateStatement : Prop :=
-  ∀ delta : ℝ, 0 < delta → delta < 1 →
-    ∃ derivOrder blockLengthThreshold listFactor exponentOverhead : ℕ,
-      0 < listFactor ∧
-      ∀ blockLength messageDim fieldSize : ℕ,
-        blockLengthThreshold ≤ blockLength →
-        0 < messageDim → messageDim ≤ blockLength →
-        fieldSize.Prime → blockLength ≤ fieldSize →
-        ∀ (domain : Fin blockLength ↪ ZMod fieldSize),
-          let listBound := qualitativeListBound fieldSize derivOrder listFactor exponentOverhead
-          Nonempty (CapacityGapCertificate delta domain messageDim listBound) ∧
-            ∀ received : Fin blockLength → ZMod fieldSize,
-              PointwiseListBound delta domain messageDim listBound received
+/-- The canonical target supplies the same gap-only polynomial bound at every received word.
+This is a consequence of the certificate, not an additional capstone obligation. -/
+theorem QualitativeAllRateStatement.exists_uniform_pointwise_bound
+    (h : QualitativeAllRateStatement) {delta : ℝ} (hdelta : 0 < delta) (hOne : delta < 1) :
+    ∃ N B E : ℕ, 0 < B ∧ ∀ n k q : ℕ,
+      N ≤ n → 0 < k → k ≤ n → q.Prime → n ≤ q →
+      ∀ (domain : Fin n ↪ ZMod q) (received : Fin n → ZMod q),
+        PointwiseListBound delta domain k (polynomialListBound q B E) received := by
+  obtain ⟨N, B, E, hB, hCertificate⟩ := h delta hdelta hOne
+  refine ⟨N, B, E, hB, fun n k q hn hk hkn hq hnq domain received ↦ ?_⟩
+  obtain ⟨certificate⟩ := hCertificate n k q hn hk hkn hq hnq domain
+  exact certificate.pointwiseListBound received
 
 /-- The derivative order in the strong prime-field target.
 
@@ -247,6 +223,10 @@ def LargeFieldCondition (delta : ℝ)
 
 /-- **Order-zero target for gaps at least one quarter.**
 
+This is an extensional exact-list specification; it certifies no derivative-zero construction
+and no running-time bound. The terminology identifies the corresponding regime of [DKTZ26,
+`thm:main`], source revision `9e4d6488ead94be47cca69e5be915b5667143b66`.
+
 For gaps at least `1 / 2`, the target list has size at most one. Between `1 / 4` and `1 / 2`,
 the target is the manuscript's strict `< 4q` bound. The statement does not require a multiplicity
 depending only on the gap: the order-zero interpolation proof uses multiplicity `messageDim - 1`,
@@ -271,7 +251,11 @@ def OrderZeroQuarterStatement : Prop :=
 
 The derivative order and multiplicity are the explicit optimized values from the manuscript.
 The block threshold is `8m`. The list bound is `B(delta) * q^(2d)` over every prime field with
-`q ≥ n`, improving to `B(delta) * q^d` under `LargeFieldCondition`. -/
+`q ≥ n`, improving to `B(delta) * q^d` under `LargeFieldCondition`.
+This is an extensional exact-list specification with no runtime guarantee. Here `d` specifies
+the numerical list exponent, not an interpolant's order; the actual construction witness is a
+separate obligation in `ConstructionContracts.lean`. Source: [DKTZ26, `thm:main`] at
+`9e4d6488ead94be47cca69e5be915b5667143b66`. -/
 def StrongAsymmetricBandStatement : Prop :=
   ∀ delta : ℝ, 0 < delta → delta < (1 / 4 : ℝ) →
     let derivOrder := strongDerivativeOrder delta
@@ -290,6 +274,10 @@ def StrongAsymmetricBandStatement : Prop :=
               (listFactor * fieldSize ^ derivOrder)))
 
 /-- **Strong quantitative all-rate target.**
+
+This combines the numerical list-bound clauses of [DKTZ26, Theorem 1.1 / `thm:main`] at
+`9e4d6488ead94be47cca69e5be915b5667143b66`. It remains an extensional exact-list specification:
+neither an executable decoder nor the paper's running-time claim follows from this proposition.
 
 The split is load-bearing: derivative order zero above gap `1 / 4` does not imply a constant list
 bound in the interval `[1 / 4, 1 / 2)`, and the order-zero multiplicity is not gap-only. -/
