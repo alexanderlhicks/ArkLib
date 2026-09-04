@@ -433,6 +433,14 @@ private theorem projectLowContact_rewrite_eq_truncated (F : LocalPolynomial R d)
       rw [map_add, map_add]
     _ = _ := by rw [hzero, add_zero]
 
+/-- Truncation modulo `T^m` does not change the enlarged low-contact constraints. -/
+@[simp]
+theorem enlargedLocalConstraintMap_truncateLocalT (m : ℕ) (F : LocalPolynomial R d) :
+    enlargedLocalConstraintMap (R := R) (d := d) m
+      (truncateLocalT (R := R) (d := d) m F) =
+        enlargedLocalConstraintMap (R := R) (d := d) m F := by
+  exact (projectLowContact_rewrite_eq_truncated F).symm
+
 /-- The exact point-dependent map factors through the point-independent enlarged map. -/
 theorem localConstraintAt_eq_enlarged_comp_translated
     (m : ℕ) (center received : R) :
