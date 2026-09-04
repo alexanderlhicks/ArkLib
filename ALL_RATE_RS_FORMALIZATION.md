@@ -758,11 +758,39 @@ Until those choices are made, contributors should prioritize the axiom-clean all
 
 ## 15. Next actionable assignments
 
+### Live conversation ownership
+
+The central integration owner is conversation `01a06c48-8980-76a2-b439-9872f827bfcd`.
+The following conversations are active as of the 2026-09-04 orchestration checkpoint. New
+coordinators use Astra at medium effort and delegate independent implementation to Sol at high
+effort. Each coordinator must report its actual workers, exclusive file claims, frozen source
+revisions, and remaining proof obligations to the central owner. A conversation's existence is
+not evidence that its proof has landed.
+
+| Conversation | Owned work | Immediate checkpoint |
+|---|---|---|
+| `01a06c48-8980-76a2-b439-9872f827bfcd` (central) | Canonical integration, tracker, cross-lane audits; `RootFinding/RegularCounting.lean` | Discharge witness-count injectivity using audited R2 and integrate verified slices |
+| `01a06db8-998a-7363-bc14-c4a6a8c54ca0` | I1 specialization-degree composition; N2 characteristic obstruction | `DifferentialSpecializationDegree.lean`, `CharacteristicObstruction.lean`, and their canaries |
+| `01a06de1-5ce7-72d0-afb8-c0172ed2491b` | U0 ambient padding | Uniform explicit ratio above one and `d < D = K-1`, with rounding proved |
+| `01a06d8e-408d-7ea0-90cc-a8c6dd11c9a5` | Paper/source alignment and corrected quantitative contracts | Frozen source pin and independently reviewed statement changes |
+| `01a06e29-8dc6-7e21-a11a-0f8b1203f145` | I2-I4 local map, kernel, finite intermediate spaces, independence, rank | Recover staged map/kernel slice, then `LocalIntermediateSpace`, `KernelSliceIndependence`, `LocalRank` |
+| `01a06e29-de18-7dc3-93e5-2244de7106f4` | R2 independent audit; recursive root count and finite-extension assembly | Audit `deb7c75f`; recover `RecursiveCounting`; assemble `RootCount` |
+| `01a06e2a-2f6d-7370-a4ed-eb061bfc77a7` | L1/I5/I6 contact, multiplicity, global interpolation | `LocalContact`, `GlobalMultiplicity`, `GlobalInterpolation`, and necessary canaries |
+
+All new implementation files in this table are under the corresponding
+`ReedSolomon/HiddenDerivative` or `AllRateListDecoding` directory. Coordinators must agree on
+shared interfaces before dependent work starts. Only the central owner updates this tracker or
+regenerates the canonical `ArkLib.lean`. Preserved drafts from interrupted subagents are recovered
+in their existing worktrees rather than discarded or independently reimplemented.
+
+### Current proof checkpoints
+
 The following nodes are already owned as of the latest update. Coordinate with the integration owner
 before duplicating them:
 
-- `R2`: the regular one-step theorem and arbitrary-highest-jet prefix adapter are integrated; the
-  active remainder is iterated fixed-jet uniqueness.
+- `R2`: the regular one-step theorem and arbitrary-highest-jet prefix adapter are integrated;
+  iterated fixed-jet uniqueness is committed at contributor head `deb7c75f` and awaiting an
+  independent integration audit.
 - `R3`: the singular/separant recursion and its well-founded measure are integrated and passed an
   independent statement/trust audit.
 - `I0`/`C0` bridge: integrated under the necessary boundary `0 < d < D`, with exact cardinality and
@@ -774,21 +802,15 @@ before duplicating them:
   infrastructure is integrated. The separant-specialization degree bridge is now integrated in
   the current checkpoint; the active remainder is root-specific jet injectivity, followed by the
   finite-extension capstone.
-- `U0`: an external agent owns exact fixed-fraction ambient padding, rounding, and uniform-ratio
-  geometry on top of canonical `1cb5622e`.
+- `U0`: an external coordinator owns exact fixed-fraction ambient padding, rounding, and an
+  explicit rate-independent agreement ratio above one, starting from canonical `28d7478f`.
 
-The best independent assignments for additional contributors are, in priority order:
-
-1. `R2` iteration: derive fixed-initial-jet uniqueness by iterating the verified one-step lift,
-   tracking truncation, degree, and characteristic bounds at every coefficient.
-2. `I3-I4` support: port or independently prove the donor's scaled-shell and contact-envelope
-   kernel lemmas in new files, coordinating exact count names with the `C0` owner. State only the
-   exhibited-kernel rank upper bound, never equality with the true local rank.
-3. `O0-O1` audit support: independently develop the continuous and discrete sharp-constant
-   certificates in non-overlapping helper files. These are separate audit routes and should not
-   share unproved numerical lemmas; final composition still waits for `C0`, `I4`, and `U0`.
-4. `N0` or `N2`: formalize the exact-capacity bad ball or the bounded-characteristic obstruction.
-   These are useful independent checks, but they do not replace a critical-path node.
+The first qualitative theorem's current critical-path lanes are all assigned above. Additional
+contributors should request a narrow helper or independent audit from the relevant owner before
+editing. Useful openings are the exact-capacity bad-ball construction (`N0`) and, after the paper
+contract is repinned, independent continuous and discrete sharp-constant certificates (`O0-O1`).
+Executable enumeration and cost-model development remain a separate longer path. Contributors
+must not duplicate R2, I1-I6, or N2 based on an older version of this assignment list.
 
 An autoformalization agent should be given this entire document and the following operating
 contract: fetch the current head of `quang/all-rate-rs-capacity-formalization`; name one node and its
