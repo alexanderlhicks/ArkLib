@@ -181,6 +181,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RateCover
 import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
 import ArkLib.Data.CodingTheory.ReedSolomon.Folded
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Counting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.CountingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialEquation
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DonorPortCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.GlobalDimension
