@@ -39,6 +39,80 @@ example {W : (ZMod 7)[X]}
     (hpoints := nonconsecutivePoints.injective.injOn) (hcard := by simp)
     (hdiv := by simpa using hdiv) (hdegree := by simpa using hdegree)
 
+private def threeNonconsecutivePoints : Fin 3 ↪ ZMod 7 where
+  toFun i := if i = 0 then 1 else if i = 1 then 4 else 6
+  inj' := by decide
+
+private def exactVanishingEquation : DifferentialPolynomial (ZMod 7) 0 :=
+  MvPolynomial.X (some 0) - MvPolynomial.X none
+
+private theorem exactVanishingEquation_mem :
+    exactVanishingEquation ∈
+      exactInterpolationSpace (ZMod 7) 1 2 0 1 0 0 (by omega) := by
+  apply Submodule.sub_mem
+  · rw [MvPolynomial.X]
+    apply monomial_mem_exactInterpolationSpace.mpr
+    exact Or.inl (by
+      simp [ExactInterpolationEligibleExponent, firstJetExponent,
+        fullHigherJetWeight, exactInterpolationMonomialWeight, Finsupp.weight_single])
+  · rw [MvPolynomial.X]
+    apply monomial_mem_exactInterpolationSpace.mpr
+    exact Or.inl (by
+      simp [ExactInterpolationEligibleExponent, firstJetExponent,
+        fullHigherJetWeight, exactInterpolationMonomialWeight, Finsupp.weight_single])
+
+private theorem unscaledLocalSubstitution_exactVanishingEquation (center : ZMod 7) :
+    unscaledLocalSubstitution 0 center center exactVanishingEquation =
+      MvPolynomial.X (localT 0) * MvPolynomial.X (localE 0) -
+        MvPolynomial.X (localT 0) := by
+  simp [exactVanishingEquation, localCorrection]
+
+private theorem exactVanishingEquation_satisfies (center : ZMod 7) :
+    SatisfiesLocalConstraints 1 center center exactVanishingEquation := by
+  rw [SatisfiesLocalConstraints, localConstraintAt, LinearMap.comp_apply]
+  change projectLowContact (R := ZMod 7) (d := 0) 1
+    (unscaledLocalSubstitution 0 center center exactVanishingEquation) = 0
+  rw [unscaledLocalSubstitution_exactVanishingEquation, projectLowContact_eq_zero_iff]
+  intro e he
+  simp only [MvPolynomial.X]
+  rw [MvPolynomial.monomial_mul,
+    MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial,
+    MvPolynomial.coeff_monomial]
+  split_ifs with h₁ h₂
+  · subst e
+    simp [localContactOrder, Finsupp.weight_single] at he
+  · subst e
+    simp [localContactOrder, Finsupp.weight_single] at he
+  · subst e
+    simp [localContactOrder, Finsupp.weight_single] at he
+  · rfl
+
+/-- Full I6 composition over three nonconsecutive agreement points while only two are required.
+The nonzero equation `Y₀ - X` satisfies the exact interpolation support and every local
+constraint for the received word `received = points`; specialization at `P = X` is therefore
+zero. This protects the orientation `requiredPoints ≤ indices.card` in the composed theorem. -/
+example :
+    exactVanishingEquation ≠ 0 ∧
+      differentialSpecialization exactVanishingEquation
+        (Polynomial.X : (ZMod 7)[X]) = 0 := by
+  constructor
+  · intro hzero
+    have hcoeff := congrArg
+      (MvPolynomial.coeff (Finsupp.single (some (0 : Fin 1)) 1)) hzero
+    simp [exactVanishingEquation] at hcoeff
+  · apply differentialSpecialization_eq_zero_of_mem_exactInterpolationSpace_of_agreements
+        (D := 1) (A := 2) (m := 1) (M := 0) (W := 0)
+        (hbudget := by omega) (hdD := by omega)
+        (points := threeNonconsecutivePoints) (received := threeNonconsecutivePoints)
+        (indices := Finset.univ) (hQspace := exactVanishingEquation_mem)
+        (hconstraints := fun i ↦ exactVanishingEquation_satisfies
+          (threeNonconsecutivePoints i))
+        (P := Polynomial.X) (hPdegree := by simp)
+        (hpoints := threeNonconsecutivePoints.injective.injOn)
+        (hcard := by simp)
+    intro i _hi
+    simp
+
 private def exactBoundaryPolynomial : (ZMod 7)[X] :=
   (X - C 1) ^ 2 * (X - C 4) ^ 2
 

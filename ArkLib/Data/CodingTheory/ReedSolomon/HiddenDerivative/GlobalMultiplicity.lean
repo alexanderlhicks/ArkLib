@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Quang Dao
 -/
 
-import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialEquation
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.DifferentialSpecializationDegree
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.LocalContact
 import ArkLib.ToMathlib.Polynomial.RootMultiplicity
 
 /-!
@@ -39,5 +40,29 @@ theorem differentialSpecialization_eq_zero_of_global_multiplicity
     differentialSpecialization Q P = 0 :=
   Polynomial.eq_zero_of_natDegree_lt_mul_of_pow_X_sub_C_dvd_at_injOn
     points indices multiplicity requiredPoints hpoints hcard hcontact hdegree
+
+/-- An exact interpolation polynomial that satisfies every local constraint vanishes after
+differential specialization at any bounded-degree polynomial agreeing with the received word on
+at least `A` selected indices. Only the selected evaluation points must be distinct, and the
+selected set may contain more than `A` indices. -/
+theorem differentialSpecialization_eq_zero_of_mem_exactInterpolationSpace_of_agreements
+    {ι F : Type*} [Field F] {D A d m M W : ℕ}
+    (hbudget : 0 < m * A) (hdD : d < D)
+    (points received : ι → F) (indices : Finset ι)
+    {Q : DifferentialPolynomial F d}
+    (hQspace : Q ∈ exactInterpolationSpace F D A d m M W hdD)
+    (hconstraints : ∀ i, SatisfiesLocalConstraints m (points i) (received i) Q)
+    (P : F[X]) (hPdegree : P.natDegree ≤ D)
+    (hpoints : Set.InjOn points (indices : Set ι))
+    (hcard : A ≤ indices.card)
+    (hagreements : ∀ i ∈ indices, P.eval (points i) = received i) :
+    differentialSpecialization Q P = 0 := by
+  apply differentialSpecialization_eq_zero_of_global_multiplicity
+      points indices m A Q P hpoints hcard
+  · intro i hi
+    exact X_sub_C_pow_dvd_differentialSpecialization_of_contact
+      Q P (points i) (received i) (hagreements i hi) (hconstraints i)
+  · exact natDegree_differentialSpecialization_lt_of_mem_exactInterpolationSpace
+      hbudget hdD hQspace P hPdegree
 
 end ReedSolomon.HiddenDerivative
