@@ -496,7 +496,7 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
 | R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | active; one-step theorem (`71207d79`) and arbitrary-highest-jet prefix adapter (`f93a5dc2`) landed | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Iterated fixed-jet uniqueness remains. |
 | R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed and independently audited (`de44a070`) | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
-| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; generic incidence, regular-jet fibre, and canonical bad-point layers landed (`9c5adf29`, `f17b2846`, `a06e228b`) | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; specialization degree bounds the exceptional points. The root-specific jet-injectivity and separant-degree discharges remain. |
+| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; generic incidence, regular-jet fibre, canonical bad-point, and weighted specialization-degree layers landed (`9c5adf29`, `f17b2846`, `a06e228b`, `14568bfd`) | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; weighted specialization degree bounds the exceptional points. Root-specific jet injectivity remains and is assigned with R2 iteration. |
 | R5 | Construct a finite extension large enough for witnesses. | R4 | foundation landed (`0144f9fd`) | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
 | R6 | Descend the root count to base-field solutions. | R5 | active; extension transport and cardinality descent landed (`481b7a52`, `2cc0dacb`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
 | R7 | Implement and verify root enumeration. | R2, R3, R5 | queued | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. |
@@ -726,7 +726,8 @@ At least one audit worktree should verify that the proof breaks when each of the
 | Exact interpolation index | Landed at `9b188640` with generated imports at `2f96648f`: finite coarse and exact derivative-weighted monomial indices, canonical basis and coefficient projections, strict floor bounds, and a proved coarse-to-exact inclusion. The bridge at `3ba5aaf7` proves equivalence with the executable exact dimension index and exact finrank equality under `0 < d < D`; its `d = 0` canary exposes the otherwise phantom `Y₁` coordinate. The proof-facing index intentionally uses noncomputable `Set.Finite.toFinset`; executable enumeration remains a separate `D0` obligation. |
 | Finite all-rate cover and uniform thresholds | Landed at `12fc714d`, `1e0634e8`, and canary hardening `9c410fbb`: the exact truncated `δ/2` mesh handles zero and top feasible rates, the rounded agreement threshold is monotone in the required direction, and finite-family/two-stage maxima establish the theorem-independent quantifier order. Donor-specific V1/V2 instantiation remains active. |
 | Singular recursion | Landed at `de44a070`: below-characteristic separants remain nonzero, preserve the characteristic contract, and strictly decrease total individual jet degree; every bounded solution of a nonzero equation reaches a leaf with nonzero separant specialization. This is a coverage/termination theorem, not an enumerator, and R4 must still produce and count scalar regular centers. |
-| Root-counting support | Landed from the independently audited support head `89afd10c` as canonical commits `0144f9fd` through `a06e228b`: explicit sufficiently large finite extensions, specialization/solution transport, one-way base-field descent, generic root-dependent witness double counting, exact fixed-point regular-jet fibre bounds, and the canonical separant-bad-point adapter. The main inequality remains conditional on root-specific jet injectivity and specialization-degree bounds; no full root theorem or runtime theorem is claimed yet. |
+| Root-counting support | Landed from the independently audited support head `89afd10c` as canonical commits `0144f9fd` through `a06e228b`: explicit sufficiently large finite extensions, specialization/solution transport, one-way base-field descent, generic root-dependent witness double counting, exact fixed-point regular-jet fibre bounds, and the canonical separant-bad-point adapter. No full root theorem or runtime theorem is claimed yet. |
+| Differential specialization degree | Landed at `14568bfd`: generalizes the authorized donor's prime-field proof to arbitrary commutative semirings, proves specialization degree is at most exact differential weighted degree, proves separants cannot increase that budget, and supplies the root-counting wrapper with the canonical exceptional-point bound. A tight `X²Y₁³`, `P=X⁵` canary attains weighted degree `14`. |
 
 ## 13. Decisions already made
 
@@ -766,22 +767,23 @@ before duplicating them:
 - `V0` plus theorem-independent `V2`: integrated. An external sprint owns V1 and the
   donor-specific/concrete remainder of V2.
 - `R4-R6` support: the independently audited finite-field counting, extension, and descent
-  infrastructure is integrated. The active remainder is the root-specific jet-injectivity and
-  separant-specialization degree bridge, followed by the finite-extension capstone.
+  infrastructure is integrated. The separant-specialization degree bridge is now integrated in
+  the current checkpoint; the active remainder is root-specific jet injectivity, followed by the
+  finite-extension capstone.
+- `U0`: an external agent owns exact fixed-fraction ambient padding, rounding, and uniform-ratio
+  geometry on top of canonical `1cb5622e`.
 
 The best independent assignments for additional contributors are, in priority order:
 
-1. `U0`: formalize ambient padding and its rate-uniform inequalities independently of interpolation.
-   Keep every floor, ceiling, positivity, and `D > d` side condition explicit.
-2. `R2` iteration: derive fixed-initial-jet uniqueness by iterating the verified one-step lift,
+1. `R2` iteration: derive fixed-initial-jet uniqueness by iterating the verified one-step lift,
    tracking truncation, degree, and characteristic bounds at every coefficient.
-3. `I3-I4` support: port or independently prove the donor's scaled-shell and contact-envelope
+2. `I3-I4` support: port or independently prove the donor's scaled-shell and contact-envelope
    kernel lemmas in new files, coordinating exact count names with the `C0` owner. State only the
    exhibited-kernel rank upper bound, never equality with the true local rank.
-4. `O0-O1` audit support: independently develop the continuous and discrete sharp-constant
+3. `O0-O1` audit support: independently develop the continuous and discrete sharp-constant
    certificates in non-overlapping helper files. These are separate audit routes and should not
    share unproved numerical lemmas; final composition still waits for `C0`, `I4`, and `U0`.
-5. `N0` or `N2`: formalize the exact-capacity bad ball or the bounded-characteristic obstruction.
+4. `N0` or `N2`: formalize the exact-capacity bad ball or the bounded-characteristic obstruction.
    These are useful independent checks, but they do not replace a critical-path node.
 
 An autoformalization agent should be given this entire document and the following operating
