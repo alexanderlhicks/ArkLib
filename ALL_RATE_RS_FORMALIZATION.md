@@ -451,7 +451,7 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 |---|---|---|---|---|
 | L0 | Connect actual polynomials and Hasse jets to the hidden local substitution, including the normalized error divisible by `T^d`. | F1, F3 | landed (`33f1f3ac`, `592458da`) | The theorem specializes a genuine `P` and proves the exact divisibility used by local constraints. |
 | L1 | Turn the local identity into order-`m` contact at an agreement point. | L0 | queued | No characteristic restriction beyond the algebraic identity; all truncation indices are checked. |
-| I0 | Define the exact finite interpolation monomial band and its coefficient space. | F0, F3 | queued | Fintype and basis are explicit; zero-weight variables have finite caps; evaluator agrees with paper weights. |
+| I0 | Define the exact finite interpolation monomial band and its coefficient space. | F0, F3 | landed (`9b188640`, registration `2f96648f`) | Fintype and basis are explicit; zero-weight variables have finite caps; evaluator agrees with paper weights. The bridge to `C0`'s executable dimension index remains active under `0 < d < D`. |
 | I1 | Define differential specialization `Y_j ↦ P^[j]` and prove its degree bound. | F0, F1 | queued | Uses exact derivative weights where possible; proves strict `< mA`, including all floor and ceiling cases. |
 | I2 | Define local and global homogeneous linear constraint maps. | I0, L0 | queued | Coordinate and polynomial formulations are equivalent; constraints are executable over finite fields. |
 | I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | queued | The map factorization is explicit; kernel elements are independent; no claim equates the upper bound with true rank. |
@@ -723,6 +723,7 @@ At least one audit worktree should verify that the proof breaks when each of the
 | Differential root foundation | Landed at `14c56aaa`: bounded differential solutions, scalar and polynomial jets, active/highest jets, separants, regularity, exact root-specialization weights, characteristic contracts, and nonannihilating highest-variable derivative descent. `ZMod 2` versus `ZMod 3` canaries check the strict characteristic boundary. |
 | Regular one-step lifting | Landed at merge `71207d79` with generated imports at `9aa107f2`: the exact logical existence-and-uniqueness clause of Kopparty's Theorem 4.4, generic first-order multivariate Taylor and Hasse-lifting support, and sharp `ZMod 2`/`ZMod 5` canaries. An independent audit found no mathematical blocker. The theorem currently uses the literal top jet and does not yet prove iterated fixed-jet uniqueness. |
 | Exact finite counting | Landed at `7935aaa5` with generated imports at `2d8216d9`: executable higher-jet simplex and shell counts, the exact staircase dimension sum, exact contact budgets, and a strict finite interpolation certificate. The certified enlarged-map rank budget is explicitly not claimed to equal the actual local rank. |
+| Exact interpolation index | Landed at `9b188640` with generated imports at `2f96648f`: finite coarse and exact derivative-weighted monomial indices, canonical basis and coefficient projections, strict floor bounds, and a proved coarse-to-exact inclusion. The proof-facing index intentionally uses noncomputable `Set.Finite.toFinset`; executable enumeration remains a separate `D0` obligation. |
 
 ## 13. Decisions already made
 
@@ -756,7 +757,8 @@ before duplicating them:
 - `R2`: the regular top-coordinate one-step theorem is integrated; the active remainder is the
   arbitrary-highest-jet restriction bridge and iterated fixed-jet uniqueness.
 - `R3`: an active agent owns the singular/separant recursion and its well-founded measure.
-- `I0`: an active agent is preparing the exact finite interpolation index for integration.
+- `I0`/`C0` bridge: an active agent is connecting the proof-facing exact interpolation index to
+  the executable dimension count under the necessary boundary `0 < d < D`.
 - `V0` plus theorem-independent `V2`: an external sprint owns the exact rate cover and uniform
   finite-threshold machinery.
 
