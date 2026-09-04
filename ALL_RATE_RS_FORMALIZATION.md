@@ -495,10 +495,10 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 | R0 | Define differential polynomials, solutions of bounded degree, highest active derivative, and regular jets. | S0, F1 | landed (`14c56aaa`) | Definitions support partial derivatives in `Y_j`, specialization, recursion, and characteristic bounds. |
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
 | R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | active; one-step theorem (`71207d79`) and arbitrary-highest-jet prefix adapter (`f93a5dc2`) landed | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Iterated fixed-jet uniqueness remains. |
-| R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed (`de44a070`), independent integration audit pending | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
-| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active externally | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; specialization degree bounds the exceptional points. |
-| R5 | Construct a finite extension large enough for witnesses. | R4 | active externally | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. |
-| R6 | Descend the root count to base-field solutions. | R5 | active externally | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
+| R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed and independently audited (`de44a070`) | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
+| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; generic incidence, regular-jet fibre, and canonical bad-point layers landed (`9c5adf29`, `f17b2846`, `a06e228b`) | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; specialization degree bounds the exceptional points. The root-specific jet-injectivity and separant-degree discharges remain. |
+| R5 | Construct a finite extension large enough for witnesses. | R4 | foundation landed (`0144f9fd`) | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
+| R6 | Descend the root count to base-field solutions. | R5 | active; extension transport and cardinality descent landed (`481b7a52`, `2cc0dacb`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
 | R7 | Implement and verify root enumeration. | R2, R3, R5 | queued | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. |
 
 This lane is expected to be the main schedule risk. ArkLib's existing Hensel code is specialized to a different trivariate rational-function setting and is not a substitute. Kai Zhe Zheng's formalization states the needed cardinality and algorithmic results as axioms, so those declarations may guide interfaces but cannot discharge `R1` through `R7`.
@@ -726,6 +726,7 @@ At least one audit worktree should verify that the proof breaks when each of the
 | Exact interpolation index | Landed at `9b188640` with generated imports at `2f96648f`: finite coarse and exact derivative-weighted monomial indices, canonical basis and coefficient projections, strict floor bounds, and a proved coarse-to-exact inclusion. The bridge at `3ba5aaf7` proves equivalence with the executable exact dimension index and exact finrank equality under `0 < d < D`; its `d = 0` canary exposes the otherwise phantom `Y₁` coordinate. The proof-facing index intentionally uses noncomputable `Set.Finite.toFinset`; executable enumeration remains a separate `D0` obligation. |
 | Finite all-rate cover and uniform thresholds | Landed at `12fc714d`, `1e0634e8`, and canary hardening `9c410fbb`: the exact truncated `δ/2` mesh handles zero and top feasible rates, the rounded agreement threshold is monotone in the required direction, and finite-family/two-stage maxima establish the theorem-independent quantifier order. Donor-specific V1/V2 instantiation remains active. |
 | Singular recursion | Landed at `de44a070`: below-characteristic separants remain nonzero, preserve the characteristic contract, and strictly decrease total individual jet degree; every bounded solution of a nonzero equation reaches a leaf with nonzero separant specialization. This is a coverage/termination theorem, not an enumerator, and R4 must still produce and count scalar regular centers. |
+| Root-counting support | Landed from the independently audited support head `89afd10c` as canonical commits `0144f9fd` through `a06e228b`: explicit sufficiently large finite extensions, specialization/solution transport, one-way base-field descent, generic root-dependent witness double counting, exact fixed-point regular-jet fibre bounds, and the canonical separant-bad-point adapter. The main inequality remains conditional on root-specific jet injectivity and specialization-degree bounds; no full root theorem or runtime theorem is claimed yet. |
 
 ## 13. Decisions already made
 
@@ -758,14 +759,15 @@ before duplicating them:
 
 - `R2`: the regular one-step theorem and arbitrary-highest-jet prefix adapter are integrated; the
   active remainder is iterated fixed-jet uniqueness.
-- `R3`: the singular/separant recursion and its well-founded measure are integrated; an independent
-  integration audit is in flight.
+- `R3`: the singular/separant recursion and its well-founded measure are integrated and passed an
+  independent statement/trust audit.
 - `I0`/`C0` bridge: integrated under the necessary boundary `0 < d < D`, with exact cardinality and
   finrank equalities.
 - `V0` plus theorem-independent `V2`: integrated. An external sprint owns V1 and the
   donor-specific/concrete remainder of V2.
-- `R4-R6` support: an external sprint has produced finite-field counting, extension, and descent
-  infrastructure; integration waits for its final frozen-head audit.
+- `R4-R6` support: the independently audited finite-field counting, extension, and descent
+  infrastructure is integrated. The active remainder is the root-specific jet-injectivity and
+  separant-specialization degree bridge, followed by the finite-extension capstone.
 
 The best independent assignments for additional contributors are, in priority order:
 
