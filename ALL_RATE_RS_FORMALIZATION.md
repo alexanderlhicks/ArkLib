@@ -477,7 +477,7 @@ Route A is the preferred phase-one path. Its output may have a very poor non-exp
 
 | ID | Work package | Depends on | Initial status | Acceptance condition |
 |---|---|---|---|---|
-| C0 | Formalize exact finite counting functions for bands, shells, and local-rank sums. | F0 | queued | Finite sums correspond bijectively to interpolation indices; small numerical instances are executable canaries. |
+| C0 | Formalize exact finite counting functions for bands, shells, and local-rank sums. | F0 | landed (`7935aaa5`, registration `2d8216d9`) | Finite sums correspond bijectively to interpolation indices; small numerical instances are executable canaries. |
 | C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | queued | Floors and ceilings are included; constants need not be optimized; no unjustified real-to-natural rounding. |
 | U0 | Formalize ambient padding `K = k + floor(λ δ n)` and uniform geometry. | S0 | queued | Proves a positive ambient-rate lower bound and agreement-to-ambient-rate ratio `> 1`, uniformly over every `0 ≤ k/n ≤ 1-δ`. |
 | U1 | Prove a local-rank power saving whenever the ratio exceeds one. | U0, C1 | queued | Derives `O(d^{-s})` for some `s(δ) > 0`; no small-agreement hypothesis. |
@@ -494,8 +494,8 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 |---|---|---|---|---|
 | R0 | Define differential polynomials, solutions of bounded degree, highest active derivative, and regular jets. | S0, F1 | landed (`14c56aaa`) | Definitions support partial derivatives in `Y_j`, specialization, recursion, and characteristic bounds. |
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
-| R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | queued | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. |
-| R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | queued | Recursion terminates under a lexicographic or total individual-degree measure; all solutions enter a regular branch. |
+| R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | active; top-coordinate one-step theorem landed (`71207d79`, registration `9aa107f2`) | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. The arbitrary-highest-jet restriction bridge and iterated fixed-jet uniqueness remain. |
+| R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | active | Recursion terminates under a lexicographic or total individual-degree measure; all solutions enter a regular branch. |
 | R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | queued | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; specialization degree bounds the exceptional points. |
 | R5 | Construct a finite extension large enough for witnesses. | R4 | queued | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. |
 | R6 | Descend the root count to base-field solutions. | R5 | queued | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
@@ -721,6 +721,8 @@ At least one audit worktree should verify that the proof breaks when each of the
 | Axiom-free donor foundation | Landed at merge `52903c27`: six modules covering free-order parameters, a finite zero-weight-safe interpolation space, repaired rectangular dimension counting, scoped finrank bounds, and canaries. Kopparty assumptions, `FieldCost`, and algorithmic wrappers were excluded. |
 | Hidden substitutions and local identity | Landed at `33f1f3ac` and completed at `592458da`: local variables, factored and normalized substitutions, weighted bounds with explicit `d < D`, the genuine-polynomial Hasse identity, canonical reduced error, characteristic-two canaries, and an algebra-hom identity with the root solver's canonical specialization after affine Taylor translation. |
 | Differential root foundation | Landed at `14c56aaa`: bounded differential solutions, scalar and polynomial jets, active/highest jets, separants, regularity, exact root-specialization weights, characteristic contracts, and nonannihilating highest-variable derivative descent. `ZMod 2` versus `ZMod 3` canaries check the strict characteristic boundary. |
+| Regular one-step lifting | Landed at merge `71207d79` with generated imports at `9aa107f2`: the exact logical existence-and-uniqueness clause of Kopparty's Theorem 4.4, generic first-order multivariate Taylor and Hasse-lifting support, and sharp `ZMod 2`/`ZMod 5` canaries. An independent audit found no mathematical blocker. The theorem currently uses the literal top jet and does not yet prove iterated fixed-jet uniqueness. |
+| Exact finite counting | Landed at `7935aaa5` with generated imports at `2d8216d9`: executable higher-jet simplex and shell counts, the exact staircase dimension sum, exact contact budgets, and a strict finite interpolation certificate. The certified enlarged-map rank budget is explicitly not claimed to equal the actual local rank. |
 
 ## 13. Decisions already made
 
@@ -751,10 +753,12 @@ Until those choices are made, contributors should prioritize the axiom-clean all
 The following nodes are already owned as of the latest update. Coordinate with the integration owner
 before duplicating them:
 
-- `R2`: an external independent sprint is developing regular-jet coefficient lifting against the
-  current root-solver contract.
-- `I0`: an active agent is completing the exact finite interpolation index.
-- `C0`: an active agent is building exact finite band, shell, and rank-sum counts.
+- `R2`: the regular top-coordinate one-step theorem is integrated; the active remainder is the
+  arbitrary-highest-jet restriction bridge and iterated fixed-jet uniqueness.
+- `R3`: an active agent owns the singular/separant recursion and its well-founded measure.
+- `I0`: an active agent is preparing the exact finite interpolation index for integration.
+- `V0` plus theorem-independent `V2`: an external sprint owns the exact rate cover and uniform
+  finite-threshold machinery.
 
 The best independent assignments for additional contributors are, in priority order:
 

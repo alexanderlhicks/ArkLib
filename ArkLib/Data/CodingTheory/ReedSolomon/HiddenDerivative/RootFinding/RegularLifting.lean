@@ -225,9 +225,10 @@ theorem X_pow_dvd_shiftedJetSubstitution_regularLiftCandidate (hk : 0 < k)
 
 /-- Exact nonresonant form of the regular one-step lift.
 
-This is the formal counterpart of [Kop15, Theorem 4.4].  The binomial hypothesis is stated
-directly, as in the source, so the theorem also applies in characteristic zero and at any
-nonresonant step in positive characteristic. -/
+This is the formal counterpart of the logical existence-and-uniqueness clause of
+[Kop15, Theorem 4.4]. The source's algorithmic cost claim is outside this theorem. The binomial
+hypothesis is stated directly, as in the source, so the result also applies in characteristic zero
+and at any nonresonant step in positive characteristic. -/
 theorem existsUnique_regularLiftCoefficient (hk : 0 < k)
     (Q : DifferentialPolynomial F r) (center : F) (P : F[X])
     (hresidual : X ^ k ∣ shiftedJetSubstitution center P Q)
