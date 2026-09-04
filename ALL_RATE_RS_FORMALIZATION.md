@@ -88,15 +88,16 @@ The `q^(2d)` and larger-field `q^d` bounds should be corollaries. This avoids fi
 
 ### 2.5 Strong quantitative capstone
 
-After the qualitative capstone is axiom-clean, the target derivative order from the current paper snapshot is
+The quantitative contract is temporarily **unfrozen** while the current paper source is reconciled
+with the Lean statements.  A live source-alignment audit has identified changes to the exponential
+constant, low-order regimes, multiplicity, larger-field hypothesis, and shrinking-gap threshold
+relative to the older snapshot previously recorded here.  In particular, contributors must not
+implement the former `172/25` or `C > 13.76` statements from an old tracker revision.
 
-```text
-dδ = 0                              if δ ≥ 1/2,
-dδ = 1                              if 1/4 ≤ δ < 1/2,
-dδ = ceil(exp((172/25) / δ))        if 0 < δ < 1/4.
-```
-
-The rational constant `172/25` is the exact formal representation of `6.88`. Decimal approximation must not enter a proof term. This phase also targets the larger-field `q^d` list bound and the shrinking-gap corollary `δ_n = C / log n` for `C > 13.76`, subject to re-audit whenever the paper source commit changes.
+The qualitative target—all rates, every fixed positive gap, and one `d(δ)` chosen before the
+rate—is unaffected.  Once the source-alignment branch is committed and independently reviewed,
+this subsection will record the exact rational constants and boundary conventions.  Decimal
+approximations must not enter proof terms.
 
 ## 3. Gold trust and announcement gate
 
@@ -513,16 +514,18 @@ This lane is expected to be the main schedule risk. ArkLib's existing Hensel cod
 | M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | queued | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
 | M1 | Compose the algorithmic theorem. | M0, D3 | queued | Exact output and list bound are proved; runtime is claimed only if formally modeled. |
 | O0 | Formalize adaptive padding, variance/Cantelli estimates, and asymmetric interpolation band. | C0, I4, U0 | queued | Reproduces a mechanically checkable sharp finite certificate. |
-| O1 | Prove the paper's explicit `d(δ) ≤ ceil(exp(6.88/δ))` regime or the strongest corrected constant. | O0 | queued | Every numerical inequality is kernel-checked; no decimal is trusted without a rational enclosure. |
-| O2 | Prove `d = 0` for `δ ≥ 1/2` and `d = 1` for `1/4 ≤ δ < 1/2`, if these remain correct under final audit. | M0 | queued | Boundary values, ceilings, and empty-list cases are explicit. |
+| O1 | Prove the paper's strongest corrected explicit exponential `d(δ)` bound. | O0 | blocked on source-alignment audit | Every numerical inequality is kernel-checked; no decimal is trusted without a rational enclosure. |
+| O2 | Prove the corrected low-order regimes from the final paper source. | M0 | blocked on source-alignment audit | Boundary values, ceilings, empty-list cases, and list-size consequences are explicit. |
 | O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under the larger-field hypothesis. | R6 | queued | Includes the corrected characteristic condition `char(F) > max(D,t)` and fixed-parameter runtime scope. |
-| O4 | Formalize the shrinking-gap result `δ_n = C/log n` for `C > 13.76`. | O0 | queued | Statement matches paper commit `81c12b0...`; all asymptotic quantifiers are formal and no fixed-gap theorem is conflated with it. |
+| O4 | Formalize the corrected shrinking-gap result from the final paper source. | O0 | blocked on source-alignment audit | All asymptotic quantifiers are formal and no fixed-gap theorem is conflated with it. |
 | O5 | Formalize field descent, resonance, and other qualitative refinements selected for the paper's final theorem suite. | M0 | queued | Each theorem has an independent value and does not weaken characteristic hypotheses. |
 | N0 | Formalize the exact-capacity bad-ball construction. | M0 | queued | Gives exponentially many codewords at the endpoint, including ceiling conventions. |
 | N1 | Formalize the `exp(Ω(1/δ))` arbitrary-evaluation-set lower bound. | M0 | queued | Coset construction and parameter regime are exact; no unsupported asymptotic shorthand. |
 | N2 | Formalize the bounded-characteristic obstruction to jet lifting. | R0 | queued | Gives an explicit counterexample such as `Q = Y₁`, `P = H(X^p)` and states precisely what fails. |
 
-The paper source, rather than an earlier agent report, controls `O4`. The pinned paper states `δ_n = C/log n` for `C > 13.76`; any later source change requires a statement re-audit before implementation.
+The paper source, rather than an earlier agent report or stale tracker revision, controls `O1`,
+`O2`, and `O4`.  Their contracts must be repinned after the active source-alignment audit and then
+independently reviewed before implementation.
 
 ### 7.6 Independent audits
 
