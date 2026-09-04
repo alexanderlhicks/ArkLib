@@ -248,6 +248,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Countin
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescent
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescentCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularCoefficient
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularIteration
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularIteration
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularLift
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularStep
@@ -343,6 +344,8 @@ import ArkLib.Data.Lattices.CyclotomicRing.Subfield.TraceVanishing
 import ArkLib.Data.Lattices.ModuleSIS
 import ArkLib.Data.Lattices.Vectors
 import ArkLib.Data.Matrix.Basic
+import ArkLib.Data.Matrix.PivotEliminationMachine
+import ArkLib.Data.Matrix.PivotEliminationMachineCanary
 import ArkLib.Data.Matrix.RowReductionMachine
 import ArkLib.Data.Matrix.RowReductionMachineCanary
 import ArkLib.Data.Matrix.Sparse
@@ -384,6 +387,8 @@ import ArkLib.Data.Probability.Combinatorial
 import ArkLib.Data.Probability.Instances
 import ArkLib.Data.Probability.KoalaBear
 import ArkLib.Data.Probability.Notation
+import ArkLib.Data.QuadraticAlgebra.FiniteWitness
+import ArkLib.Data.ZMod.EnumerationMachine
 import ArkLib.OracleReduction.BCS.Basic
 import ArkLib.OracleReduction.Basic
 import ArkLib.OracleReduction.Cast

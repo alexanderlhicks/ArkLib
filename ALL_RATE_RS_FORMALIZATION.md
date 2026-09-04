@@ -20,7 +20,7 @@ This certifies the scoped qualitative list/construction results, not full Theore
 to announce the full paper result. The concrete lifting suite now includes direct-affine solver
 checks, while the closed runtime theorem remains a separate obligation.
 
-The optimized mathematical endpoint is now in
+The optimized mathematical endpoint was validated and pushed at `1d77f94a` and is in
 [`StrongBand.lean`](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/StrongBand.lean):
 `strong_hidden_derivative_construction`, `strong_asymmetric_band`, and
 `strong_quantitative_all_rate`. These preserve the exact `169/25` order constant, prescribed
@@ -987,10 +987,10 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Deterministic direct regular iteration and exact final solution filter | `HiddenDerivative/RootFinding/DirectRegularIteration.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Closed costed prime-field enumeration with completeness and no duplicates | `ArkLib/Data/ZMod/EnumerationMachine.lean` (interface being frozen) |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Costed pivot lookup, factor calculation, and delegated target-row elimination | `ArkLib/Data/Matrix/PivotEliminationMachine.lean` |
-| Central | Quantitative capstone final gate, operational composition, audits, tracker, validation and push | `AllRateListDecoding/StrongBand.lean`, generated umbrella and integration fixes |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Closed simultaneous Hasse-jet Horner evaluation | `ArkLib/Data/Polynomial/JetHornerMachine.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Closed quadratic-time nonsquare search for concrete extension setup | `ArkLib/Data/ZMod/NonsquareSearchMachine.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Full column driver with charged inner pivot steps and output assembly | `ArkLib/Data/Matrix/ColumnEliminationMachine.lean` and minimal canaries |
+| Central | Concrete quadratic-field refinement, sampling bridge, integration, audits and push | `ArkLib/Data/QuadraticAlgebra/FiniteWitness.lean`, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
 except explicitly repository-relative paths beginning `ArkLib/`.
@@ -1148,6 +1148,30 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   Eight principal endpoints, including both strong contracts and their composition, depend only
   on `propext`, `Classical.choice`, and `Quot.sound`. Source admissions remain 183 with zero
   additions; no explicit axioms or native-trust constructs were introduced.
+- `DirectRegularIteration.lean` source `1178f8cf` composes the direct solve without finite-field
+  scans or branching candidate sets. Under regularity and the characteristic bound its final
+  optional output is exactly the full legacy solution set, including the degree-below-jet case.
+  Eleven durable compiled tests cover genuine and locally false solutions, zero stages, failure
+  propagation, and a nonzero Taylor center. This is functional exactness, not residual-cost adequacy.
+- `PivotEliminationMachine.lean` source `ce790e30` composes actual charged row steps with explicit
+  indexed lookup, zero-pivot testing, inversion, negation, scalar multiplication, and return.
+  A valid target of length `n` at column `j` takes `4n+j+8` transitions, with exact component costs;
+  missing entries, zero pivots, and unequal rows reject explicitly. Matrix and augmented-system
+  solution-preservation bridges are proved. The outer column iteration is a separate worker task.
+- `ZMod/EnumerationMachine.lean` source `17495066` explicitly enumerates every residue exactly
+  once for `q>0`, using `4q+3` charged transitions and `q` field additions. List construction,
+  constants, counters, reversal, and emission are accounted for. `List.range` and `map` occur in
+  its specification, not its executable dispatch. Zero modulus terminates but has no completeness
+  claim; composite positive moduli are covered by the ring enumeration theorem.
+- `QuadraticAlgebra/FiniteWitness.lean` reuses Mathlib's concrete two-coordinate quadratic algebra.
+  A supplied nonsquare certifies its computable field operations. Explicit coordinate addition,
+  multiplication, and shared-norm inversion refine those operations; cardinality is squared and
+  characteristic is preserved. Searching for the nonsquare and charging/lowering extension
+  arithmetic remain separate obligations, not consequences of an abstract existence witness.
+- This operational/refinement batch passed full central `validate.sh --axioms` with 555 umbrella
+  imports, 30 compiled regular-lifting checks, all style/import/documentation gates, and no new
+  axiom taint. Ten principal endpoints use only baseline logical axioms; source admissions remain
+  183, with zero new explicit axioms/native trust and ten additional kernel-checked examples.
 
 ### Next critical-path work
 
@@ -1168,6 +1192,29 @@ the decomposition into fully charged operational subroutines. The mathematical a
 the remaining implementation/adequacy layers need their own measured milestones. Partial counters
 and functional optimizations must not be counted as completed runtime proofs.
 Lower bounds, shrinking gaps, exact-rank optimality, and characteristic refinements remain deferred.
+
+### Residual-cost route under implementation
+
+The chosen route reuses scalar evaluation and linear-system solving instead of first building
+a complete dense-polynomial multiplication/substitution machine. This is a plan, not a proved
+end-to-end cost bound:
+
+1. Evaluate all Hasse jets of a materialized prefix at a scalar point with simultaneous Horner.
+   An ascending list and carried **old** predecessor implement the recurrence in linear time
+   per coefficient; initialization and list reversal must be charged.
+2. Evaluate the sparse differential equation with the closed multivariate evaluator. At centered
+   sample `u`, its inputs are `[center+u, P(u), P^[1](u), ...]`, not `[u, ...]`.
+3. For strict residual degree `<L`, use `L` distinct witness-field points. A costed Vandermonde
+   solve recovers the coefficient needed by the affine lifting step. The final zero-residual
+   check only needs all `L` sampled values to vanish. Degree must be checked first in `D<r` cases.
+4. Perform the entire root calculation in the quadratic witness field, then check final coefficients
+   for base-field membership. This avoids an intermediate descent at every residual coefficient.
+
+The plan still requires charged coefficient-list updates, sparse-equation serialization, sample
+enumeration, Vandermonde construction/solving, final base-field descent, and complete root enumeration.
+No bulk polynomial operation, residual evaluation, matrix solve, or representation conversion is
+accepted as an unexplained unit-cost callback. The integer-threshold input decision in Section 2.2
+remains pending and is not settled by this implementation plan.
 
 Contributors should read this document, fetch the integration branch, claim a narrow node and
 files, use a private worktree, preserve the no-new-admissions/no-native-trust boundary, and return

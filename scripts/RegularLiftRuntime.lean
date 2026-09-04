@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Quang Dao
 -/
 
-import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularCoefficient
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularIteration
 import Mathlib.Algebra.Field.ZMod
 
 /-!
@@ -87,7 +87,32 @@ def run : IO Unit := do
     effectiveDirectRegularCoefficient xEquation 0 constantOnePrefix 1 == none
   check "unavailable solve may have no roots" <|
     effectiveRegularCoefficients xEquation 0 constantOnePrefix 1 == ∅
-  IO.println "Regular-lifting runtime checks passed (19 checks)."
+  check "direct iteration produces the forced quadratic" <|
+    directRegularIteration derivativeMinusX 0 constantOnePrefix 1 == some forcedQuadratic
+  check "direct final filter retains genuine solution" <|
+    directRegularSolution derivativeMinusX 0 ![1, 0] 2 == some forcedQuadratic
+  check "direct local iteration can produce a nonsolution" <|
+    directRegularIteration derivativeMinusValue 0 linearOnePrefix 1 == some locallyForcedQuadratic
+  check "direct final filter rejects local nonsolution" <|
+    directRegularSolution derivativeMinusValue 0 ![1, 1] 2 == none
+  let derivative : CPoly.CMvPolynomial 3 (ZMod 5) := CPoly.CMvPolynomial.X (2 : Fin 3)
+  check "degree below jet accepts constant" <|
+    directRegularSolution derivative 0 ![1, 0] 0 == some constantOnePrefix
+  check "degree below jet rejects linear" <|
+    directRegularSolution (derivative - 1) 0 ![1, 1] 0 == none
+  check "direct zero stages retain input" <|
+    directRegularIteration derivative 0 linearOnePrefix 0 == some linearOnePrefix
+  check "direct zero-slope failure" <|
+    directRegularIteration zeroEquation 0 constantOnePrefix 1 == none
+  check "direct failure propagates" <|
+    directRegularIteration zeroEquation 0 constantOnePrefix 2 == none
+  let translated := effectiveRegularCandidate 1 1 (effectiveInitialPrefix ![1, 2]) 3
+  check "direct nonzero center" <|
+    directRegularSolution derivativeMinusX 2 ![1, 2] 2 == some translated
+  check "direct nonzero-center result agrees with exhaustive scan" <|
+    (directRegularSolution derivativeMinusX 2 ![1, 2] 2).toFinset ==
+      effectiveRegularSolutions derivativeMinusX 2 (effectiveInitialPrefix ![1, 2]) 2
+  IO.println "Regular-lifting runtime checks passed (30 checks)."
 
 end RegularLiftRuntime
 
