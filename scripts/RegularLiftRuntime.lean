@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Quang Dao
 -/
 
-import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularLift
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularCoefficient
 import Mathlib.Algebra.Field.ZMod
 
 /-!
@@ -75,7 +75,19 @@ def run : IO Unit := do
     [(effectiveHasseRun 3 forcedQuadratic).additions,
       (effectiveHasseRun 3 forcedQuadratic).multiplications,
       (effectiveHasseRun 3 forcedQuadratic).visited] == [15, 3, 3]
-  IO.println "Regular-lifting runtime checks passed (14 checks)."
+  check "direct regular coefficient" <|
+    effectiveDirectRegularCoefficient derivativeMinusX 0 constantOnePrefix 1 == some 3
+  let zeroEquation : CPoly.CMvPolynomial 3 (ZMod 5) := 0
+  check "zero equation has unavailable direct solve" <|
+    effectiveDirectRegularCoefficient zeroEquation 0 constantOnePrefix 1 == none
+  check "unavailable solve may have every coefficient as root" <|
+    effectiveRegularCoefficients zeroEquation 0 constantOnePrefix 1 == Finset.univ
+  let xEquation : CPoly.CMvPolynomial 3 (ZMod 5) := CPoly.CMvPolynomial.X (0 : Fin 3)
+  check "nonzero constant residual has unavailable direct solve" <|
+    effectiveDirectRegularCoefficient xEquation 0 constantOnePrefix 1 == none
+  check "unavailable solve may have no roots" <|
+    effectiveRegularCoefficients xEquation 0 constantOnePrefix 1 == ∅
+  IO.println "Regular-lifting runtime checks passed (19 checks)."
 
 end RegularLiftRuntime
 

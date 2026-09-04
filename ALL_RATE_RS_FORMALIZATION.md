@@ -1,6 +1,6 @@
 # All-rate Reed-Solomon capacity formalization
 
-Status: qualitative capstone proved and pushed; explicit parameters and algorithm remain active
+Status: optimized construction/list capstones proved and fully validated; runtime remains open
 
 Last updated: 2026-09-04  
 Integration branch: `quang/all-rate-rs-capacity-formalization`  
@@ -17,7 +17,17 @@ the gold completion gate passes. Progress reports must name the narrower stateme
 The first milestone is commit `81096328`: `qualitative_all_rate` and
 `uniform_hidden_derivative_construction` pass the full validation gate and principal-axiom audit.
 This certifies the scoped qualitative list/construction results, not full Theorem 1.1 or permission
-to announce the full paper result. The concrete lifting vectors pass 14 compiled runtime checks.
+to announce the full paper result. The concrete lifting suite now includes direct-affine solver
+checks, while the closed runtime theorem remains a separate obligation.
+
+The optimized mathematical endpoint is now in
+[`StrongBand.lean`](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/StrongBand.lean):
+`strong_hidden_derivative_construction`, `strong_asymmetric_band`, and
+`strong_quantitative_all_rate`. These preserve the exact `169/25` order constant, prescribed
+multiplicity, threshold `8m`, arbitrary prime-field evaluation sets, and the larger-field condition.
+They prove construction existence and exact-list cardinality, **not** the deterministic runtime
+clause. The remaining critical path is executable interpolation, root enumeration, representation
+and field setup, final filtering, and composition under the closed cost model.
 
 ## 1. Mission and non-negotiable scope
 
@@ -658,7 +668,7 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 | R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | landed coarse counting (`41860246`, `d27de4ed`; validated `3a551066`) | Regular counting discharges jet injectivity from R2. Recursive counting has an explicit regular-branch budget, exact partition, and injective singular transport. The capstone discharges that budget and chooses a cubic witness field. |
 | R5 | Construct a finite extension large enough for witnesses. | R4 | landed noncomputable witness-field construction; executable construction remains open | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
 | R6 | Descend the root count to base-field solutions. | R5 | landed coarse root bound (`d27de4ed`; validated `3a551066`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
-| R7 | Implement and verify root enumeration. | R2, R3, R5 | active: executable prefix invariant integrated; full completeness/enumeration/cost open | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. Full recursion/enumeration remains after the regular continuation stage. |
+| R7 | Implement and verify root enumeration. | R2, R3, R5 | active: regular-lifting completeness, uniqueness and direct affine coefficient solve integrated; full enumeration/cost open | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. Full recursion/enumeration remains after the regular continuation stage. |
 
 This lane is expected to be the main schedule risk. ArkLib's existing Hensel code is specialized to a different trivariate rational-function setting and is not a substitute. Kai Zhe Zheng's formalization states the needed cardinality and algorithmic results as axioms, so those declarations may guide interfaces but cannot discharge `R1` through `R7`.
 
@@ -671,10 +681,10 @@ This lane is expected to be the main schedule risk. ArkLib's existing Hensel cod
 | D3 | Prove exact decoder theorem. | D2, R7 | queued | Decoder output equals the target finite set for every input satisfying hypotheses. |
 | M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | landed (`81096328`; full validation and independent statement audit) | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
 | M1 | Compose the algorithmic theorem. | M0, D3 | queued | Exact output and list bound are proved; runtime is claimed only if formally modeled. |
-| O0 | Add a separate asymmetric-band index and certificate with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and `C_- ≤ |c| active: band index integrated (`fe32c8e6`); local-rank proof owned by B | C0, I4, U0a, S0.1 | queued | Reproduces the finite certificate without changing the landed cap-free index or the qualitative `m = d³` package consumed by active work. Its `floor(δn/2)` quantitative padding is distinct from, but should reuse the max-branch geometry API of, `U0a`. |
-| O1 | Prove `d(δ) = ceil(exp((169/25)/δ))` for `0 < δ < 1/4`. | O0 | queued | Every numerical inequality is kernel-checked; `169/25`, not a decimal approximation, occurs in proof terms. |
+| O0 | Prove the actual asymmetric band with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and lower/upper higher-jet degree cutoffs. | C0, I4, U0a, S0.1 | landed: complete finite comparison and construction in `BandParameterAssembly` and `StrongBand` | Reproduces the finite certificate without changing the landed cap-free index or qualitative `m = d³` package. Finite ambient rounding, actual local rank, dimension, and nonzero interpolation are all proved. |
+| O1 | Prove `d(δ) = ceil(exp((169/25)/δ))` for `0 < δ < 1/4`. | O0 | landed: `StrongBand.strong_hidden_derivative_construction` | Every numerical inequality is kernel-checked; `169/25`, not a decimal approximation, occurs in proof terms. |
 | O2 | Prove the order-zero branch for every `δ ≥ 1/4`: list size `≤ 1` for `δ ≥ 1/2` and `< 4q` below `1/2`. | M0, S0.1 | list bounds landed (`53d3b9b8`, validated `3a551066`); efficient order-zero algorithm open | The bivariate interpolation module is independent of exact hidden-derivative indices requiring `0 < d`; multiplicity `k-1` and the direct `k=1` case are explicit. The `d=1,m=64,M=16` certificate at gap `1/4` is an optional corollary. |
-| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under `q ≥ 2 max{0,mA-K+d}`. | R6, S0.1 | review: extension-exponent source `951e25e5`; gap-only prefactor and exact field condition open | Includes `D < char(F)`, every relevant individual jet degree `< char(F)`, primitive normalization, and fixed-parameter runtime scope. |
+| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under `q ≥ 2 max{0,mA-K+d}`. | R6, S0.1 | landed: `StrongBand.strong_asymmetric_band` with prefactor `8(d+1)m²` | Explicit characteristic hypotheses and the reduced separant budget are discharged. This node certifies list cardinality; executable root enumeration and runtime remain R7/M1. |
 | O4 | Formalize the shrinking-gap result `δ_n = C/log n` for `C > 13.52`. | O0, O1, O3, S0.1 | queued | Gives `d = n^(6.76/C+o(1))`, `m = n^(13.52/C+o(1))`, and list size `exp(n^(6.76/C+o(1)))`. A runtime clause additionally requires M1 with an explicit proved cost model; parameter substitution alone does not prove runtime. |
 | O5 | Formalize primitive-part normalization, first-separant degree, residual-chain bounds, exact resonance counts, and randomized regular-witness enumeration. | M0, R6 | queued | These strengthen rather than replace the generic division-free root theorem; each theorem states its characteristic and algorithmic scope independently. |
 | O6 | Formalize the full local-kernel monomial ideal and the exact finite-matrix block decomposition of the actual local rank. | I4 | queued | Preserve the distinction between the actual local map and the enlarged map. Do not retroactively strengthen `I3-I4` acceptance criteria or block `M0`. |
@@ -977,13 +987,13 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Direct affine solve for the unique regular lifting coefficient | `HiddenDerivative/RootFinding/ExecutableRegularCoefficient.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Prescribed finite parameters and strict global band comparison | `AllRateListDecoding/BandParameterAssembly.lean` |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Deterministic direct regular iteration and exact final solution filter | `HiddenDerivative/RootFinding/DirectRegularIteration.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Closed costed prime-field enumeration with completeness and no duplicates | `ArkLib/Data/ZMod/EnumerationMachine.lean` (interface being frozen) |
 | C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Costed pivot lookup, factor calculation, and delegated target-row elimination | `ArkLib/Data/Matrix/PivotEliminationMachine.lean` |
-| Central | Construction and quantitative capstone assembly, integration, audits, tracker, validation and push | `AllRateListDecoding/BandConstruction.lean`, generated umbrella and integration fixes |
+| Central | Quantitative capstone final gate, operational composition, audits, tracker, validation and push | `AllRateListDecoding/StrongBand.lean`, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
-except C's explicitly repository-relative path.
+except explicitly repository-relative paths beginning `ArkLib/`.
 Do not infer ownership from the historical
 wide dependency graph. Ask the central owner before editing a claimed interface.
 
@@ -1114,29 +1124,49 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   formula, value refinement, and canaries, with no correctness findings. Direct regular lifting
   is now being optimized to solve an affine coefficient equation instead of scanning the field;
   its residual evaluations still require operational cost refinement before any runtime claim.
+- `BandParameterAssembly.lean` source `b609361e` closes every scalar, mass, normalized-rank,
+  and dimension prerequisite from the original prescribed parameters and feasible threshold.
+  In particular `delta*n >= 5408*d²` implies the necessary finite ambient room. The endpoint
+  gives `n*actualBandBudget < actualBandDimensionCount` without an assumed rank or mass bound.
+  Worker A independently audited every parameter conversion and the strict comparison.
+- `StrongBand.lean` consumes that numerical certificate and proves both strong mathematical
+  contracts without extra assumptions. The small-gap prefactor is `8*(d+1)*m²`, chosen before
+  every instance parameter. The two witness fields give exponents `2d` and `d`; thresholds above
+  `n` give empty lists. Combining with `LowOrderRegime` proves the optimized quantitative contract.
+  Worker B independently checked the exact quantifiers, original/padded dimension distinction,
+  prime characteristic, larger-field natural subtraction, and canonical exact-list/radius wrapper.
+- `DirectRegularCoefficient.lean` source `bb7d8809` replaces a field scan by direct affine
+  division whenever the slope is nonzero. The residual-affine identity, uniqueness, scan-singleton
+  equality, and availability at regular characteristic-safe prefixes are proved. `none` means
+  the nonzero-slope method is unavailable, not that there are no roots. Five durable compiled
+  tests added to `regular-lift-runtime` distinguish the unique, all-roots, and no-roots cases.
+  The shorter canonical filename satisfies the generated umbrella import's line limit; source
+  theorem names and proofs are unchanged.
+- The optimized capstone/parameter/direct-coefficient batch passed full central
+  `./scripts/validate.sh --axioms`: 550 umbrella imports, 19 compiled lifting checks, all style,
+  documentation and import gates, 312 pre-existing tainted declarations and no new taint.
+  Eight principal endpoints, including both strong contracts and their composition, depend only
+  on `propext`, `Classical.choice`, and `Quot.sound`. Source admissions remain 183 with zero
+  additions; no explicit axioms or native-trust constructs were introduced.
 
 ### Next critical-path work
 
-1. Preserve the completed coarse capstone while integrating the quantitative and operational
-   layers. Do not replace its proved inputs with assumed root-count or rank premises.
-2. Assemble the completed `29/100` concentration bound and explicit `169/25` endpoint comparison
-   into the actual strict finite rank/dimension certificate at `n >= 8m`.
-   Exact finite Cantelli, event transport, normalized local rank, and scalar rounding are implemented.
-   In the finite simplex, variance contains `S*(S+d)` rather than `S²`; transporting a good event
-   through the quotient/remainder lattice map also requires a fiber bound, not an assumption
-   that the image distribution is uniform. Both issues are addressed by the finite mass proof.
-3. Assemble extension root counting at `q^(2d)` and base-field `q^d` with a gap-only jet-degree
-   prefactor. The reduced-separant field-size theorem and band bound `t <= 2m` are implemented;
-   finish their assembly with the prescribed-parameter finite certificate and canonical contracts.
-4. Build executable interpolation, regular/singular root enumeration, extension construction,
+1. Preserve both mathematical capstones and their no-extra-assumption theorem statements.
+   Optimized analysis and list counting are no longer the main critical path.
+2. Finish the closed Gaussian-elimination kernel, including pivot selection, matrix materialization,
+   preservation of solution spaces, and nonzero-kernel-vector extraction with a proved cost bound.
+3. Build direct regular iteration, then regular/singular root enumeration. Link the actual residual
+   computations to costed polynomial operations; field scans or residual calls are not unit-cost.
+4. Build executable interpolation-matrix entries, finite-field and extension construction,
    and final filtering from costed subroutines. Prove termination, exact output, and cost for
    the same program. Include the efficient order-zero route.
 5. Combine the exact numerical construction with the operational decoder; independently audit
    statements and trust before claiming Theorem 1.1.
 
-The working estimate is eight integration epochs, with a planning allowance of eight to twelve.
-This is not a guarantee. The closed operational-semantics requirement adds real work, and the
-estimate must be revised from measured handoffs rather than treating partial counters as completion.
+The earlier eight-to-twelve-epoch estimate is no longer a reliable completion forecast. It preceded
+the decomposition into fully charged operational subroutines. The mathematical assembly is complete;
+the remaining implementation/adequacy layers need their own measured milestones. Partial counters
+and functional optimizations must not be counted as completed runtime proofs.
 Lower bounds, shrinking gaps, exact-rank optimality, and characteristic refinements remain deferred.
 
 Contributors should read this document, fetch the integration branch, claim a narrow node and

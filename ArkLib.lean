@@ -182,6 +182,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPadding
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPaddingCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandAmbientParameters
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandConstruction
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandParameterAssembly
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.ConstructionContracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorConstruction
@@ -192,6 +193,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegime
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegimeCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Main
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RateCover
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.UniformThresholds
 import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
 import ArkLib.Data.CodingTheory.ReedSolomon.Folded
@@ -245,6 +247,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexV
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Counting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescent
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescentCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DirectRegularCoefficient
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularIteration
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularLift
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.ExecutableRegularStep
