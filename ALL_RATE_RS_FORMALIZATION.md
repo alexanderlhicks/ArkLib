@@ -5,6 +5,7 @@ Last updated: 2026-09-04
 Integration branch: `quang/all-rate-rs-capacity-formalization`  
 Fork: <https://github.com/quangvdao/ArkLib>  
 ArkLib base: `Verified-zkEVM/ArkLib@22dbd4e836c15a21f68889afa69b7130da04abbb`
+Normative paper: `quangvdao/all-rate-rs-list-decoding@9e4d6488ead94be47cca69e5be915b5667143b66`
 
 This document is the single source of truth for formalizing the all-rate hidden-derivative Reed-Solomon list-decoding theorem. It is deliberately kept on the integration branch with the proof. It records the theorem contract, provenance, dependencies, ownership boundaries, risks, and completion gates for a long-running multi-contributor effort.
 
@@ -25,11 +26,12 @@ The project may first prove weaker constants or a worse list-size exponent. It m
 - the list bound has the form `C(δ) q^e(δ)`, with exponent and prefactor independent of `n` once `δ` is fixed;
 - the proof exposes the characteristic hypotheses used by differential root finding.
 
-The initial capstone may use an existential or very large explicit `d(δ)` and the older `q^(4d+6)`-type bound. The optimized derivative order, the `q^(2d)` bound, the `d = 0` and `d = 1` regimes, and shrinking-gap results are refinement milestones, not excuses to delay the qualitative all-rate theorem.
+The initial capstone may use an existential or very large explicit `d(δ)` and the older `q^(4d+6)`-type bound. The optimized derivative order, the `q^(2d)` bound, the order-zero regime for `δ ≥ 1/4`, the optional fixed-parameter order-one certificate at gap `1/4`, and shrinking-gap results are refinement milestones, not excuses to delay the qualitative all-rate theorem.
 
 ## 2. Target theorem contracts
 
-The exact Lean signatures will be frozen in task `S0`. The following mathematical statements are normative.
+The qualitative Lean signatures are frozen in task `S0`; paper-dependent quantitative signatures
+are synchronized in `S0.1`. The following mathematical statements are normative.
 
 ### 2.1 Combinatorial capstone
 
@@ -88,16 +90,24 @@ The `q^(2d)` and larger-field `q^d` bounds should be corollaries. This avoids fi
 
 ### 2.5 Strong quantitative capstone
 
-The quantitative contract is temporarily **unfrozen** while the current paper source is reconciled
-with the Lean statements.  A live source-alignment audit has identified changes to the exponential
-constant, low-order regimes, multiplicity, larger-field hypothesis, and shrinking-gap threshold
-relative to the older snapshot previously recorded here.  In particular, contributors must not
-implement the former `172/25` or `C > 13.76` statements from an old tracker revision.
+The quantitative contract was temporarily unfrozen while the current paper source was reconciled
+with the Lean statements. The source-alignment audit is now pinned to paper commit `9e4d648` and
+records the corrected exponential constant, low-order regimes, multiplicity, larger-field
+hypothesis, and shrinking-gap threshold below. Contributors must not implement the former `172/25`
+or `C > 13.76` statements from an old tracker revision.
 
-The qualitative target—all rates, every fixed positive gap, and one `d(δ)` chosen before the
-rate—is unaffected.  Once the source-alignment branch is committed and independently reviewed,
-this subsection will record the exact rational constants and boundary conventions.  Decimal
-approximations must not enter proof terms.
+```text
+dδ = 0                              if δ ≥ 1/4,
+dδ = ceil(exp((169/25) / δ))        if 0 < δ < 1/4.
+```
+
+The rational constant `169/25` is the exact formal representation of `6.76`. Decimal approximation must not enter a proof term. For `0 < δ < 1/4`, take `m = ceil(100 d² H_(d-1))` and `N = 8m`; the list bound is `B(δ) q^(2d)`, improving to `B(δ) q^d` under the paper's separant-based larger-field condition. For `1/4 ≤ δ < 1/2`, the order-zero proof gives list size `< 4q`, not a gap-dependent constant; for `δ ≥ 1/2`, the list size is at most one. The optional `d = 1`, `m = 64`, `M = 16` certificate applies at gap `1/4` but is not the headline derivative order. The shrinking-gap corollary is `δ_n = C / log n` for `C > 13.52`.
+
+The strong contract is therefore split into an order-zero statement and a small-gap asymmetric-band statement. Derivative order and field-size exponent must never again be identified in a single formula across the `δ = 1/4` boundary, and the order-zero interpolation multiplicity must not be quantified as a function of `δ` alone.
+
+This repinning releases `S0.1` and its quantitative descendants for implementation. It does not
+replace the independent theorem and source-correspondence audit required by `A0` before publication
+or announcement.
 
 ## 3. Gold trust and announcement gate
 
@@ -120,9 +130,10 @@ A theorem temporarily parameterized by the Kopparty root-finding result may be u
 
 - Joshua Brakensiek, Yeyuan Chen, Aaron Putterman, Zihan Zhang, and Kai Zhe Zheng, *Algorithmic List Decoding of Reed-Solomon Codes up to Capacity in the Low-Rate Regime*, ECCC TR26-164. This is the source of the hidden-derivative interpolation framework and the published low-rate specialization.
 - Swastik Kopparty's differential-equation root-finding theorem, as cited by the ECCC report. This result must be reconstructed in Lean for the gold capstone.
-- The all-rate strengthening paper by Quang Dao and Justin Thaler, source snapshot `81c12b07307e8bf49f61cdbf18736d6b8777f539` in the research repository. This is the normative source for the stronger theorem, uniform ambient-padding argument, improved interpolation analysis, sharper list bound, refinements, and limitations.
+- Quang Dao, Scott Duke Kominers, Justin Thaler, and Kai Zhe Zheng, *Reed--Solomon List Decoding up to Capacity at Every Rate*, source snapshot `9e4d6488ead94be47cca69e5be915b5667143b66` in the private research repository. This is the normative source for the stronger theorem, adaptive ambient-padding argument, improved interpolation analysis, sharper list bound, refinements, and limitations. Scott Duke Kominers supplied the latest GPT-6 Astra/Claude Fable 5.1 audit incorporated in this snapshot.
 
-Exact bibliographic entries and theorem-to-source links must be added to `blueprint/src/references.bib` as modules land.
+Bibliographic entries `BCPZZ26` and `DKTZ26`, together with durable knowledge-base source records,
+are part of the paper-alignment checkpoint. Theorem-to-source links must be kept current as modules land.
 
 ### 4.2 Prior Lean formalization
 
@@ -167,7 +178,7 @@ The prior formalization and existing ArkLib branches substantially shorten the a
 1. formalizing differential-equation root counting and root enumeration without axioms;
 2. proving a uniform all-rate parameter certificate with `d` depending only on `δ`.
 
-With the fresh free-order layer and finite-cover wrapper, the practical estimate is that existing work removes 70 to 85 percent of the interpolation and parameter work for the first qualitative theorem, or roughly 45 to 60 percent of its complete axiom-clean critical path after ArkLib adaptation and root counting are included. It removes only about 25 to 35 percent of the explicit `172/(25δ)` path and less than 20 percent of an honestly executable decoder/runtime path. The remaining work contains the deepest independent arguments and most of the cross-library adaptation.
+With the fresh free-order layer and finite-cover wrapper, the practical estimate is that existing work removes 70 to 85 percent of the interpolation and parameter work for the first qualitative theorem, or roughly 45 to 60 percent of its complete axiom-clean critical path after ArkLib adaptation and root counting are included. It removes only about 25 to 35 percent of the explicit `169/(25δ)` path and less than 20 percent of an honestly executable decoder/runtime path. The remaining work contains the deepest independent arguments and most of the cross-library adaptation.
 
 ### 4.5 Accelerated qualitative route from the fresh donor theorem
 
@@ -205,7 +216,7 @@ n > ceil(2m/a_min).
 
 These inequalities uniformly give `d < K_a`, donor agreement threshold at most `n`, `mA_a ≤ n² ≤ q²`, and `B_a < n ≤ q`. This produces one coarse `d(δ)` and `N(δ)` before the code rate is known.
 
-This finite-cover reduction offers the shortest qualitative path because it reuses the donor's already checked free-order rank comparison. It does not yield the paper's sharp `exp((172/25)/δ)` dependence, and it does not remove the Kopparty cardinality axiom by itself. The direct adaptive-padding and asymmetric-band paths remain necessary for the sharp theorem and provide an independent cross-check of the finite-cover proof.
+This finite-cover reduction offers the shortest qualitative path because it reuses the donor's already checked free-order rank comparison. It does not yield the paper's sharp `exp((169/25)/δ)` dependence, and it does not remove the Kopparty cardinality axiom by itself. The direct adaptive-padding and asymmetric-band paths remain necessary for the sharp theorem and provide an independent cross-check of the finite-cover proof.
 
 ## 5. Architecture and module ownership
 
@@ -229,14 +240,24 @@ ArkLib/Data/CodingTheory/ReedSolomon/
 │   ├── LocalConstraints.lean
 │   ├── LocalRank.lean
 │   ├── Counting.lean
+│   ├── AsymmetricBandIndex.lean
+│   ├── ExactLocalRank.lean
 │   ├── Interpolation.lean
 │   ├── Multiplicity.lean
 │   ├── DifferentialEquation.lean
 │   └── RootFinding/
-│       ├── Lifting.lean
+│       ├── RegularLifting.lean
+│       ├── SingularRecursion.lean
 │       ├── Counting.lean
-│       └── Extension.lean
+│       ├── Extension.lean
+│       └── Resonance.lean
 └── AllRateListDecoding/
+    ├── Contracts.lean
+    ├── RateCover.lean
+    ├── UniformThresholds.lean
+    ├── OrderZero.lean
+    ├── Characteristic.lean
+    ├── Sharpness.lean
     └── Main.lean
 ```
 
@@ -251,7 +272,8 @@ Every node below has a narrow owner and an explicit acceptance condition in Sect
 ```mermaid
 flowchart TD
     P0["P0: provenance and source pins"]
-    S0["S0: freeze theorem contracts"]
+    S0["S0: qualitative contracts"]
+    S01["S0.1: quantitative contracts v2"]
     F0["F0: integrate weighted support"]
     F1["F1: integrate Hasse-Taylor"]
     F2["F2: canonical RS/list bridge"]
@@ -270,7 +292,8 @@ flowchart TD
 
     C0["C0: exact finite band counts"]
     C1["C1: coarse lattice bounds"]
-    U0["U0: ambient padding geometry"]
+    U0["U0: fixed-fraction padding geometry"]
+    U0a["U0a: paper-adaptive padding geometry"]
     U1["U1: positive power saving for ratio > 1"]
     U2["U2: uniform d(delta), N(delta)"]
     U3["U3: finite all-rate interpolation certificate"]
@@ -297,14 +320,18 @@ flowchart TD
     M1["M1: axiom-clean exact decoder capstone"]
 
     O0["O0: asymmetric-band analysis"]
-    O1["O1: explicit exp(6.88/delta) bound"]
-    O2["O2: d=0 and d=1 regimes"]
+    O1["O1: explicit exp(6.76/delta) bound"]
+    O2["O2: order-zero quarter-gap regime"]
     O3["O3: q^(2d), q^d root bounds"]
     O4["O4: shrinking gap C/log n"]
-    O5["O5: field-descent and resonance refinements"]
-    N0["N0: exact-capacity bad ball"]
-    N1["N1: exp(Omega(1/delta)) lower bound"]
-    N2["N2: small-characteristic obstruction"]
+    O5["O5: primitive/separant/resonance refinements"]
+    O6["O6: exact local-kernel refinements"]
+    C2["C2: linearly-growing characteristic"]
+    N0["N0: exact-capacity maximum"]
+    N1["N1: inverse-gap lower-bound suite"]
+    N2a["N2a: lifting characteristic boundary"]
+    N2b["N2b: Frobenius-plane obstruction"]
+    N3["N3: universal agreement bounds"]
 
     A0["A0: statement and source audit"]
     A1["A1: mutation and boundary canaries"]
@@ -318,7 +345,13 @@ flowchart TD
     P0 --> F4
     S0 --> F2
     S0 --> U0
+    S0 --> U0a
     S0 --> R0
+    S01 --> O0
+    S01 --> O2
+    S01 --> O3
+    S01 --> O4
+    S01 --> C2
 
     F1 --> L0
     F3 --> L0
@@ -342,11 +375,12 @@ flowchart TD
     F0 --> C0
     F4 --> C0
     C0 --> C1
-    U0 --> U1
+    U0 --> U0a
+    U0a --> U1
     C1 --> U1
     F4 --> U1
     U1 --> U2
-    U0 --> U2
+    U0a --> U2
     U2 --> U3
     C0 --> U3
 
@@ -388,16 +422,21 @@ flowchart TD
 
     C0 --> O0
     I4 --> O0
-    U0 --> O0
+    U0a --> O0
     U3 --> O0
     O0 --> O1
     O0 --> O4
     M0 --> O2
     R6 --> O3
     M0 --> O5
-    M0 --> N0
-    M0 --> N1
-    R0 --> N2
+    I4 --> O6
+    O3 --> C2
+    R0 --> N2a
+    N2a --> N2b
+    O0 --> N2b
+    F2 --> N0
+    F2 --> N1
+    F2 --> N3
 
     M0 --> A0
     M1 --> A0
@@ -406,9 +445,13 @@ flowchart TD
     O3 --> A0
     O4 --> A0
     O5 --> A0
+    O6 --> A0
+    C2 --> A0
     N0 --> A0
     N1 --> A0
-    N2 --> A0
+    N2a --> A0
+    N2b --> A0
+    N3 --> A0
     A0 --> A1
     A1 --> A2
     A2 --> G0
@@ -437,7 +480,8 @@ Status values are `blocked`, `queued`, `active`, `review`, and `landed`. A node 
 | ID | Work package | Depends on | Status | Acceptance condition |
 |---|---|---|---|---|
 | P0 | Record provenance, permission, source commits, and citation keys. | None | active (project-owner attestation recorded; direct grant evidence pending) | Every imported file names its source and commit; bibliography entries build; permission record is durable. |
-| S0 | Freeze exact Lean statements for combinatorial, exact-decoder, characteristic, and refinement theorems. | None | landed (`7715c089`) | Quantifier order visibly gives `d = d(δ)` before all code parameters; edge cases and radius conversion are explicit. |
+| S0 | Freeze the qualitative prime-field combinatorial and exact-decoder statements. | None | landed (`7715c089`) | Quantifier order visibly gives `d = d(δ)` before all code parameters; edge cases and radius conversion are explicit. |
+| S0.1 | Freeze quantitative contracts matching paper snapshot `9e4d648`: split order-zero and asymmetric-band regimes, then compose them. | None | landed (paper-alignment checkpoint) | `d = 0` above gap `1/4` does not imply a constant list bound; order-zero multiplicity is not gap-only; the small-gap statement uses `169/25`, the optimized multiplicity, and the corrected larger-field condition. Any later paper change reopens this node before dependent work starts. |
 | F0 | Integrate and re-audit PR 857 weighted-support API. | P0 | landed (`5bc284d7`) | Head `f37f25ba` is represented without regressions; no zero-weight finrank theorem is misapplied. |
 | F1 | Integrate and re-audit PR 856 Hasse-Taylor API. | P0 | landed (`611afa07`) | Head `0c6d0a40` is represented; characteristic-safe identities and divisibility canaries pass. |
 | F2 | Port ArkLib-native list specification, agreement-radius bridge, ambient subcode, and exact filtering contracts. | P0, S0 | landed (`d970f64c`, `45f98802`) | Uses canonical `ReedSolomon.code` and `Code.Lambda`; closes PR 855's two filtering holes; contains no stale low-rate capstone. |
@@ -480,9 +524,10 @@ Route A is the preferred phase-one path. Its output may have a very poor non-exp
 |---|---|---|---|---|
 | C0 | Formalize exact finite counting functions for bands, shells, and local-rank sums. | F0 | landed (`7935aaa5`, registration `2d8216d9`) | Finite sums correspond bijectively to interpolation indices; small numerical instances are executable canaries. |
 | C1 | Prove coarse simplex/lattice bounds sufficient for positive power saving. | C0 | queued | Floors and ceilings are included; constants need not be optimized; no unjustified real-to-natural rounding. |
-| U0 | Formalize ambient padding `K = k + floor(λ δ n)` and uniform geometry. | S0 | queued | Proves a positive ambient-rate lower bound and agreement-to-ambient-rate ratio `> 1`, uniformly over every `0 ≤ k/n ≤ 1-δ`. |
-| U1 | Prove a local-rank power saving whenever the ratio exceeds one. | U0, C1 | queued | Derives `O(d^{-s})` for some `s(δ) > 0`; no small-agreement hypothesis. |
-| U2 | Extract one finite `d(δ)` and `N(δ)` independent of the rate. | U0, U1 | queued | Quantifier order passes the uniformity test; all side conditions such as `D > d` and individual degrees are included. |
+| U0 | Formalize fixed-fraction additive padding `K = k + floor(λδn)` and its rate-uniform inequalities. | S0 | active; externally owned from canonical `1cb5622e` | This remains a sound phase-one qualitative route. It proves a positive ambient-rate lower bound and agreement-to-ambient-rate ratio `> 1`, with every floor and positivity condition explicit. |
+| U0a | Formalize the manuscript's adaptive qualitative padding `ρ₀ = δ(1-δ)/2`, `K = max{k, ceil(ρ₀n)}`, and uniform geometry. | S0, U0 | queued; start after the `U0` interface is integrated | Proves `K < A`, a positive ambient-rate lower bound, and agreement-to-ambient-rate ratio at least `1/(1-δ)`, uniformly over every `0 ≤ k/n ≤ 1-δ`. Reuse `U0`'s rounding lemmas without changing its active contract. |
+| U1 | Prove a local-rank power saving whenever the ratio exceeds one. | U0a, C1 | queued | Derives `O(d^{-s})` for some `s(δ) > 0`; no small-agreement hypothesis. The fixed-fraction `U0` package may supply an alternate corollary. |
+| U2 | Extract one finite `d(δ)` and `N(δ)` independent of the rate. | U0a, U1 | queued | Quantifier order passes the uniformity test; all side conditions such as `D > d` and individual degrees are included. |
 | U3 | Package a finite interpolation certificate valid for all rates and all `n ≥ N(δ)`. | U2, C0 | queued | Strict dimension-versus-rank inequality is available in exactly the form required by `I5`. |
 
 Phase one should use the simplest sound padding and lattice argument, such as midpoint or fixed-fraction padding. Optimizing `λ`, asymmetric bands, or the derivative exponent belongs in `O0` and `O1` after the qualitative theorem composes.
@@ -513,19 +558,21 @@ This lane is expected to be the main schedule risk. ArkLib's existing Hensel cod
 | D3 | Prove exact decoder theorem. | D2, R7 | queued | Decoder output equals the target finite set for every input satisfying hypotheses. |
 | M0 | Compose the all-rate combinatorial theorem. | F2, I6, R6, V3; alternatively the independently audited direct `U3` path | queued | Gold qualitative scope, `d = d(δ)`, arbitrary evaluation set, and no project axioms. |
 | M1 | Compose the algorithmic theorem. | M0, D3 | queued | Exact output and list bound are proved; runtime is claimed only if formally modeled. |
-| O0 | Formalize adaptive padding, variance/Cantelli estimates, and asymmetric interpolation band. | C0, I4, U0 | queued | Reproduces a mechanically checkable sharp finite certificate. |
-| O1 | Prove the paper's strongest corrected explicit exponential `d(δ)` bound. | O0 | blocked on source-alignment audit | Every numerical inequality is kernel-checked; no decimal is trusted without a rational enclosure. |
-| O2 | Prove the corrected low-order regimes from the final paper source. | M0 | blocked on source-alignment audit | Boundary values, ceilings, empty-list cases, and list-size consequences are explicit. |
-| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under the larger-field hypothesis. | R6 | queued | Includes the corrected characteristic condition `char(F) > max(D,t)` and fixed-parameter runtime scope. |
-| O4 | Formalize the corrected shrinking-gap result from the final paper source. | O0 | blocked on source-alignment audit | All asymptotic quantifiers are formal and no fixed-gap theorem is conflated with it. |
-| O5 | Formalize field descent, resonance, and other qualitative refinements selected for the paper's final theorem suite. | M0 | queued | Each theorem has an independent value and does not weaken characteristic hypotheses. |
-| N0 | Formalize the exact-capacity bad-ball construction. | M0 | queued | Gives exponentially many codewords at the endpoint, including ceiling conventions. |
-| N1 | Formalize the `exp(Ω(1/δ))` arbitrary-evaluation-set lower bound. | M0 | queued | Coset construction and parameter regime are exact; no unsupported asymptotic shorthand. |
-| N2 | Formalize the bounded-characteristic obstruction to jet lifting. | R0 | queued | Gives an explicit counterexample such as `Q = Y₁`, `P = H(X^p)` and states precisely what fails. |
+| O0 | Add a separate asymmetric-band index and certificate with `K = max{k, floor(δn/2)}`, `m = ceil(100d²H_(d-1))`, and `C_- ≤ |c| ≤ C_+`; formalize the variance/Cantelli analysis. | C0, I4, U0a, S0.1 | queued | Reproduces the finite certificate without changing the landed cap-free index or the qualitative `m = d³` package consumed by active work. Its `floor(δn/2)` quantitative padding is distinct from, but should reuse the max-branch geometry API of, `U0a`. |
+| O1 | Prove `d(δ) = ceil(exp((169/25)/δ))` for `0 < δ < 1/4`. | O0 | queued | Every numerical inequality is kernel-checked; `169/25`, not a decimal approximation, occurs in proof terms. |
+| O2 | Prove the order-zero branch for every `δ ≥ 1/4`: list size `≤ 1` for `δ ≥ 1/2` and `< 4q` below `1/2`. | M0, S0.1 | queued | The bivariate interpolation module is independent of exact hidden-derivative indices requiring `0 < d`; multiplicity `k-1` and the direct `k=1` case are explicit. The `d=1,m=64,M=16` certificate at gap `1/4` is an optional corollary. |
+| O3 | Formalize sharpened root counts `O_δ(q^(2d))` and `O_δ(q^d)` under `q ≥ 2 max{0,mA-K+d}`. | R6, S0.1 | queued | Includes `D < char(F)`, every relevant individual jet degree `< char(F)`, primitive normalization, and fixed-parameter runtime scope. |
+| O4 | Formalize the shrinking-gap result `δ_n = C/log n` for `C > 13.52`. | O0, S0.1 | queued | Gives `d = n^(6.76/C+o(1))`, `m = n^(13.52/C+o(1))`, and list size/time `exp(n^(6.76/C+o(1)))`; all asymptotic quantifiers are formal. |
+| O5 | Formalize primitive-part normalization, first-separant degree, residual-chain bounds, exact resonance counts, and randomized regular-witness enumeration. | M0, R6 | queued | These strengthen rather than replace the generic division-free root theorem; each theorem states its characteristic and algorithmic scope independently. |
+| O6 | Formalize the full local-kernel monomial ideal and the exact finite-matrix block decomposition of the actual local rank. | I4 | queued | Preserve the distinction between the actual local map and the enlarged map. Do not retroactively strengthen `I3-I4` acceptance criteria or block `M0`. |
+| C2 | Formalize all-rate decoding over finite fields of characteristic `p ≥ cn`, with root exponent `2d ceil(1/c)`. | O3, S0.1 | queued | Uses fixed parameter certificates, including `d=1` for `1/4 ≤ δ < 1/2`, so individual jet degrees are bounded independently of `n`; requires a generic finite-field certificate API rather than the `ZMod q` prime-field frontend. |
+| N0 | Formalize the exact-capacity extremal result. | F2 | queued | Proves the maximum list size is exactly `binom(n,k)`, including the explicit center and all ceiling conventions. |
+| N1 | Formalize three separately quantified lower bounds: coefficient-pigeonhole/entropy shrinking gaps, the existential doubly-exponential inverse-gap bad ball, and the explicit multiplicative-coset family. | F2 | queued | The `o(1/log n)` obstruction, `exp((δ/16)2^(1/δ))` finite-length example, and `2^t/(t+1)` infinitely-many-length example are not conflated; the finite-length theorem is not claimed to lower-bound eventual `d(δ)`. |
+| N2a | Formalize the characteristic boundary for coefficient lifting. | R0 | queued | Retains `∂(Y₁^p)/∂Y₁ = 0` and `Q=Y₁`, `P=H(X^p)` as regression tests and records exactly which descent and uniqueness hypotheses fail. |
+| N2b | Formalize the Frobenius-plane obstruction. | N2a, O0 | queued | Proves the `H₀(X^M)+XH₁(X^M)` root family for every higher-derivative-supported asymmetric-band interpolant. Scope is the enumerate-then-filter architecture, not every hidden-derivative method. |
+| N3 | Formalize the field-independent subset and Johnson-type agreement bounds. | F2 | queued | The finite floor conventions match the manuscript and the bounds can be intersected with algebraic differential-root bounds in every characteristic. |
 
-The paper source, rather than an earlier agent report or stale tracker revision, controls `O1`,
-`O2`, and `O4`.  Their contracts must be repinned after the active source-alignment audit and then
-independently reviewed before implementation.
+The paper source, rather than an earlier agent report, controls every node `S0.1` and `O0-O6`. The pinned paper states `δ_n = C/log n` for `C > 13.52`; any later source change requires a statement re-audit before implementation. Qualitative work may continue across a paper update, but no new quantitative or refinement node may start until the source pin and its contract have been reconciled.
 
 ### 7.6 Independent audits
 
@@ -544,12 +591,14 @@ The graph is designed for more contributors than the four-agent local limit. Wit
 
 Run concurrently:
 
-1. `S0 + F2`: freeze ArkLib-native theorem and decoder contracts.
-2. `F0 + I0`: integrate weighted support and design the finite zero-weight-safe band.
-3. `F1 + L0`: integrate Hasse-Taylor and prove the missing actual-polynomial bridge.
-4. `R0 + R1`: begin differential root-finding definitions and derivative descent.
-5. `P0 + F3`: record provenance and adapt hidden-variable substitutions.
-6. `F4`: audit and selectively port the new donor free-order layer.
+1. `S0 + F2`: freeze ArkLib-native qualitative theorem and decoder contracts.
+2. `S0.1`: whenever the normative paper pin changes, reconcile the quantitative contracts before
+   starting new `O0-O6` or `C2` work. This synchronization does not pause qualitative work.
+3. `F0 + I0`: integrate weighted support and design the finite zero-weight-safe band.
+4. `F1 + L0`: integrate Hasse-Taylor and prove the missing actual-polynomial bridge.
+5. `R0 + R1`: begin differential root-finding definitions and derivative descent.
+6. `P0 + F3`: record provenance and adapt hidden-variable substitutions.
+7. `F4`: audit and selectively port the new donor free-order layer.
 
 ### Wave 1: algebraic cores
 
@@ -558,7 +607,8 @@ Run concurrently:
 1. `L1 + I2`: local contact and constraint map.
 2. `I1`: differential specialization and degree.
 3. `C0 + C1`: exact counts and coarse lattice estimates.
-4. `U0 + U1`: uniform ambient geometry and positive power saving.
+4. `U0`: fixed-fraction ambient geometry; then `U0a + U1` in non-overlapping files for the
+   manuscript's adaptive geometry and positive power saving.
 5. `R2 + R3`: unique lifting and singular recursion.
 6. `D0`: checked interpolation linear solver.
 7. `V0 + V1`: formalize the finite rate cover and its donor parameter instances.
@@ -586,7 +636,7 @@ The first public-quality milestone is `M0` plus `A0-A2`. `M1` may follow if algo
 
 ### Wave 4: quantitative refinements and limitations
 
-Run `O0-O5` and `N0-N2` in separate worktrees. These nodes should consume the stable phase-one interfaces rather than rewrite the capstone. Quantitative improvements should be added as stronger corollaries or alternate parameter packages.
+Run `O0-O6`, `C2`, and `N0-N3` in separate worktrees after `S0.1` matches the pinned paper. These nodes should consume the stable phase-one interfaces rather than rewrite the capstone. Quantitative improvements should be added as stronger corollaries or alternate parameter packages.
 
 ## 9. Hardest blockers and mitigations
 
@@ -596,9 +646,9 @@ Run `O0-O5` and `N0-N2` in separate worktrees. These nodes should consume the st
 | Local rank argument | The paper bounds the rank through an intermediate map and an exhibited kernel. Confusing this upper bound with exact rank would invalidate the proof. | Give `Φ` and `Γ` distinct types and names. State only `rank Φ ≤ rank Γ ≤ bound`. Add small-field executable rank comparisons as canaries. |
 | Zero-weight interpolation variables | Existing weighted finrank assumes nonzero weights, while `X`, `Y₀`, and `Y₁` have weight zero in the high-derivative band. | Build an exact finite index type with individual caps and degree inequalities. Never infer finiteness from the high-derivative weight alone. |
 | Uniform all-rate quantifiers | Pointwise padding can accidentally choose `d` after the rate. Floors near `k = 1` and `k = n - ceil(δn)` are delicate. | Freeze the quantifier order in `S0`. Make `U2` return one package before it receives `k`. Add a theorem-level canary that specializes the same `d` at two extreme rates. |
-| Characteristic assumptions | Hasse algebra works in small characteristic, but unique coefficient lifting can fail. Field cardinality does not by itself imply safe characteristic outside prime fields. | Keep prime-field capstone primary. Carry `D < char(F)` and individual-degree bounds through the generic root theorem. Formalize `N2` as a regression test. |
+| Characteristic assumptions | Hasse algebra works in small characteristic, but unique coefficient lifting can fail. Field cardinality does not by itself imply safe characteristic outside prime fields. | Keep prime-field capstone primary. Carry `D < char(F)` and individual-degree bounds through the generic root theorem. Formalize `N2a` as a lifting regression test and `N2b` as the architecture-specific obstruction. |
 | Porting `rs-ld-mca` | It uses Lean 4.32.0, custom coefficient-vector messages, and custom list predicates; ArkLib uses Lean 4.33.1 and canonical code APIs. | Port proof kernels, not the duplicate frontend. Build small bridge lemmas first. Preserve source comments and compare theorem signatures line by line. |
-| Sharp analytic constants | Variance/Cantelli, asymmetric bands, harmonic estimates, exponentials, and rounding can overwhelm the main proof. | Land the coarse existential `d(δ)` theorem first. Isolate all refined analysis behind the same finite certificate interface. Use rational enclosures for decimal constants. |
+| Sharp analytic constants | Variance/Cantelli, asymmetric bands, harmonic estimates, exponentials, and rounding can overwhelm the main proof. | Land the coarse existential `d(δ)` theorem first. Isolate all refined analysis behind a new asymmetric-band certificate rather than mutating the landed cap-free index. Use `169/25` and rational enclosures; never trust decimal constants. |
 | Runtime claims | A field-operation estimate is not automatically a verified executable complexity theorem. | Keep runtime out of `M0`. Introduce a separate cost semantics before `M1` advertises complexity. |
 | Long-lived fork divergence | PRs 856 and 857 may later land upstream in squashed form, producing duplicate semantic patches. | Pin every imported head. During upstream sync, compare patch IDs and deliberately drop equivalent patches rather than blindly merging histories. |
 
@@ -745,6 +795,12 @@ The following project decisions do not need to be revisited unless a formal obst
 7. Runtime is separated from combinatorial existence until an honest executable cost model exists.
 8. Optimized constants and shrinking-gap results are layered refinements over a stable qualitative core.
 9. No announcement or upstream PR is made before the independent axiom and statement audits pass.
+10. The strong prime-field theorem uses `d = 0` for every `δ ≥ 1/4`; list-size exponents and
+    derivative order are separate contract data.
+11. The optimized asymmetric-band package is separate from the qualitative `m = d³` donor package
+    and from the landed cap-free interpolation index.
+12. Quantitative nodes are source-pinned to paper commit `9e4d648`; a later paper update triggers a
+    synchronization audit at `S0.1` without stopping the qualitative critical path.
 
 ## 14. Open decisions for the human authors
 
@@ -752,7 +808,9 @@ These questions do not block phase-one proof work, but should be resolved before
 
 1. Can direct evidence of the `kz99/rs-ld-mca` permission grant, including its grantor and scope, be archived or linked from [`docs/kb/sources/rs-ld-mca/PERMISSION.md`](docs/kb/sources/rs-ld-mca/PERMISSION.md)? The durable storage location is now fixed, but the direct grant and license-compatibility terms remain unrecorded.
 2. Should the first upstream artifact expose only the axiom-clean combinatorial theorem, or wait for the fully verified executable decoder and cost theorem?
-3. Should quantitative lower bounds and the small-characteristic obstruction ship in the first formalization release, or in a second refinement release after `M0` and `M1`?
+3. Quantitative lower bounds, exact local-rank refinements, and the small-characteristic obstruction
+   should default to a second refinement release after `M0` and its audits. Override this only if an
+   external publication deadline requires a single synchronized theorem suite.
 
 Until those choices are made, contributors should prioritize the axiom-clean all-rate combinatorial critical path and keep optional results modular.
 
@@ -804,11 +862,16 @@ before duplicating them:
   finite-extension capstone.
 - `U0`: an external coordinator owns exact fixed-fraction ambient padding, rounding, and an
   explicit rate-independent agreement ratio above one, starting from canonical `28d7478f`.
+- `U0a`: do not redirect the active `U0` owner. After `U0` integrates, a separate owner should add
+  the paper-adaptive `max`-padding geometry in non-overlapping files and reuse the landed rounding
+  lemmas.
 
 The first qualitative theorem's current critical-path lanes are all assigned above. Additional
 contributors should request a narrow helper or independent audit from the relevant owner before
-editing. Useful openings are the exact-capacity bad-ball construction (`N0`) and, after the paper
-contract is repinned, independent continuous and discrete sharp-constant certificates (`O0-O1`).
+editing. Useful openings are the exact-capacity bad-ball construction (`N0`), universal agreement
+bounds (`N3`), and independent continuous and discrete sharp-constant certificates (`O0-O1`).
+The latter must use the repinned `169/25` contract and a new asymmetric-band index. The adaptive
+padding node `U0a` follows U0; the exact-rank node `N2b` waits for the asymmetric support interface.
 Executable enumeration and cost-model development remain a separate longer path. Contributors
 must not duplicate R2, I1-I6, or N2 based on an older version of this assignment list.
 
@@ -823,4 +886,6 @@ canonical branch.
 
 After `F3`, `F4`, and `R0-R1` land, assign `L0-L1`, `I0-I4`, `V0-V3`, and `R2-R3` immediately.
 The root solver and local-rank proof are the two largest schedule risks; keep independent reviewers
-on both rather than concentrating all effort on infrastructure or constants.
+on both rather than concentrating all effort on infrastructure or constants. New optimized or
+limitation work must name `9e4d648` and the `S0.1` checkpoint as prerequisites. Existing qualitative,
+root, and exact-count branches need no mathematical rewrite because of this paper update.

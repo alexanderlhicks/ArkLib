@@ -25,7 +25,8 @@ The executable representatives use ordinary tuples.  The equivalence
 
 * [Brakensiek, J., Chen, Y., Putterman, A., Zhang, Z., and Zheng, K. Z., *Algorithmic List
   Decoding of Reed-Solomon Codes up to Capacity in the Low-Rate Regime*][BCPZZ26]
-* [Dao, Q. and Thaler, J., *Reed-Solomon List Decoding at All Rates via Hidden Derivatives*]
+* [Dao, Q., Kominers, S. D., Thaler, J., and Zheng, K. Z., *Reed-Solomon List Decoding up to
+  Capacity at Every Rate*][DKTZ26]
 -/
 
 namespace ReedSolomon

@@ -30,9 +30,10 @@ It is deliberately separate from the older support-first rectangular space in
 
 ## References
 
-* Brakensiek, Chen, Putterman, Zhang, and Zheng, *Algorithmic List Decoding of Reed--Solomon
-  Codes up to Capacity in the Low-Rate Regime*, ECCC TR26-164.
-* Dao and Thaler, *Reed--Solomon List Decoding at All Rates via Hidden Derivatives*, Section 5.
+* [Brakensiek, Chen, Putterman, Zhang, and Zheng, *Algorithmic List Decoding of Reed--Solomon
+  Codes up to Capacity in the Low-Rate Regime*][BCPZZ26], ECCC TR26-164.
+* [Dao, Kominers, Thaler, and Zheng, *Reed--Solomon List Decoding up to Capacity at Every
+  Rate*][DKTZ26], Section 5.
 -/
 
 namespace ReedSolomon

@@ -29,9 +29,10 @@ the propositions to be discharged by later modules.
 
 ## References
 
-* Brakensiek, Chen, Putterman, Zhang, and Zheng, *Algorithmic List Decoding of Reed-Solomon Codes
-  up to Capacity in the Low-Rate Regime*, ECCC TR26-164.
-* Dao and Thaler, *Reed-Solomon List Decoding at All Rates via Hidden Derivatives*, manuscript.
+* [Brakensiek, Chen, Putterman, Zhang, and Zheng, *Algorithmic List Decoding of Reed-Solomon
+  Codes up to Capacity in the Low-Rate Regime*][BCPZZ26], ECCC TR26-164.
+* [Dao, Kominers, Thaler, and Zheng, *Reed-Solomon List Decoding up to Capacity at Every
+  Rate*][DKTZ26], manuscript.
 -/
 
 namespace ReedSolomon
@@ -203,42 +204,97 @@ def QualitativeAllRateStatement : Prop :=
             ∀ received : Fin blockLength → ZMod fieldSize,
               PointwiseListBound delta domain messageDim listBound received
 
-/-- The derivative order in the strong quantitative target.
+/-- The derivative order in the strong prime-field target.
 
-The constant `172 / 25` is the exact rational representation of `6.88`. -/
+The order-zero branch covers every gap at least `1 / 4`. Below that boundary, the constant
+`169 / 25` is the exact rational representation of `6.76`. -/
 def strongDerivativeOrder (delta : ℝ) : ℕ :=
-  if (1 / 2 : ℝ) ≤ delta then 0
-  else if (1 / 4 : ℝ) ≤ delta then 1
-  else Nat.ceil (Real.exp (((172 : ℝ) / 25) / delta))
+  if (1 / 4 : ℝ) ≤ delta then 0
+  else Nat.ceil (Real.exp (((169 : ℝ) / 25) / delta))
 
-/-- The larger-field condition under which the strong target improves its exponent from `2d`
-to `d`. The interpolation multiplicity is selected as a function of the gap before the code
-parameters. -/
-def LargeFieldCondition (delta : ℝ) (blockLength messageDim fieldSize multiplicity : ℕ) :
+@[simp]
+theorem strongDerivativeOrder_eq_zero {delta : ℝ} (hdelta : (1 / 4 : ℝ) ≤ delta) :
+    strongDerivativeOrder delta = 0 := by
+  rw [strongDerivativeOrder, if_pos hdelta]
+
+theorem strongDerivativeOrder_eq_ceil {delta : ℝ} (hdelta : delta < (1 / 4 : ℝ)) :
+    strongDerivativeOrder delta = Nat.ceil (Real.exp (((169 : ℝ) / 25) / delta)) := by
+  rw [strongDerivativeOrder, if_neg (not_le_of_gt hdelta)]
+
+/-- The harmonic number `H_r = sum_{i=1}^r 1/i` used by the asymmetric-band parameters. -/
+def harmonicNumber (r : ℕ) : ℝ :=
+  ∑ i ∈ Finset.range r, (1 : ℝ) / (i + 1)
+
+/-- The optimized asymmetric-band multiplicity `ceil(100 d^2 H_{d-1})`. This parameter package
+is used only below gap `1 / 4`; the order-zero branch instead uses an instance-dependent
+multiplicity and is deliberately specified separately. -/
+def strongBandMultiplicity (delta : ℝ) : ℕ :=
+  let derivOrder := strongDerivativeOrder delta
+  Nat.ceil (100 * (derivOrder : ℝ) ^ 2 * harmonicNumber (derivOrder - 1))
+
+/-- The ambient dimension in the optimized asymmetric-band certificate. -/
+def strongBandAmbientDimension (delta : ℝ) (blockLength messageDim : ℕ) : ℕ :=
+  max messageDim ⌊(delta * (blockLength : ℝ)) / 2⌋₊
+
+/-- The larger-field condition under which the asymmetric-band target improves its root exponent
+from `2d` to `d`. The truncated natural subtraction represents
+`max {0, m * A - K + d}` from the manuscript. -/
+def LargeFieldCondition (delta : ℝ)
+    (blockLength messageDim fieldSize derivOrder multiplicity : ℕ) :
     Prop :=
-  2 * multiplicity * agreementThreshold delta blockLength messageDim ≤ fieldSize
+  2 * (multiplicity * agreementThreshold delta blockLength messageDim + derivOrder -
+    strongBandAmbientDimension delta blockLength messageDim) ≤ fieldSize
 
-/-- **Strong quantitative all-rate target.**
+/-- **Order-zero target for gaps at least one quarter.**
 
-This target fixes the optimized derivative order, asks for a `C(delta) * q^(2d)` list bound over
-all prime fields of size at least `n`, and asks for `C(delta) * q^d` under the larger-field
-condition. The block threshold, interpolation multiplicity, and prefactor are all chosen before
-the code rate and field. -/
-def StrongQuantitativeAllRateStatement : Prop :=
-  ∀ delta : ℝ, 0 < delta → delta < 1 →
-    let derivOrder := strongDerivativeOrder delta
-    ∃ blockLengthThreshold multiplicity listFactor : ℕ,
-      0 < multiplicity ∧ 0 < listFactor ∧
+For gaps at least `1 / 2`, the target list has size at most one. Between `1 / 4` and `1 / 2`,
+the target is the manuscript's strict `< 4q` bound. The statement does not require a multiplicity
+depending only on the gap: the order-zero interpolation proof uses multiplicity `messageDim - 1`,
+with `messageDim = 1` handled directly. -/
+def OrderZeroQuarterStatement : Prop :=
+  ∀ delta : ℝ, (1 / 4 : ℝ) ≤ delta → delta < 1 →
+    ∃ blockLengthThreshold : ℕ,
       ∀ blockLength messageDim fieldSize : ℕ,
         blockLengthThreshold ≤ blockLength →
         0 < messageDim → messageDim ≤ blockLength →
         fieldSize.Prime → blockLength ≤ fieldSize →
         ∀ domain : Fin blockLength ↪ ZMod fieldSize,
+          let listBound := if (1 / 2 : ℝ) ≤ delta then 1 else 4 * fieldSize
+          Nonempty (CapacityGapCertificate delta domain messageDim listBound) ∧
+            (delta < (1 / 2 : ℝ) →
+              ∀ received : Fin blockLength → ZMod fieldSize,
+                (agreeingPolynomials domain messageDim
+                  (agreementThreshold delta blockLength messageDim) received).encard <
+                    ((4 * fieldSize : ℕ) : ℕ∞))
+
+/-- **Strong asymmetric-band target below gap one quarter.**
+
+The derivative order and multiplicity are the explicit optimized values from the manuscript.
+The block threshold is `8m`. The list bound is `B(delta) * q^(2d)` over every prime field with
+`q ≥ n`, improving to `B(delta) * q^d` under `LargeFieldCondition`. -/
+def StrongAsymmetricBandStatement : Prop :=
+  ∀ delta : ℝ, 0 < delta → delta < (1 / 4 : ℝ) →
+    let derivOrder := strongDerivativeOrder delta
+    let multiplicity := strongBandMultiplicity delta
+    0 < multiplicity ∧
+    ∃ listFactor : ℕ, 0 < listFactor ∧
+      ∀ blockLength messageDim fieldSize : ℕ,
+        8 * multiplicity ≤ blockLength →
+        0 < messageDim → messageDim ≤ blockLength →
+        fieldSize.Prime → blockLength ≤ fieldSize →
+        ∀ domain : Fin blockLength ↪ ZMod fieldSize,
           Nonempty (CapacityGapCertificate delta domain messageDim
             (listFactor * fieldSize ^ (2 * derivOrder))) ∧
-          (LargeFieldCondition delta blockLength messageDim fieldSize multiplicity →
+          (LargeFieldCondition delta blockLength messageDim fieldSize derivOrder multiplicity →
             Nonempty (CapacityGapCertificate delta domain messageDim
               (listFactor * fieldSize ^ derivOrder)))
+
+/-- **Strong quantitative all-rate target.**
+
+The split is load-bearing: derivative order zero above gap `1 / 4` does not imply a constant list
+bound in the interval `[1 / 4, 1 / 2)`, and the order-zero multiplicity is not gap-only. -/
+def StrongQuantitativeAllRateStatement : Prop :=
+  OrderZeroQuarterStatement ∧ StrongAsymmetricBandStatement
 
 end
 end AllRateListDecoding
