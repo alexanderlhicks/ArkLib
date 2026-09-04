@@ -977,10 +977,10 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Asymmetric finite Cantelli bounds and band-event composition | `HiddenDerivative/Parameters/SimplexCantelli.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Normalized rank estimate, explicitly conditional on the band mass bound | `HiddenDerivative/AsymmetricBandNormalizedRank.lean` |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact `29/100` band mass bound, retaining finite variance | `HiddenDerivative/Parameters/BandMassBound.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | `6.76/delta` endpoint scalar comparison and numerical prerequisites | `HiddenDerivative/Parameters/BandEndpointComparison.lean` |
 | C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed costed scalar multivariate evaluation for root tests and interpolation | `ArkLib/Data/MvPolynomial/EvaluationMachine.lean` and minimal canaries |
-| Central | Reduced-separant root bound, integration, audits, tracker, validation and push | `HiddenDerivative/RootFinding/SeparantRootCount.lean`, `SpecializationDegree.lean`, generated umbrella and integration fixes |
+| Central | Ambient parameter and construction assembly, integration, audits, tracker, validation and push | `AllRateListDecoding/BandAmbientParameters.lean`, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
 except C's explicitly repository-relative path.
@@ -1037,7 +1037,7 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   Its six principal theorem checks depend only on `propext`, `Classical.choice`, and `Quot.sound`.
   C separately reviewed the global-band bridge; the six added concrete examples cover the simplex
   split and agreement-machine value, threshold, empty-input, and short-fuel boundaries.
-- Next reviewed batch: exact signed-weight simplex variance and one-sided finite Chebyshev
+- Checkpoint `fa1dd9a3` integrates exact signed-weight simplex variance and one-sided finite Chebyshev
   (`82774989`), concrete regular-lifting completeness and unique regular continuation (`0f195163`),
   and band endpoint/width-floor/harmonic numerical bounds (`3d334fac`). Completeness characterizes
   exactly the bounded centered solutions with the supplied initial jet, including `D < r`;
@@ -1052,17 +1052,32 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   theorem audits use only the baseline logical axioms. Source admissions remain 183; zero
   explicit axioms/native-trust additions. The completeness file is named `RegularLiftCompleteness`
   so its generated import meets the repository's line limit; its declarations are unchanged.
-- Queued for the following checkpoint: A's `SimplexBandCounting.lean` source `0af7e50a` proves
+- Current reviewed batch: A's `SimplexBandCounting.lean` source `0af7e50a` proves
   exact quotient-event transport with factorial fiber bound and a two-sided Chebyshev consumer.
-  It has worker validation but is not yet centrally integrated. The sharper asymmetric Cantelli
-  step is active because symmetric Chebyshev is insufficient for the target `29/100` mass bound.
+  `SimplexCantelli.lean` source `70eb2acf` proves the sharper asymmetric finite tail estimate,
+  including zero variance, and composes it with the actual event/fiber bound. No numerical
+  `29/100` mass premise has been discharged yet.
+- B's `AsymmetricBandNormalizedRank.lean` source `382f8b37` assembles the actual band-local rank
+  bound with constant `15/2` and saving `d^(-g/(2+g))`, explicitly conditional on the `29/100`
+  band-cardinality lower bound, `g*m >= 80`, and `d >= 1000`. Harmonic, exponential, and rounding
+  bounds are proved, not added as concealed assumptions.
+- `BandAmbientParameters.lean` verifies the actual padded dimension's rate interval
+  `delta/3 <= D/n <= 1-delta` under the explicit finite-size condition `delta*n >= 12` and
+  threshold feasibility. It proves agreement-budget containment, the capped slack inequalities
+  including `(1+g/2)*delta <= g`, and `8*m*A <= q²` from `8m <= n`, `A <= n <= q`.
+  These proof-facing arithmetic facts do not implement real rounding.
+- This batch passed full central `validate.sh --axioms` with 540 umbrella imports and no new
+  kernel taint or non-sorry warnings. Seven principal endpoints passed trust-zero axiom inspection;
+  source admissions remain 183, with no explicit axioms/native-trust additions. Central reviewed
+  event-to-band implication directions, factorial fibers, the shifted-square proof and zero variance,
+  conditional normalized-rank assumptions, and ambient flooring/feasibility boundaries.
 
 ### Next critical-path work
 
 1. Preserve the completed coarse capstone while integrating the quantitative and operational
    layers. Do not replace its proved inputs with assumed root-count or rank premises.
-2. Complete concentration-event transport and the explicit `169/25` parameter comparison.
-   The exact weighted variance, weighted local-rank estimate, and scalar rounding bounds are implemented.
+2. Complete the numerical `29/100` concentration bound and the explicit `169/25` endpoint comparison.
+   Exact finite Cantelli, event transport, normalized local rank, and scalar rounding are implemented.
    In the finite simplex, variance contains `S*(S+d)` rather than `S²`; transporting a good event
    through the quotient/remainder lattice map also requires a fiber bound, not an assumption
    that the image distribution is uniform. Neither optimized concentration constant is proved yet.

@@ -180,6 +180,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AgreementRadius
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPadding
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.AmbientPaddingCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.BandAmbientParameters
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.ConstructionContracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Contracts
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.DonorConstruction
@@ -199,6 +200,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandDimen
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandInterpolation
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandLocalRank
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandLocalRankCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandNormalizedRank
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandRankBound
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Counting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.CountingCanary
@@ -233,6 +235,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorLat
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorScaledLattice
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorShellDiscrete
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.FreeOrder
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexBandCounting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexCantelli
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMoments
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexVariance
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Counting
