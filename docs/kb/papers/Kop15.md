@@ -117,8 +117,10 @@ characteristic.
   the list-size count in general characteristic, or the root-finding runtime bound.
 - It does not claim that every initial jet extends to a full solution.  The regular lift
   gives unique continuation when the current truncation satisfies the required residual
-  congruence.  Iterating this step into fixed-jet uniqueness for complete bounded solutions
-  remains a downstream theorem.
+  congruence. The downstream `RootFinding/RegularIteration.lean` now proves fixed-jet uniqueness
+  for complete bounded solutions below the characteristic, including an arbitrary highest
+  active jet. `RootFinding/RegularCounting.lean` uses it to count regular branches; total
+  recursive counting and executable enumeration remain separate obligations.
 - No code is copied from Kopparty's article.  The mathematical proof lineage is cited;
   Lean proof engineering and supporting generic lemmas are ArkLib work.
 

@@ -202,6 +202,9 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Derivat
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Extension
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.JetPrefix
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.JetPrefixCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularCounting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularIteration
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularIterationCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularJetCounting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLifting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularLiftingCanary

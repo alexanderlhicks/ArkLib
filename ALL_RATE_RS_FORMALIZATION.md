@@ -498,9 +498,9 @@ The weighted-degree finrank theorem currently requires nonzero variable weights.
 | L1 | Turn the local identity into order-`m` contact at an agreement point. | L0 | queued | No characteristic restriction beyond the algebraic identity; all truncation indices are checked. |
 | I0 | Define the exact finite interpolation monomial band and its coefficient space. | F0, F3 | landed (`9b188640`, bridge `3ba5aaf7`) | Fintype and basis are explicit; zero-weight variables have finite caps; evaluator agrees with paper weights. Under the necessary boundary `0 < d < D`, the proof-facing index is equivalent to `C0`'s executable dimension index and its finrank is the exact nested count. |
 | I1 | Define differential specialization `Y_j ↦ P^[j]` and prove its degree bound. | F0, F1 | queued | Uses exact derivative weights where possible; proves strict `< mA`, including all floor and ceiling cases. |
-| I2 | Define local and global homogeneous linear constraint maps. | I0, L0 | queued | Coordinate and polynomial formulations are equivalent; constraints are executable over finite fields. |
-| I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | queued | The map factorization is explicit; kernel elements are independent; no claim equates the upper bound with true rank. |
-| I4 | Derive the certified local-rank upper bound. | I3, C0 | queued | Exact finite sum is proved; the distinction between `Φ` and `Γ` is maintained. |
+| I2 | Define local and global homogeneous linear constraint maps. | I0, L0 | review (`8443aa17`, followup `7d4e26b4`) | Coordinate and polynomial formulations are equivalent; executable enumeration remains D0. |
+| I3 | Formalize the intermediate map `Γ` and exhibited kernel. | I2 | active; algebraic kernel foundation in review | The map factorization is explicit; truncated kernel elements belong to the finite space and are independent; no claim equates the upper bound with true rank. |
+| I4 | Derive the certified local-rank upper bound. | I3, C0 | active | Exact finite sum is proved; the distinction between `Φ` and `Γ` is maintained. |
 | I5 | Prove existence of a nonzero global interpolant from the strict dimension inequality. | I0, I1, I4, U3 | queued | Finrank comparison and nonzero-kernel extraction are axiom-clean; interpolation polynomial satisfies every local constraint. |
 | I6 | Prove that `A` agreements force the specialized differential polynomial to vanish identically. | I5, L1 | queued | Establishes `mA` total root multiplicity and strict specialization degree; arbitrary distinct evaluation points are used correctly. |
 | D0 | Give a checked finite-field linear solver for interpolation. | I0, I2 | queued | Returned nonzero coefficient vector lies in the kernel whenever the dimension certificate holds. |
@@ -540,9 +540,9 @@ Route B is no longer required to precede `M0` if Route A succeeds. It remains a 
 |---|---|---|---|---|
 | R0 | Define differential polynomials, solutions of bounded degree, highest active derivative, and regular jets. | S0, F1 | landed (`14c56aaa`) | Definitions support partial derivatives in `Y_j`, specialization, recursion, and characteristic bounds. |
 | R1 | Prove derivative descent to a nonzero highest-variable derivative. | R0 | landed (`14c56aaa`) | Positive individual degree `< char(F)` prevents formal differentiation from annihilating dependence. |
-| R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | active; one-step theorem (`71207d79`) and arbitrary-highest-jet prefix adapter (`f93a5dc2`) landed | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Iterated fixed-jet uniqueness remains. |
+| R2 | Prove unique coefficient lifting from a nonsingular initial Hasse jet. | R1 | landed (`71207d79`, `f93a5dc2`, iteration `e9876723`) | Every recurrence coefficient is explicit; nonvanishing binomial coefficients follow from the characteristic bound. Independently audited iteration proves fixed-jet uniqueness, including arbitrary highest active jet. |
 | R3 | Prove singular solutions are covered recursively by derivatives of the differential polynomial. | R1 | landed and independently audited (`de44a070`) | Recursion terminates under the total individual-jet-degree measure; every bounded solution reaches a leaf whose separant specialization is nonzero. Producing a scalar regular center remains R4. |
-| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; generic incidence, regular-jet fibre, canonical bad-point, and weighted specialization-degree layers landed (`9c5adf29`, `f17b2846`, `a06e228b`, `14568bfd`) | Proves the division-free inequality `(S-H) * card Roots ≤ S * Δ * S^d`; weighted specialization degree bounds the exceptional points. Root-specific jet injectivity remains and is assigned with R2 iteration. |
+| R4 | Count regular witnesses and solutions over a sufficiently large field. | R2, R3 | active; regular-branch composition passes strict Lean; recursive total count pending | The new `regularBranch_counting_pow_le` discharges jet injectivity from R2 and weighted exceptional-point bounds. Singular-branch partition and total count remain assigned to the root-count coordinator. |
 | R5 | Construct a finite extension large enough for witnesses. | R4 | foundation landed (`0144f9fd`) | Extension degree is explicit; cardinality and characteristic facts are proved using mathlib finite-field APIs. Final root-bound instantiation still chooses the fixed quantitative extension degree. |
 | R6 | Descend the root count to base-field solutions. | R5 | active; extension transport and cardinality descent landed (`481b7a52`, `2cc0dacb`) | Injection of base solutions is formal; first capstone obtains a proved `q^(4d+6)`-type or better bound. |
 | R7 | Implement and verify root enumeration. | R2, R3, R5 | queued | Enumeration is complete and sound; termination is proved; any runtime theorem uses an explicit cost model. |
@@ -834,6 +834,7 @@ not evidence that its proof has landed.
 | `01a06e29-8dc6-7e21-a11a-0f8b1203f145` | I2-I4 local map, kernel, finite intermediate spaces, independence, rank | Recover staged map/kernel slice, then `LocalIntermediateSpace`, `KernelSliceIndependence`, `LocalRank` |
 | `01a06e29-de18-7dc3-93e5-2244de7106f4` | R2 independent audit; recursive root count and finite-extension assembly | Audit `deb7c75f`; recover `RecursiveCounting`; assemble `RootCount` |
 | `01a06e2a-2f6d-7370-a4ed-eb061bfc77a7` | L1/I5/I6 contact, multiplicity, global interpolation | `LocalContact`, `GlobalMultiplicity`, `GlobalInterpolation`, and necessary canaries |
+| `01a06e2d-ce39-7550-a572-52e85a001414` | C1/U3 donor lattice estimates and finite certificate | `DonorLattice`, `DonorScaledLattice`, `DonorShellDiscrete`, `DonorInterpolationBridge`, `DonorFiniteCertificate` |
 
 All new implementation files in this table are under the corresponding
 `ReedSolomon/HiddenDerivative` or `AllRateListDecoding` directory. Coordinators must agree on
@@ -846,9 +847,8 @@ in their existing worktrees rather than discarded or independently reimplemented
 The following nodes are already owned as of the latest update. Coordinate with the integration owner
 before duplicating them:
 
-- `R2`: the regular one-step theorem and arbitrary-highest-jet prefix adapter are integrated;
-  iterated fixed-jet uniqueness is committed at contributor head `deb7c75f` and awaiting an
-  independent integration audit.
+- `R2`: one-step lifting, arbitrary-highest-jet restriction, and iterated fixed-jet uniqueness
+  are integrated. Iteration at `e9876723` passed independent statement and strict trust review.
 - `R3`: the singular/separant recursion and its well-founded measure are integrated and passed an
   independent statement/trust audit.
 - `I0`/`C0` bridge: integrated under the necessary boundary `0 < d < D`, with exact cardinality and
@@ -858,8 +858,8 @@ before duplicating them:
   blocked on interpolation existence/specialization and the proved root-count endpoint.
 - `R4-R6` support: the independently audited finite-field counting, extension, and descent
   infrastructure is integrated. The separant-specialization degree bridge is now integrated in
-  the current checkpoint; the active remainder is root-specific jet injectivity, followed by the
-  finite-extension capstone.
+  the current checkpoint. Regular-branch jet injectivity is now discharged by R2; the active
+  remainder is recursive total counting followed by the finite-extension capstone.
 - `U0`: an external coordinator owns exact fixed-fraction ambient padding, rounding, and an
   explicit rate-independent agreement ratio above one, starting from canonical `28d7478f`.
 - `U0a`: do not redirect the active `U0` owner. After `U0` integrates, a separate owner should add
