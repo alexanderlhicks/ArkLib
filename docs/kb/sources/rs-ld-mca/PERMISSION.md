@@ -80,6 +80,13 @@ Each adapted file names its contributors, source repository, and pinned source c
 header or module documentation. Future adaptations must preserve the same file-level attribution
 and add their exact donor and integration commits to this record.
 
+Subsequent adaptations, from the same pinned donor revision `9699ee7...`, are recorded below.
+
+| Donor material | ArkLib adaptation | Integration commit | Credited contributors |
+|---|---|---|---|
+| `RSListDecoding/Lemmas/GlobalBudgets.lean` | [`RootFinding/SpecializationDegree.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/RootFinding/SpecializationDegree.lean) | `14568bfd` | Kai Zhe Zheng and Quang Dao; specialization bounds generalized to commutative semirings |
+| `RSListDecoding/Lemmas/Contact.lean` | [`LocalContact.lean`](../../../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/LocalContact.lean) | `c88abc18` | Kai Zhe Zheng and Quang Dao; monomial divisibility adapted and composed with ArkLib's canonical specialization |
+
 ## Evidence needed to upgrade this record
 
 Before this project claims a public license grant or compatibility with ArkLib's Apache-2.0
