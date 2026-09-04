@@ -912,6 +912,14 @@ Section 15 records the current integration state and remaining obligations.
   step relation, two-way interpreter/trace correspondence, actual terminating program, exact
   operation vector, and the explicit coefficient-preparation boundary. This is a subroutine
   cost theorem, not a decoder-runtime theorem.
+- Simplex source `58f3b907` and weighted-rank source `0cd409a9`: C independently reconstructed
+  the coordinate-splitting bijection, first/mixed/factorial moments, reflected geometric sum,
+  exponential tail inequalities, lattice offset, and connection to the actual local map.
+  Small integer/rational counts agree; no correctness blocker was found. The finite variance
+  factor `S*(S+d)` must still be controlled before using the manuscript's concentration constants.
+- Agreement source `efeac3f2`: central checked the closed outer phases, instruction-by-instruction
+  Horner composition, exact operation vector, fuel boundary, and explicit representation bridge
+  to `Code.agree`. Input preparation, field bit costs, and candidate enumeration remain excluded.
 
 ## 13. Decisions already made
 
@@ -959,13 +967,13 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact finite simplex first and second moments | `HiddenDerivative/Parameters/SimplexMoments.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Weighted geometric upper bound for the band local-rank budget | `HiddenDerivative/AsymmetricBandRankBound.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Closed agreement-count/threshold machine composed with actual Horner steps | `ReedSolomon/ListDecoding/AgreementMachine.lean` and its minimal canary |
-| Central | Integrate, audit, assemble qualitative capstone, maintain this tracker, validate and push | `AllRateListDecoding/Main.lean`, generated umbrella, runtime harness and integration fixes |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Exact weighted simplex variance and finite concentration interface | `HiddenDerivative/Parameters/SimplexVariance.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Band endpoint, harmonic, and floor-error parameter inequalities | `HiddenDerivative/Parameters/BandParameterBounds.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Completeness and unique continuation in executable regular lifting | `HiddenDerivative/RootFinding/ExecutableRegularLiftCompleteness.lean` |
+| Central | Global band interpolation bridge, integration, audits, tracker, validation and push | `HiddenDerivative/AsymmetricBandInterpolation.lean`, `AllRateListDecoding/Main.lean`, generated umbrella and integration fixes |
 
-Paths in the first two rows are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`;
-the third is relative to `ArkLib/Data/CodingTheory/`. Do not infer ownership from the historical
+Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`.
+Do not infer ownership from the historical
 wide dependency graph. Ask the central owner before editing a claimed interface.
 
 ### Integrated foundations and current handoffs
@@ -990,7 +998,7 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   It embeds original agreeing messages into actual differential roots.
 - Asymmetric-band source `d922229c` is integrated as `fe32c8e6`: actual finite support,
   exact dimension count, and a potential local-coordinate index. A counted index alone
-  is not a local-rank theorem; B is proving the necessary image-containment bridge.
+  is not a local-rank theorem; the actual image-containment bridge landed at `73b968e4`.
 - Executable-lifting source `f85866f2` is integrated as `a24d75b2`: acceptance iff
   next residual divisibility, survivor invariant, and explicit partial counters. Completeness,
   regular uniqueness in the executable representation, full enumeration, and runtime remain open.
@@ -1000,17 +1008,34 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   Its scope is the qualitative list theorem plus actual uniform construction, not full Theorem 1.1.
 - Extension root counts (`cf791027`, source `951e25e5`), closed Horner-machine adequacy and cost
   (`95fa420e`, source `0ac29623`), actual band local rank (`73b968e4`, source `3ce3fcf2`), and
-  the discrete `/162` dimension lower bound (`92137deb`, source `3762f5fa`) are in the next
-  integration batch. Central full validation, compiled runtime checks, and the axiom-regression
-  gate passed on this batch; there is no decoder-runtime or full optimized-parameter claim.
+  the discrete `/162` dimension lower bound (`92137deb`, source `3762f5fa`) were fully validated
+  and pushed in checkpoint `7fc3f495`. There is no decoder-runtime or full optimized-parameter claim.
+- Current reviewed integration batch: exact finite simplex moments (`58f3b907`), the weighted
+  geometric band-rank estimate retaining `choose(d,2)` and both reciprocal error terms
+  (`0cd409a9`), and the closed agreement machine (`efeac3f2`). For `n` coefficient cells and
+  `m` positions, agreement testing executes `m*(3*n+6)+1` modeled transitions, `m*n` field
+  additions and multiplications each, `m` field equalities and counter updates, and one threshold
+  test. Data/control/output costs are also explicit; representation preparation is not free.
+- `AsymmetricBandInterpolation.lean` bridges the actual band-restricted local maps to global
+  rank-nullity. Its strict finite numerical certificate produces a nonzero band polynomial
+  satisfying every local constraint, then includes it in the exact interpolation space when
+  `d < D` and `L <= m*A`. It does not assume a rank bound for the larger space or provide a solver.
+- This batch passed central `./scripts/validate.sh --axioms`: 532 umbrella imports, all runtime,
+  style, documentation, and import checks, and no new kernel taint. The source inventory retains
+  183 existing admissions, adds none, and has zero explicit axioms or native-trust constructs.
+  Its six principal theorem checks depend only on `propext`, `Classical.choice`, and `Quot.sound`.
+  C separately reviewed the global-band bridge; the six added concrete examples cover the simplex
+  split and agreement-machine value, threshold, empty-input, and short-fuel boundaries.
 
 ### Next critical-path work
 
 1. Preserve the completed coarse capstone while integrating the quantitative and operational
    layers. Do not replace its proved inputs with assumed root-count or rank premises.
-2. Complete simplex moments/concentration, the weighted local-rank numerical estimate, and
-   the explicit `169/25` parameter comparison. The actual local-rank and discrete dimension
-   estimates are already implemented in the current validation batch.
+2. Complete weighted variance/concentration and the explicit `169/25` parameter comparison.
+   The exact simplex moments and weighted local-rank numerical estimate are implemented.
+   In the finite simplex, variance contains `S*(S+d)` rather than `S²`; transporting a good event
+   through the quotient/remainder lattice map also requires a fiber bound, not an assumption
+   that the image distribution is uniform. Neither optimized concentration constant is proved yet.
 3. Refine extension root counting to `q^(2d)` and base-field `q^d` with a gap-only jet-degree
    prefactor. The exact manuscript larger-field condition uses a separant-degree bound;
    a stronger sufficient field-size hypothesis alone does not discharge that target.
