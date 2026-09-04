@@ -435,6 +435,7 @@ theorem scaledShellFactor_cast_le_two_rpow
   linarith
 
 set_option maxHeartbeats 500000 in
+-- The eventual analytic estimate combines several nonlinear rounded bounds in one proof.
 /-- For fixed `0 < θ < 1`, the two explicit hypotheses of
 `scaledExponentCount_shell_le_mul_goodScaledExponentCount` hold for all
 sufficiently large derivative orders.  This statement is the analytic core
