@@ -268,6 +268,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Regular
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RegularWitnessCounting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RootCount
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.RootCountCanary
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SampledResidual
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SeparantRootCount
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SingularRecursion
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SingularRecursionCanary
@@ -344,6 +345,8 @@ import ArkLib.Data.Lattices.CyclotomicRing.Subfield.TraceVanishing
 import ArkLib.Data.Lattices.ModuleSIS
 import ArkLib.Data.Lattices.Vectors
 import ArkLib.Data.Matrix.Basic
+import ArkLib.Data.Matrix.ColumnEliminationMachine
+import ArkLib.Data.Matrix.ColumnEliminationMachineCanary
 import ArkLib.Data.Matrix.PivotEliminationMachine
 import ArkLib.Data.Matrix.PivotEliminationMachineCanary
 import ArkLib.Data.Matrix.RowReductionMachine
@@ -371,6 +374,8 @@ import ArkLib.Data.Polynomial.HornerMachine
 import ArkLib.Data.Polynomial.HornerMachineCanary
 import ArkLib.Data.Polynomial.Indicator
 import ArkLib.Data.Polynomial.Interface
+import ArkLib.Data.Polynomial.JetHornerMachine
+import ArkLib.Data.Polynomial.JetHornerMachineCanary
 import ArkLib.Data.Polynomial.Prelims
 import ArkLib.Data.Polynomial.RationalFunctions
 import ArkLib.Data.Polynomial.RationalFunctions.FunctionField
@@ -381,6 +386,7 @@ import ArkLib.Data.Polynomial.RationalFunctions.HenselNumerators.Weight
 import ArkLib.Data.Polynomial.RationalFunctions.Lifts
 import ArkLib.Data.Polynomial.RationalFunctions.RationalRootVanishing
 import ArkLib.Data.Polynomial.RationalFunctions.Weight
+import ArkLib.Data.Polynomial.SampledCoefficients
 import ArkLib.Data.Polynomial.SplitFold
 import ArkLib.Data.Polynomial.Trivariate
 import ArkLib.Data.Probability.Combinatorial
@@ -389,6 +395,7 @@ import ArkLib.Data.Probability.KoalaBear
 import ArkLib.Data.Probability.Notation
 import ArkLib.Data.QuadraticAlgebra.FiniteWitness
 import ArkLib.Data.ZMod.EnumerationMachine
+import ArkLib.Data.ZMod.NonsquareSearchMachine
 import ArkLib.OracleReduction.BCS.Basic
 import ArkLib.OracleReduction.Basic
 import ArkLib.OracleReduction.Cast

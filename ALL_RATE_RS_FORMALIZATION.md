@@ -987,10 +987,10 @@ Each epoch ends with a frozen commit, evidence, residual obligations, and a wait
 
 | Worker task | Current bounded objective | Exclusive new file claim |
 |---|---|---|
-| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Closed simultaneous Hasse-jet Horner evaluation | `ArkLib/Data/Polynomial/JetHornerMachine.lean` |
-| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Closed quadratic-time nonsquare search for concrete extension setup | `ArkLib/Data/ZMod/NonsquareSearchMachine.lean` |
-| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Full column driver with charged inner pivot steps and output assembly | `ArkLib/Data/Matrix/ColumnEliminationMachine.lean` and minimal canaries |
-| Central | Concrete quadratic-field refinement, sampling bridge, integration, audits and push | `ArkLib/Data/QuadraticAlgebra/FiniteWitness.lean`, generated umbrella and integration fixes |
+| A: `01a06e56-bed2-72f2-9bba-78de078e8a81` | Compose actual jet and sparse-evaluation steps into scalar residual sampling | `HiddenDerivative/RootFinding/ResidualSampleMachine.lean` |
+| B: `01a06e56-c0dc-7ea0-90fd-499425b394f9` | Explicit quadratic coordinate-pair enumeration and setup refinement | `ArkLib/Data/QuadraticAlgebra/EnumerationMachine.lean` |
+| C: `01a06e56-c2e1-7101-8774-21db0a570b2d` | Charged pivot selection and augmented-row permutation | `ArkLib/Data/Matrix/PivotSelectionMachine.lean` and minimal canaries |
+| Central | Interpolation/residual representation interfaces, integration, audits and push | Sampling refinements, generated umbrella and integration fixes |
 
 Proof paths in this table are relative to `ArkLib/Data/CodingTheory/ReedSolomon/`,
 except explicitly repository-relative paths beginning `ArkLib/`.
@@ -1172,6 +1172,29 @@ wide dependency graph. Ask the central owner before editing a claimed interface.
   imports, 30 compiled regular-lifting checks, all style/import/documentation gates, and no new
   axiom taint. Ten principal endpoints use only baseline logical axioms; source admissions remain
   183, with zero new explicit axioms/native trust and ten additional kernel-checked examples.
+
+### Closed jet, nonsquare, column, and sampling checkpoint
+
+- `JetHornerMachine` implements simultaneous Hasse jets by actual initialization, coefficient
+  updates, reversal, and scalar emission. For `N` input coefficients and `J=r+1` jet entries,
+  it uses exactly `NJ` additions and multiplications each, with total declared primitive cost
+  at most `28(N+1)J`. Its polynomial refinement includes characteristic two.
+- `NonsquareSearchMachine` explicitly scans candidates and their possible square roots.
+  Returned values are sound for every modulus; odd primes guarantee success. The actual
+  trace costs at most `48q²+48q+24`, including counters, comparisons, resets, and output.
+- `ColumnEliminationMachine` validates the head pivot and delegates each actual pivot-elimination
+  step, retaining every charge. It proves exact output/cost and preservation of augmented
+  solutions. This is column elimination, not yet a complete linear-system solver.
+- `SampledCoefficients` and `SampledResidual` identify the unique Vandermonde coefficient vector
+  with the concrete centered residual, and reduce its complete zero test to distinct samples.
+  `DirectRegularIteration` now proves intermediate degree bounds needed by this sampling route.
+  These algebraic bridges do not assign a cost to an assumed matrix solver.
+- Independent cross-audits found no correctness issues. Full central `validate.sh --axioms`
+  passed with 562 umbrella imports and all 30 compiled lifting checks. Ten principal endpoints
+  use only baseline logical axioms; the source audit retains 183 admissions, zero explicit
+  axioms/native trust, and adds 18 kernel-checked examples. These are abstract-machine costs,
+  not compiled Lean instruction counts; composition must retain all subroutine charges and
+  reconcile their explicitly documented primitive conventions.
 
 ### Next critical-path work
 

@@ -43,6 +43,43 @@ def directRegularSolution (Q : CPoly.CMvPolynomial (r + 2) F) (center : F)
     if candidate.natDegree ≤ D ∧ effectiveResidual Q center candidate = 0 then
       some candidate else none
 
+/-- Every successful direct prefix respects its construction depth, independently of regularity.
+This supplies the degree premise for scalar residual sampling at intermediate stages. -/
+theorem directRegularIteration_natDegree_le
+    (Q : CPoly.CMvPolynomial (r + 2) F) (center : F) (initial : CPolynomial F)
+    (hdegree : initial.natDegree ≤ r) (steps : ℕ) (P : CPolynomial F)
+    (hresult : directRegularIteration Q center initial steps = some P) :
+    P.natDegree ≤ r + steps := by
+  induction steps generalizing P with
+  | zero =>
+      simp only [directRegularIteration, Option.some.injEq] at hresult
+      simpa only [← hresult, Nat.add_zero] using hdegree
+  | succ steps ih =>
+      cases hprevious : directRegularIteration Q center initial steps with
+      | none => simp [directRegularIteration, hprevious] at hresult
+      | some previous =>
+          cases hnext : effectiveDirectRegularCoefficient Q center previous (steps + 1) with
+          | none => simp [directRegularIteration, hprevious, hnext] at hresult
+          | some gamma =>
+              simp only [directRegularIteration, hprevious, Option.bind_some, hnext,
+                Option.map_some, Option.some.injEq] at hresult
+              rw [← hresult, effectiveRegularCandidate]
+              apply CPolynomial.natDegree_add_le _ _ |>.trans
+              apply max_le
+              · have h := ih previous hprevious
+                omega
+              · by_cases hgamma : gamma = 0
+                · rw [CPolynomial.natDegree_toPoly, CPolynomial.monomial_toPoly]
+                  simp [hgamma]
+                · rw [CPolynomial.natDegree_monomial hgamma]
+                  omega
+
+/-- The actual initial jet satisfies the initial bound used by the direct-prefix invariant. -/
+theorem natDegree_effectiveInitialPrefix_le (jet : Fin (r + 1) → F) :
+    (effectiveInitialPrefix jet).natDegree ≤ r := by
+  rw [CPolynomial.natDegree_toPoly]
+  exact Polynomial.natDegree_le_of_degree_le (degree_effectiveInitialPrefix_toPoly_le jet)
+
 /-- Every permitted direct stage succeeds and is the unique exhaustive-scan survivor. -/
 theorem directRegularIteration_eq_some_and_candidates [Fintype F]
     (Q : CPoly.CMvPolynomial (r + 2) F) (center : F) (jet : Fin (r + 1) → F)
