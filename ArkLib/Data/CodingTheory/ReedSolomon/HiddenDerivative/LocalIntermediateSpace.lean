@@ -155,7 +155,7 @@ theorem localFirstJetExponent_eq_coordinate (hd : 0 < d)
     rcases v with (_ | (_ | j)) <;> simp)]
   simp_rw [Fintype.sum_option]
   rw [zero_add, zero_add, sum_localJet_eq_first_add_higher hd]
-  simp
+  simp only [↓reduceIte, Nat.add_one_ne_zero, Finset.sum_const_zero, add_zero]
   exact (localExponentCoordinatesEquiv_Y₁ hd e).symm
 
 /-- The anisotropic statistic is exactly the weight of the higher tuple. -/
@@ -165,7 +165,7 @@ theorem localHigherJetWeight_eq_coordinate (hd : 0 < d)
       higherJetTupleWeight (localExponentCoordinatesEquiv hd e).2.2.2 := by
   rw [Finsupp.weight_apply, Finsupp.sum_fintype _ _ (by simp),
     Fintype.sum_option, Fintype.sum_option, higherJetTupleWeight]
-  simp [localHigherJetWeight]
+  simp only [localHigherJetWeight, nsmul_eq_mul, mul_zero, zero_add]
   rw [sum_localJet_eq_first_add_higher hd]
   simp [localY, Nat.mul_comm]
 
