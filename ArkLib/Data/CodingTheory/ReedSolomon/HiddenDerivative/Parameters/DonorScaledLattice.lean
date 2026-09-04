@@ -23,8 +23,10 @@ cardinality bounds. Coordinate `i` has anisotropic cost `i + 1`.
 The definitions and proofs are adapted, with permission, from Kai Zhe
 Zheng's `rs-ld-mca` formalization at commit
 `9699ee7a6143f6efe1d8cfed84998a4f8c79c40f`. The free-order extension was
-contributed through PR 1 by Pratyush Mishra; its source commit records Codex
-as author and Pratyush Mishra as committer.
+contributed through PR 1 by Pratyush Mishra at commit
+`b1e346fc39780adb442ed2504a316b32702b97af`; its metadata records Codex as
+author and Pratyush Mishra as committer. The project-owner permission
+attestation is recorded in `docs/kb/sources/rs-ld-mca/PERMISSION.md`.
 -/
 
 namespace ReedSolomon
