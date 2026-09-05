@@ -21,8 +21,12 @@ Branch: `review/all-rate-rs-refinements`.
 | Exponential tail bounds | Finite lower correction and upper denominator `W+r` | Proved |
 | Sharper rank | Coefficient `10/3` conditional on band coefficient `13/20` | Proved with explicit premise |
 | Candidate endpoint | Order `ceil(exp((23/4)/δ))` satisfies scalar threshold `540` | Proved |
+| Sharper dimension | Cubic denominator `140` instead of `162`, with finite ceiling reserve | Proved |
+| Tunable endpoint | Uniform `c² exp(c/2)` lower bound for every `c≥4` | Proved |
+| Further candidate endpoint | Order `ceil(exp((11/2)/δ))` exceeds the new threshold `1400/3` | Proved |
+| Interpolation adapter | Actual nonzero band polynomial from sharper mass and endpoint | Proved with explicit premises |
 | Uniform `13/20` mass | Maximum-coordinate tail estimates at the prescribed parameters | Still open in Lean |
-| Full `5.75` construction/list capstone | New parameter assembly plus the missing tail estimate | Not claimed |
+| Full smaller-order construction/list capstone | Parameter assembly plus the missing tail estimate | Not claimed |
 
 No new `sorry`, project axiom, native-computation proof, or runtime claim is introduced.
 The original `6.76` construction and larger-field theorem are preserved.
@@ -79,6 +83,52 @@ reuses generic endpoint monotonicity and proves the new low-/high-rate endpoint 
 bounds at `23/4=5.75`. The crucial numeric margin is certified by rational exponential partial sums,
 not floating-point computation.
 
+## Further improvement: count more of each band fiber
+
+[AsymmetricBandDimensionBound](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/AsymmetricBandDimensionBound.lean)
+now exposes the simplex fraction `θ` and upper-cutoff slope `β`. The sufficient rounding condition is
+
+```text
+2 ≤ (1-β-θ)*g*m
+dimension ≥ B*D*m³*g³*θ³/6.
+```
+
+For `β=13/20`, take `θ=17499/50000=0.34998`, leaving `gm/50000` for both ceilings.
+The existing hypotheses `d≥1000` and `gm≥100(d+1)` imply `gm≥100000`, so this gives
+
+```text
+dimension ≥ B*D*m³*g³/140
+140*(10/3) = 1400/3.
+```
+
+This is a `81/70 ≈ 1.157` factor improvement in the dimension lower bound under the prescribed
+large-order hypotheses. The old `/162` theorem and its smaller multiplicity domain are preserved.
+There is no band-mass premise in the dimension improvement itself.
+
+[TunableBandEndpoint](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/TunableBandEndpoint.lean)
+proves both rate regimes and the multiplicity bound with a variable `c≥4`, then specializes to
+`c=11/2=5.5`. Its high-rate endpoint is `473.1896… > 1400/3`, certified by a rational Taylor sum.
+[SharperBandComparison](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/SharperBandComparison.lean)
+connects the improved constants to the exact integer dimension comparison and a genuine nonzero
+band interpolant, conditional on `13/20` band mass and the endpoint inequality.
+
+**The full `5.5` list-decoding bound is not yet proved.** The available harmonic estimate
+`H_r≤log r+3/5` suggests stronger lower-tail margins than the earlier `+1` estimate. With finite
+errors bounded by `1/100`, the new candidate gives
+
+```text
+log μ ≥ (3/5)*(11/2) - 3/5 - 1/100 = 269/100
+log ν ≤ -1/2 - (3/20)*(11/2) + 1/100 = -263/200
+μ ≥ 14,  ν ≤ 27/100
+14/15 - 27/100 = 199/300 > 13/20.
+```
+
+The rational exponential margins and the finite mass adapter for these two tail bounds are proved.
+The uniform substitution of the actual rounded parameters into those analytic bounds is still open;
+neither floating-point experiments nor the scalar endpoint theorem discharge that obligation.
+See [the finite argument](docs/research/all-rate-partition-count.md#5-a-sharper-dimension-and-a-further-candidate)
+for the derivation and the precise proof boundary.
+
 ## The remaining proof target is concrete
 
 The complete finite derivation, including rounding errors and every numerical margin, is in
@@ -133,7 +183,8 @@ With the pinned Lean/dependency setup available:
 This builds the relevant modules, runs `scripts/AllRateRefinementAudit.lean` under `--trust=0`,
 rejects principal-theorem axioms other than `propext`, `Classical.choice`, and `Quot.sound`,
 and runs exact integer/rational experiments on 65 small simplexes and 2275 bands, plus 6084
-threshold pairs for the product and correlation formulas (including dimension zero).
+threshold pairs for the product and correlation formulas (including dimension zero), and 60
+dimension-rounding cases including the exact multiplicity threshold.
 The tests illustrate and regression-check the counting identities; they do not prove a uniform
 asymptotic theorem. The script does not upload artifacts or run a decoder benchmark.
 
@@ -146,12 +197,10 @@ Before integration, also run:
 The focused audit complements, rather than replaces, the repository-wide axiom sweep and style,
 runtime, import, and documentation gates.
 
-The focused command passed on 2026-09-05: all 31 audited declarations had only the accepted
-logical axioms, the concrete Lean examples checked, and the exact finite tests passed on
-65 simplexes, 27,118 points, 2,275 bands, and 6,084 threshold pairs. Documentation integrity, knowledge-base lint,
-shell syntax, and whitespace checks also passed. The full `./scripts/validate.sh --axioms`
-command passed, including the fixture matrix and the regression sweep: no new axiom or `sorry`
-taint. Existing unrelated baseline debt is unchanged.
+The audit now covers 45 principal declarations, including the new dimension, tunable endpoint,
+interpolation, and tail-margin theorems. Its Lean canaries include an explicit counterexample to
+using the limiting `7/20` simplex fraction without reserving room for ceilings. All new scalar
+certificates also have independent exact-rational Taylor-sum checks.
 
 ## Optional offline transport
 

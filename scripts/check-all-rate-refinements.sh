@@ -13,7 +13,9 @@ export LAKE_NO_CACHE=true
 lake build \
   ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandNormalizedRank \
+  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandComparison \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SharperBandEndpoint \
+  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.TunableBandEndpoint \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexPartitionCounting \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMaximumTail \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexTailBounds

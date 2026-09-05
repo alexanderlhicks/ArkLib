@@ -30,11 +30,15 @@ lake exe cache get
 
 ```bash
 git add path/to/newfile.lean
+./scripts/update-lib.sh
+git add ArkLib.lean
 ./scripts/validate.sh
 ```
 
 `./scripts/update-lib.sh` only considers tracked files, and fails fast if untracked
 `ArkLib/**/*.lean` files are present.
+Stage the regenerated umbrella too: the import gate compares `ArkLib.lean` against the Git index,
+so an unstaged, correctly regenerated umbrella is still reported as out of date.
 
 ### Lean source-policy checks
 
@@ -95,7 +99,9 @@ For the all-rate refinement branch, run:
 
 This builds the changed theorem modules, checks the principal declarations under `--trust=0`
 against the accepted logical axiom baseline, and runs exact finite partition-counting and
-coordinate-tail tests, including over-budget thresholds and dimension zero.
+coordinate-tail tests, including over-budget thresholds and dimension zero. It also checks the
+tunable dimension and endpoint estimates, their conditional interpolation adapter, and exact
+ceiling-reserve examples at the multiplicity threshold.
 It does not replace `./scripts/validate.sh --axioms`. In particular, the stronger root-count
 frontend is unconditional under its stated hypotheses, while the proposed smaller derivative
 order still needs its uniform tail estimate and full parameter assembly. See

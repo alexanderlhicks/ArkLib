@@ -17,6 +17,9 @@ The proof counts an explicit integer simplex inside the exact staircase index. I
 band cardinality symbolic and uses no volume or concentration premise.
 It uses `gm ≥ 120`, discharged from the manuscript's stronger `gm ≥ 100(d+1)`,
 rather than proving the isolated integral estimate at `gm ≥ 60`.
+
+The slack-parametrized refinement below keeps the usable fraction of `gm` explicit.
+At `gm ≥ 100000`, the same upper band edge gives the stronger denominator `140`.
 -/
 
 noncomputable section
@@ -212,6 +215,91 @@ theorem finrank_asymmetricBandSpace_ge_paper_cubic [Field F] {g : ℝ}
         ⌈(1 + 13 * g / 20) * m⌉₊ ((D : ℝ) * m * (1 + g)) hD) := by
   apply finrank_asymmetricBandSpace_ge_cubic hd hD hg0 hg1
     (asymmetricBand_discrete_threshold_of_paper hd hgm)
+  · exact (Nat.ceil_lt_add_one (by positivity : 0 ≤ (1 + 13 * g / 20) * m)).le
+  · rfl
+
+/-- Any simplex fraction fits if the unused degree budget absorbs both ceiling errors.
+The upper band edge has slope `β`; the simplex uses a fraction `θ` of `gm`. -/
+theorem asymmetricBand_simplex_scalar_conditions_of_slack {g β θ : ℝ}
+    (hg0 : 0 ≤ g) (hg1 : g ≤ 1) (hθ0 : 0 ≤ θ) (hθ1 : θ ≤ 1)
+    (hslack : 2 ≤ (1 - β - θ) * g * m)
+    (hC : (Cmax : ℝ) ≤ (1 + β * g) * m + 1)
+    (hL : (D : ℝ) * m * (1 + g) ≤ L) :
+    ⌈θ * g * m⌉₊ ≤ m + 1 ∧ D * (Cmax + ⌈θ * g * m⌉₊) ≤ ⌈L⌉₊ := by
+  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg _
+  have hnonneg : 0 ≤ θ * g * m := by positivity
+  have hceil : (⌈θ * g * m⌉₊ : ℝ) ≤ θ * g * m + 1 :=
+    (Nat.ceil_lt_add_one hnonneg).le
+  have hθg : θ * g ≤ 1 := (mul_le_mul_of_nonneg_right hθ1 hg0).trans (by simpa)
+  have hN : ⌈θ * g * m⌉₊ ≤ m := Nat.ceil_le.mpr (by nlinarith)
+  refine ⟨hN.trans (Nat.le_succ m), ?_⟩
+  have hfree : (Cmax : ℝ) + ⌈θ * g * m⌉₊ ≤ m * (1 + g) := by
+    nlinarith only [hC, hceil, hslack]
+  have hbudget : (D : ℝ) * (Cmax + (⌈θ * g * m⌉₊ : ℝ)) ≤ L :=
+    (mul_le_mul_of_nonneg_left hfree (Nat.cast_nonneg D)).trans (by nlinarith [hL])
+  exact_mod_cast hbudget.trans (Nat.le_ceil L)
+
+/-- A tunable cubic dimension bound, with its complete finite rounding budget exposed. -/
+theorem finrank_asymmetricBandSpace_ge_cubic_of_slack [Field F] {g β θ : ℝ}
+    (hd : 0 < d) (hD : 0 < D) (hg0 : 0 ≤ g) (hg1 : g ≤ 1)
+    (hθ0 : 0 ≤ θ) (hθ1 : θ ≤ 1) (hslack : 2 ≤ (1 - β - θ) * g * m)
+    (hC : (Cmax : ℝ) ≤ (1 + β * g) * m + 1)
+    (hL : (D : ℝ) * m * (1 + g) ≤ L) :
+    ((asymmetricBandTuples d W Cmin Cmax).card : ℝ) * D * m ^ 3 * g ^ 3 * θ ^ 3 / 6 ≤
+      Module.finrank F (asymmetricBandSpace F D d m W Cmin Cmax L hD) := by
+  obtain ⟨hN, hbudget⟩ := asymmetricBand_simplex_scalar_conditions_of_slack
+    hg0 hg1 hθ0 hθ1 hslack hC hL
+  have hcount := finrank_asymmetricBandSpace_ge_simplex_cube (F := F)
+    (W := W) (Cmin := Cmin) hd hD hN hbudget
+  have hpow := pow_le_pow_left₀ (by positivity : 0 ≤ θ * g * m)
+    (Nat.le_ceil (θ * g * m)) 3
+  have hscale : (0 : ℝ) ≤ (asymmetricBandTuples d W Cmin Cmax).card * D := by positivity
+  calc
+    _ = ((asymmetricBandTuples d W Cmin Cmax).card : ℝ) * D * (θ * g * m) ^ 3 / 6 := by
+      ring
+    _ ≤ ((asymmetricBandTuples d W Cmin Cmax).card : ℝ) * D *
+        (⌈θ * g * m⌉₊ : ℝ) ^ 3 / 6 :=
+      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hscale) (by norm_num)
+    _ ≤ _ := hcount
+
+/-- Using almost all of the available `7gm/20` improves the cubic denominator to `140`.
+The fraction `17499/50000` leaves `gm/50000` for the two ceiling errors. -/
+theorem finrank_asymmetricBandSpace_ge_cubic_div_140 [Field F] {g : ℝ}
+    (hd : 0 < d) (hD : 0 < D) (hg0 : 0 ≤ g) (hg1 : g ≤ 1)
+    (hgm : 100000 ≤ g * m)
+    (hC : (Cmax : ℝ) ≤ (1 + 13 * g / 20) * m + 1)
+    (hL : (D : ℝ) * m * (1 + g) ≤ L) :
+    ((asymmetricBandTuples d W Cmin Cmax).card : ℝ) * D * m ^ 3 * g ^ 3 / 140 ≤
+      Module.finrank F (asymmetricBandSpace F D d m W Cmin Cmax L hD) := by
+  have hslack : 2 ≤ (1 - (13 / 20 : ℝ) - 17499 / 50000) * g * m := by
+    nlinarith only [hgm]
+  have hC' : (Cmax : ℝ) ≤ (1 + (13 / 20 : ℝ) * g) * m + 1 := by
+    convert hC using 1
+    ring
+  have hcount := finrank_asymmetricBandSpace_ge_cubic_of_slack (F := F)
+    (W := W) (Cmin := Cmin) hd hD hg0 hg1 (by norm_num : (0 : ℝ) ≤ 17499 / 50000)
+    (by norm_num) hslack hC' hL
+  have hconst : (1 / 140 : ℝ) ≤ (17499 / 50000) ^ 3 / 6 := by norm_num
+  have hscale : (0 : ℝ) ≤
+      (asymmetricBandTuples d W Cmin Cmax).card * D * (m : ℝ) ^ 3 * g ^ 3 := by positivity
+  have h := mul_le_mul_of_nonneg_left hconst hscale
+  calc
+    _ ≤ ((asymmetricBandTuples d W Cmin Cmax).card : ℝ) * D * m ^ 3 * g ^ 3 *
+        (17499 / 50000) ^ 3 / 6 := by
+      simpa only [div_eq_mul_inv, mul_one, mul_assoc, one_mul] using h
+    _ ≤ _ := hcount
+
+/-- The prescribed upper cutoff and existing large-order multiplicity premise yield `/140`.
+No band-mass premise, concentration theorem, or asymptotic approximation is used. -/
+theorem finrank_asymmetricBandSpace_ge_prescribed_cubic_div_140 [Field F] {g : ℝ}
+    (hd : 1000 ≤ d) (hD : 0 < D) (hg0 : 0 ≤ g) (hg1 : g ≤ 1)
+    (hgm : 100 * ((d : ℝ) + 1) ≤ g * m) :
+    ((asymmetricBandTuples d W Cmin ⌈(1 + 13 * g / 20) * m⌉₊).card : ℝ) *
+        D * m ^ 3 * g ^ 3 / 140 ≤
+      Module.finrank F (asymmetricBandSpace F D d m W Cmin
+        ⌈(1 + 13 * g / 20) * m⌉₊ ((D : ℝ) * m * (1 + g)) hD) := by
+  have hd' : (1000 : ℝ) ≤ d := by exact_mod_cast hd
+  apply finrank_asymmetricBandSpace_ge_cubic_div_140 (by omega) hD hg0 hg1 (by linarith)
   · exact (Nat.ceil_lt_add_one (by positivity : 0 ≤ (1 + 13 * g / 20) * m)).le
   · rfl
 

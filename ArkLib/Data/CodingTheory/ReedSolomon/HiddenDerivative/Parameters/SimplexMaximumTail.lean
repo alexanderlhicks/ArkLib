@@ -242,6 +242,34 @@ theorem asymmetricBand_card_lower_of_tail_margins {d W Cmin Cmax : ℕ}
     linarith
   linarith
 
+/-- Any nonnegative lower first moment and upper union bound give a band-mass certificate.
+Keeping these constants explicit supports joint optimization of the endpoint and dimension. -/
+theorem asymmetricBand_card_lower_of_tail_bounds {d W Cmin Cmax : ℕ}
+    (lower upper mass : ℝ) (hlower : 0 ≤ lower) (hmass : 0 ≤ mass)
+    (hmargin : mass ≤ lower / (1 + lower) - upper)
+    (hl : lower ≤ ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin)
+    (hu : ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W (Cmax + 1) ≤ upper) :
+    mass * (W : ℝ) ^ (d - 1) / ((d - 1).factorial : ℝ) ^ 2 ≤
+      (asymmetricBandTuples d W Cmin Cmax).card := by
+  apply asymmetricBand_card_lower_of_tail_ratios mass hmass
+  have hden : (0 : ℝ) <
+      1 + ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin := by linarith
+  have hfrac : lower / (1 + lower) ≤
+      ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin /
+        (1 + ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin) := by
+    apply (div_le_div_iff₀ (by positivity) hden).mpr
+    nlinarith only [hl]
+  linarith
+
+/-- The `14` and `27/100` margins also suffice for the rank coefficient's `13/20` mass. -/
+theorem asymmetricBand_card_lower_of_tighter_tail_margins {d W Cmin Cmax : ℕ}
+    (hlower : (14 : ℝ) ≤ ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin)
+    (hupper : ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W (Cmax + 1) ≤ 27 / 100) :
+    (13 / 20 : ℝ) * (W : ℝ) ^ (d - 1) / ((d - 1).factorial : ℝ) ^ 2 ≤
+      (asymmetricBandTuples d W Cmin Cmax).card :=
+  asymmetricBand_card_lower_of_tail_bounds 14 (27 / 100) (13 / 20)
+    (by norm_num) (by norm_num) (by norm_num) hlower hupper
+
 end
 
 end ReedSolomon.HiddenDerivative

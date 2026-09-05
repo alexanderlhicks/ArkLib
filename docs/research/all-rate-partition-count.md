@@ -1,6 +1,6 @@
 # Finite argument for the sharper band count
 
-This note records the mathematical argument for the remaining uniform tail estimate. The sorting/permutation bridge and mass-to-band adapter are proved in [SimplexPartitionCounting](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean). The exact finite coordinate tails, negative correlation, second-moment maximum bound, and exponential tail bounds are also proved, as detailed below. The conditional rank and endpoint estimates compile. The uniform numerical estimates at the prescribed parameters and the complete `5.75` construction/list theorem are not yet formalized.
+This note records the mathematical argument for the remaining uniform tail estimate. The sorting/permutation bridge and mass-to-band adapter are proved in [SimplexPartitionCounting](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean). The exact finite coordinate tails, negative correlation, second-moment maximum bound, and exponential tail bounds are also proved, as detailed below. The conditional rank and endpoint estimates compile. Section 5 records the further proved dimension improvement and `5.5` scalar endpoint. The uniform numerical estimates at the prescribed parameters and the complete smaller-order construction/list theorem are not yet formalized.
 
 This is a proof proposal over the pinned implementation, not a review of the complete manuscript.
 No novelty or runtime claim is made.
@@ -200,7 +200,7 @@ Thus the local budget is at most
 \frac{10}{3}\frac{ga^2}{H^2}B m^3d^{-g/(2+g)}.
 \]
 
-The existing cubic dimension lower bound is unchanged:
+For this first candidate, use the original cubic dimension lower bound:
 
 \[
 \dim\ge BDm^3g^3/162.
@@ -222,3 +222,65 @@ c_0^2e^{c_0/2}=586.0468\ldots>540.
 This inequality is not justified merely by decimals: `exp(23/8)>17`, proved by a rational partial exponential sum, already gives a lower bound `562.0625>540`. The full low- and high-rate endpoint proof, and the prescribed multiplicity threshold, are in [SharperBandEndpoint](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SharperBandEndpoint.lean). The conditional normalized rank proof is in [SharperBandNormalizedRank](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/SharperBandNormalizedRank.lean).
 
 The remaining ambient and field budgets have ample room. From `n≥8m` we get `δn≥800c₀d²=4600d²`, replacing the old `5408d²`. This still gives `δn≥12`, `d<D`, and the rate interval used above. Also `gm≥100(d+1)`, `2m<q`, and `8mA≤q²` remain available. No new characteristic assumption or evaluation-set restriction is being introduced.
+
+## 5 A sharper dimension and a further candidate
+
+The original discrete dimension proof places a simplex of side `ceil(gm/3)` inside each band
+fiber. The upper cutoff `Cmax=ceil((1+13g/20)m)` actually leaves almost `7gm/20` of the degree
+budget. More generally, with cutoff slope `β` and simplex fraction `θ`, the two ceiling errors
+fit whenever `2≤(1−β−θ)gm`. The exact staircase count then gives
+
+\[
+\dim\ge BDm^3g^3\theta^3/6.
+\]
+
+This generic statement is proved in
+[AsymmetricBandDimensionBound](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/AsymmetricBandDimensionBound.lean).
+Set `β=13/20` and `θ=17499/50000`. Then `1−β−θ=1/50000`, and `θ³/6>1/140`.
+The existing `d≥1000`, `gm≥100(d+1)` assumptions imply the required `gm≥100000`, yielding
+
+\[
+\boxed{\dim\ge BDm^3g^3/140.}
+\]
+
+This is a fully proved improvement, independent of the unproved uniform mass estimate. Simply
+using `θ=7/20` would not absorb rounding: at `g=m=D=1`, the cutoff and simplex ceilings add to
+`ceil(1.65)+ceil(0.35)=3>ceil(2)`. The general theorem exposes the reserve instead of hiding it.
+
+With the already proved conditional rank coefficient `10/3`, the sufficient scalar threshold is
+now `1400/3`, not `540`.
+[TunableBandEndpoint](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/TunableBandEndpoint.lean)
+proves the entire endpoint comparison for variable `c≥4`, including the rounded order and both
+rate regimes. At `c=11/2`, the limiting expression is `473.1896…>1400/3`, with a rational
+Taylor-sum certificate. It also proves `gm≥100(d+1)` for these variable-constant parameters.
+
+[SharperBandComparison](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/SharperBandComparison.lean)
+assembles the sharper mass, dimension, and endpoint into a strict inequality of integer counts
+and an actual nonzero interpolant over any field. The mass and scalar comparison are explicit
+premises, and every denominator used in the strict comparison is positive.
+
+There is a plausible stronger mass estimate at this new constant. In the lower-edge argument,
+replace `H−log r≤1` with `H−log r≤3/5`, which is already proved by `band_harmonic_le_log` for
+`r≥32`. Retaining the same `1/100` finite-error allowance gives
+
+\[
+\log\mu\ge -\tfrac35+\tfrac35\cdot\tfrac{11}{2}-\tfrac1{100}
+=\tfrac{269}{100},\qquad
+\log\nu\le-\tfrac12-\tfrac3{20}\cdot\tfrac{11}{2}+\tfrac1{100}
+=-\tfrac{263}{200}.
+\]
+
+The exponential margins `exp(269/100)>14` and `exp(263/200)>100/27` are proved. So is the
+finite adapter from `μ≥14`, `ν≤27/100` to band mass `13/20`, since
+`14/15−27/100=199/300>13/20`. The old margins `μ≥11`, `ν≤13/50` are not silently reused:
+the upper-tail allowance has changed.
+
+For the remaining uniform-error proof, `d≥exp(22)>10⁸` still holds when `0<δ≤1/4` and
+`c=11/2`. The same comparison `H≤1+log d≤d^(1/4)` works: putting `t=(log d)/4≥11/2`, a
+cubic partial sum of `exp(t)` dominates `1+4t`. These inequalities give the same sub-`1/100`
+finite corrections as in Section 3. This substitution, the all-rate ambient/field parameter
+assembly at `c=11/2`, and the final list-decoding frontend are **not yet proved in Lean**.
+
+The change from `5.75` to `5.5` would reduce the exponential derivative-order scale by
+`exp(0.25/δ)`; at `δ=0.1` that is about `12.2`. This illustrates a conditional parameter gain,
+not a measured decoding speedup or a completed smaller-order theorem.

@@ -1,11 +1,11 @@
 """Exact regression checks for the simplex/partition bridge; no network or file I/O.
 
-These finite tests are not a proof of the proposed uniform 5.75 theorem.
+These finite tests are not a proof of the proposed smaller-order all-rate theorems.
 """
 
 from collections import Counter
 from fractions import Fraction
-from math import comb, factorial, exp, log, prod
+from math import ceil, comb, factorial, exp, log, prod
 
 
 def simplex(r, budget):
@@ -111,8 +111,47 @@ def illustrative_sizes():
         print('gap / approximate (log10 d, log10 N), original and candidate:', gap, row)
 
 
+def dimension_slack_checks():
+    theta = Fraction(17499, 50000)
+    beta = Fraction(13, 20)
+    assert 1 - beta - theta == Fraction(1, 50000)
+    assert theta**3 / 6 >= Fraction(1, 140)
+    assert Fraction(162, 140) == Fraction(81, 70)
+    instances = 0
+    for g in (Fraction(1), Fraction(1, 2), Fraction(1, 7),
+              Fraction(1, 100), Fraction(1, 100003)):
+        for offset in (0, 1, 7, 101):
+            m = ceil(100000 / g) + offset
+            upper = ceil((1 + beta * g) * m)
+            side = ceil(theta * g * m)
+            assert (1 - beta - theta) * g * m >= 2
+            assert side <= m + 1
+            for degree in (1, 2, 7):
+                budget = degree * m * (1 + g)
+                assert degree * (upper + side) <= ceil(budget)
+                simplex_count = side * (side + 1) * (side + 2) // 6
+                assert degree * simplex_count >= degree * m**3 * g**3 / 140
+                instances += 1
+    # Ignoring the ceiling reserve already fails at g=m=D=1.
+    assert ceil(1 + beta) + ceil(1 - beta) > ceil(Fraction(2))
+    assert Fraction(140) * Fraction(10, 3) == Fraction(1400, 3)
+    c = Fraction(11, 2)
+    # Rational Taylor polynomials, not floating point, certify all three margins.
+    taylor = lambda x, terms: sum((x**i / factorial(i) for i in range(terms)), Fraction(0))
+    assert c**2 * taylor(c / 2, 12) > Fraction(1400, 3)
+    lower_exponent = Fraction(3, 5) * c - Fraction(3, 5) - Fraction(1, 100)
+    upper_exponent = Fraction(1, 2) + Fraction(3, 20) * c - Fraction(1, 100)
+    assert lower_exponent == Fraction(269, 100)
+    assert upper_exponent == Fraction(263, 200)
+    assert taylor(lower_exponent, 12) > 14
+    assert taylor(upper_exponent, 10) > Fraction(100, 27)
+    assert Fraction(14, 15) - Fraction(27, 100) > Fraction(13, 20)
+    print('exact dimension rounding checks:', instances, 'cases; c=11/2 scalar margins passed')
+
+
 if __name__ == '__main__':
     exact_checks()
     exact_tail_checks()
     scalar_checks()
+    dimension_slack_checks()
     illustrative_sizes()
