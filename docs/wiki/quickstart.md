@@ -85,6 +85,21 @@ environment sweep cannot see reliably: admissions in examples or defaults/autopa
 constructs in files outside the imported roots. Source inventory changes are review evidence,
 not a global `sorry` ban; the kernel sweep remains the taint verdict.
 
+### Focused all-rate refinement review
+
+For the all-rate refinement branch, run:
+
+```bash
+./scripts/check-all-rate-refinements.sh
+```
+
+This builds the changed theorem modules, checks the principal declarations under `--trust=0`
+against the accepted logical axiom baseline, and runs exact finite partition-counting tests.
+It does not replace `./scripts/validate.sh --axioms`. In particular, the stronger root-count
+frontend is unconditional under its stated hypotheses, while the proposed smaller derivative
+order still needs its uniform tail estimate and full parameter assembly. See
+[`ALL_RATE_RS_REFINEMENTS.md`](../../ALL_RATE_RS_REFINEMENTS.md) for the precise boundary.
+
 ### Docstrings, blueprint, or website changes
 
 ```bash

@@ -240,9 +240,11 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorLat
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorScaledLattice
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorShellDiscrete
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.FreeOrder
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SharperBandEndpoint
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexBandCounting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexCantelli
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMoments
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexPartitionCounting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexVariance
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Counting
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.DerivativeDescent
@@ -275,6 +277,7 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.Singula
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SpecializationDegree
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.RootFinding.SpecializationDegreeCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.ScopedGlobalDimension
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandNormalizedRank
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Substitution
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Variables
 import ArkLib.Data.CodingTheory.ReedSolomon.Interleaved

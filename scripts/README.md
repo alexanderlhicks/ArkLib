@@ -18,6 +18,10 @@ This directory contains various utility scripts for the ArkLib project.
 - **`test-axiomsweep.sh`** - Executable fixture matrix certifying the axiomsweep tool itself
   (gate directions, native-trust floor, exit-code contract), against the synthetic-taint
   fixtures in `AxiomSweepTestFixtures/`
+- **`check-all-rate-refinements.sh`** - Focused build, fail-closed principal-axiom audit, and
+  exact finite simplex/partition tests for the all-rate refinement branch. See
+  `AllRateRefinementAudit.lean` and `all_rate_partition_experiments.py`; this is not a decoder
+  runtime certificate or a replacement for the repository-wide validation gate.
 - **`source-trust-audit.py`** - Deterministic source-token inventory for constructs outside
   the environment sweep's visibility, with optional Git-ref comparison
 - **`test-source-trust-audit.py`** - Focused lexer/diff fixtures for the source inventory
