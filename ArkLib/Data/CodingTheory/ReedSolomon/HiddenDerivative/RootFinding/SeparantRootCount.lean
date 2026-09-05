@@ -100,6 +100,59 @@ theorem boundedSolution_extension_sub_mul_le_of_separant_budget
       Nat.mul_le_mul_left _ hDescent
     _ ≤ _ := by simpa only [hcardE, pow_mul] using hcount
 
+/-- Retain the exact number of good witnesses instead of rounding it down to half the field.
+The strict budget makes the natural-division denominator positive. -/
+theorem natCard_boundedSolution_le_div_of_separant_budget
+    (Q : DifferentialPolynomial F d) (e H t : ℕ) (he : 0 < e)
+    (hQ : Q ≠ 0) (hchar : IsBelowCharacteristic D Q)
+    (hWeight : differentialWeightedDegree D Q - (D - d) ≤ H)
+    (hDegree : ∀ s, jetDegree Q s ≤ t) (hlarge : H < Nat.card F ^ e) :
+    Nat.card (BoundedSolution Q D) ≤
+      (Nat.card F ^ e * ((d + 1) * t ^ 2 * Nat.card F ^ (e * d))) /
+        (Nat.card F ^ e - H) := by
+  apply (Nat.le_div_iff_mul_le (Nat.sub_pos_of_lt hlarge)).mpr
+  simpa only [mul_comm] using
+    boundedSolution_extension_sub_mul_le_of_separant_budget Q e H t he hQ hchar hWeight hDegree
+
+/-- An eighth-field exceptional-point budget gives the division-free factor `8/7`.
+This is independent of any rounding convention for the final cardinality bound. -/
+theorem seven_mul_natCard_boundedSolution_le_of_separant_budget
+    (Q : DifferentialPolynomial F d) (e H t : ℕ) (he : 0 < e)
+    (hQ : Q ≠ 0) (hchar : IsBelowCharacteristic D Q)
+    (hWeight : differentialWeightedDegree D Q - (D - d) ≤ H)
+    (hDegree : ∀ s, jetDegree Q s ≤ t) (hlarge : 8 * H ≤ Nat.card F ^ e) :
+    7 * Nat.card (BoundedSolution Q D) ≤
+      8 * ((d + 1) * t ^ 2 * Nat.card F ^ (e * d)) := by
+  have hcount := boundedSolution_extension_sub_mul_le_of_separant_budget
+    Q e H t he hQ hchar hWeight hDegree
+  have hS : 0 < Nat.card F ^ e := pow_pos Nat.card_pos e
+  have hgood : 7 * Nat.card F ^ e ≤ 8 * (Nat.card F ^ e - H) := by omega
+  apply Nat.le_of_mul_le_mul_left ?_ hS
+  calc
+    Nat.card F ^ e * (7 * Nat.card (BoundedSolution Q D)) =
+        (7 * Nat.card F ^ e) * Nat.card (BoundedSolution Q D) := by ring
+    _ ≤ (8 * (Nat.card F ^ e - H)) * Nat.card (BoundedSolution Q D) :=
+      Nat.mul_le_mul_right _ hgood
+    _ = 8 * ((Nat.card F ^ e - H) * Nat.card (BoundedSolution Q D)) := by ring
+    _ ≤ 8 * (Nat.card F ^ e * ((d + 1) * t ^ 2 * Nat.card F ^ (e * d))) :=
+      Nat.mul_le_mul_left 8 hcount
+    _ = Nat.card F ^ e * (8 * ((d + 1) * t ^ 2 * Nat.card F ^ (e * d))) := by ring
+
+/-- Strict interpolation degree and jet cap `2m` give the integer-rounded `32/7` prefactor.
+Unlike the half-field corollary, this requires an eighth-field exceptional-point budget. -/
+theorem natCard_boundedSolution_le_div_seven_of_interpolation_degree
+    (Q : DifferentialPolynomial F d) (e L m : ℕ) (he : 0 < e) (hdD : d ≤ D)
+    (hQ : Q ≠ 0) (hchar : IsBelowCharacteristic D Q)
+    (hWeight : differentialWeightedDegree D Q < L)
+    (hDegree : ∀ s, jetDegree Q s ≤ 2 * m)
+    (hlarge : 8 * (L + d - (D + 1)) ≤ Nat.card F ^ e) :
+    Nat.card (BoundedSolution Q D) ≤
+      (32 * (d + 1) * m ^ 2 * Nat.card F ^ (e * d)) / 7 := by
+  have h := seven_mul_natCard_boundedSolution_le_of_separant_budget
+    Q e (L + d - (D + 1)) (2 * m) he hQ hchar (by omega) hDegree hlarge
+  apply (Nat.le_div_iff_mul_le (by norm_num : 0 < (7 : ℕ))).mpr
+  nlinarith only [h]
+
 /-- Half the witness field suffices using the separant budget, rather than the original degree.
 Taking `e=1` or `e=2` gives the base-field or quadratic-extension exponent, respectively. -/
 theorem natCard_boundedSolution_le_extension_pow_of_separant_budget

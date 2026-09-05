@@ -97,5 +97,35 @@ theorem agreeingPolynomials_encard_le_of_band_certificate
   convert hroot using 1
   ring
 
+/-- Retaining an eighth-field separant budget improves the band prefactor from `8` to `32/7`.
+The floor is applied after multiplication by the field power, not just to a gap-only factor. -/
+theorem agreeingPolynomials_encard_le_div_seven_of_band_certificate
+    {F : Type*} [Field F] [Finite F] [DecidableEq F]
+    {n k A d m K W Cmin Cmax e : ℕ} {L : ℝ}
+    (domain : Fin n ↪ F) (received : Fin n → F)
+    (hkK : k ≤ K) (hd : 0 < d) (hdK : d < K - 1)
+    (hmA : 0 < m * A) (hKchar : K - 1 < ringChar F) (hmchar : 2 * m < ringChar F)
+    (he : 0 < e) (hlarge : 8 * (m * A + d - K) ≤ Nat.card F ^ e)
+    (hL : L ≤ (m * A : ℕ)) (hLt : L ≤ ((K - 1 : ℕ) : ℝ) * (2 * m : ℕ))
+    (hdim : n * asymmetricBandLocalBudget d m W ⌈L / (K - 1 : ℕ) - Cmin⌉₊ <
+      asymmetricBandDimensionCount (K - 1) d m W Cmin Cmax L) :
+    (agreeingPolynomials domain k A received).encard ≤
+      ((32 * (d + 1) * m ^ 2 * Nat.card F ^ (e * d)) / 7 : ℕ) := by
+  have hD : 0 < K - 1 := hd.trans hdK
+  have hK : K - 1 + 1 = K := by omega
+  obtain ⟨Q, hQ0, hQband, hQlocal⟩ := exists_nonzero_band_interpolant hd hD
+    (fun i ↦ domain i) received (by simpa using hdim)
+  have hQexact := asymmetricBandSpace_le_exactInterpolationSpace hD hdK hL hQband
+  have hjet : ∀ j, jetDegree Q j ≤ 2 * m :=
+    jetDegree_le_of_mem_asymmetricBandSpace hD hLt hQband
+  have hchar : IsBelowCharacteristic (K - 1) Q :=
+    ⟨hKchar, fun j ↦ (hjet j).trans_lt hmchar⟩
+  apply agreeingPolynomials_encard_le_of_boundedSolution_natCard_le
+    (by simpa only [hK] using hkK) hmA hdK domain received hQexact hQlocal
+  exact natCard_boundedSolution_le_div_seven_of_interpolation_degree
+    Q e (m * A) m he hdK.le hQ0 hchar
+    (differentialWeightedDegree_lt_of_mem_exactInterpolationSpace hmA hdK hQexact)
+    hjet (by simpa only [hK] using hlarge)
+
 end
 end ReedSolomon.AllRateListDecoding

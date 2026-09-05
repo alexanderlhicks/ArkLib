@@ -205,5 +205,72 @@ theorem strong_asymmetric_band : StrongAsymmetricBandStatement := by
 theorem strong_quantitative_all_rate : StrongQuantitativeAllRateStatement :=
   ⟨orderZeroQuarterStatement, strong_asymmetric_band⟩
 
+/-- The prescribed band already supplies an eighth-field budget over the quadratic extension.
+Retaining it gives the exact natural-rounded `32/7` bound, including infeasible thresholds.
+No parameter or characteristic premise is changed. -/
+theorem strong_band_pointwise_div_seven {delta : ℝ} {n k q : ℕ}
+    (hdelta : 0 < delta) (hquarter : delta < (1 / 4 : ℝ))
+    (hblock : 8 * strongBandMultiplicity delta ≤ n) (hk : 0 < k) (hkn : k ≤ n)
+    (hq : q.Prime) (hnq : n ≤ q)
+    (domain : Fin n ↪ ZMod q) (received : Fin n → ZMod q) :
+    (agreeingPolynomials domain k (agreementThreshold delta n k) received).encard ≤
+      ((32 * (strongDerivativeOrder delta + 1) * strongBandMultiplicity delta ^ 2 *
+        q ^ (2 * strongDerivativeOrder delta)) / 7 : ℕ) := by
+  let : Fact q.Prime := ⟨hq⟩
+  by_cases hA : agreementThreshold delta n k ≤ n
+  · obtain ⟨data⟩ := exists_band_instance_data hdelta hquarter hblock hk hkn hA
+    have hm := strongBandMultiplicity_pos hdelta hquarter
+    have hchar : strongBandAmbientDimension delta n k - 1 < ringChar (ZMod q) := by
+      rw [ringChar.eq (ZMod q) q]
+      have := data.ambient_le
+      have := data.order_lt
+      omega
+    have hmchar : 2 * strongBandMultiplicity delta < ringChar (ZMod q) := by
+      rw [ringChar.eq (ZMod q) q]
+      omega
+    have hcontact := band_contact_budget_le_eighth hblock hA hnq
+    have hlarge : 8 * (strongBandMultiplicity delta * agreementThreshold delta n k +
+        strongDerivativeOrder delta - strongBandAmbientDimension delta n k) ≤ q ^ 2 := by
+      have := data.order_lt
+      omega
+    have h := agreeingPolynomials_encard_le_div_seven_of_band_certificate domain received
+      data.message_le data.order_pos data.order_lt data.product_pos hchar hmchar
+      (by norm_num : 0 < (2 : ℕ)) (by simpa only [Nat.card_zmod] using hlarge)
+      data.cutoff_agreement data.cutoff_jet data.comparison
+    simpa only [Nat.card_zmod] using h
+  · rw [agreeingPolynomials_eq_empty_of_card_lt (by simpa using Nat.lt_of_not_ge hA) received]
+    simp
+
+/-- The sharper point count supplies the canonical exact-list and relative-radius certificate.
+This is an extensional theorem, not an executable decoder or a runtime bound. -/
+theorem strong_band_certificate_div_seven {delta : ℝ} {n k q : ℕ}
+    (hdelta : 0 < delta) (hquarter : delta < (1 / 4 : ℝ))
+    (hblock : 8 * strongBandMultiplicity delta ≤ n) (hk : 0 < k) (hkn : k ≤ n)
+    (hq : q.Prime) (hnq : n ≤ q) (domain : Fin n ↪ ZMod q) :
+    Nonempty (CapacityGapCertificate delta domain k
+      ((32 * (strongDerivativeOrder delta + 1) * strongBandMultiplicity delta ^ 2 *
+        q ^ (2 * strongDerivativeOrder delta)) / 7)) := by
+  exact ⟨CapacityGapCertificate.ofPointwiseBound hdelta.le (hk.trans_le hkn) domain
+    (strong_band_pointwise_div_seven hdelta hquarter hblock hk hkn hq hnq domain)⟩
+
+/-- A convenient gap-only integral prefactor for the default-field bound is `5*(d+1)*m²`.
+The original larger-field branch retains its own prefactor and weaker budget hypothesis. -/
+theorem strong_band_certificate_five {delta : ℝ} {n k q : ℕ}
+    (hdelta : 0 < delta) (hquarter : delta < (1 / 4 : ℝ))
+    (hblock : 8 * strongBandMultiplicity delta ≤ n) (hk : 0 < k) (hkn : k ≤ n)
+    (hq : q.Prime) (hnq : n ≤ q) (domain : Fin n ↪ ZMod q) :
+    Nonempty (CapacityGapCertificate delta domain k
+      (5 * (strongDerivativeOrder delta + 1) * strongBandMultiplicity delta ^ 2 *
+        q ^ (2 * strongDerivativeOrder delta))) := by
+  refine ⟨CapacityGapCertificate.ofPointwiseBound hdelta.le (hk.trans_le hkn) domain ?_⟩
+  intro received
+  apply (strong_band_pointwise_div_seven hdelta hquarter hblock hk hkn hq hnq domain received).trans
+  apply ENat.natCast_le_natCast.mpr
+  apply Nat.div_le_of_le_mul
+  have h := Nat.mul_le_mul_right
+    ((strongDerivativeOrder delta + 1) * strongBandMultiplicity delta ^ 2 *
+      q ^ (2 * strongDerivativeOrder delta)) (by norm_num : 32 ≤ 7 * 5)
+  nlinarith only [h]
+
 end
 end ReedSolomon.AllRateListDecoding
