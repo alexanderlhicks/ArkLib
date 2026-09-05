@@ -14,7 +14,9 @@ lake build \
   ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandNormalizedRank \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SharperBandEndpoint \
-  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexPartitionCounting
+  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexPartitionCounting \
+  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMaximumTail \
+  ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexTailBounds
 
 lake env lean --trust=0 scripts/AllRateRefinementAudit.lean
 python3 scripts/all_rate_partition_experiments.py

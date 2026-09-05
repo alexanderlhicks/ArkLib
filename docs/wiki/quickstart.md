@@ -94,7 +94,8 @@ For the all-rate refinement branch, run:
 ```
 
 This builds the changed theorem modules, checks the principal declarations under `--trust=0`
-against the accepted logical axiom baseline, and runs exact finite partition-counting tests.
+against the accepted logical axiom baseline, and runs exact finite partition-counting and
+coordinate-tail tests, including over-budget thresholds and dimension zero.
 It does not replace `./scripts/validate.sh --axioms`. In particular, the stronger root-count
 frontend is unconditional under its stated hypotheses, while the proposed smaller derivative
 order still needs its uniform tail estimate and full parameter assembly. See

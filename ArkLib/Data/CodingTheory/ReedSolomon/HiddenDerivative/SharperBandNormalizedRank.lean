@@ -8,6 +8,7 @@ The stronger band-cardinality premise is not proved in this file.
 -/
 
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.AsymmetricBandNormalizedRank
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMaximumTail
 
 /-!
 # Sharper normalized rank conditional on a stronger finite band count
@@ -167,5 +168,33 @@ theorem finrank_asymmetricBandLocalConstraint_le_normalized_of_band_card_lower
   have heq : (m : ℝ) * D * (1 + g) / D = m * (1 + g) := by field_simp
   rw [heq] at hrank
   exact (Nat.cast_le.mpr hrank).trans hbudget
+
+/-- The finite tail margins imply the sharper rank bound for the actual local constraint.
+No separate band-cardinality assumption is needed; the uniform numerical margins remain explicit. -/
+theorem finrank_asymmetricBandLocalConstraint_le_normalized_of_tail_margins
+    {F : Type*} [Field F] (g : ℝ) (d D : ℕ) (center received : F)
+    (hg : 0 ≤ g) (hg' : g ≤ 1) (hd : 1000 ≤ d) (hD : 0 < D) :
+    let H := ∑ i ∈ Finset.range (d - 1), (1 : ℝ) / (i + 1)
+    let a := 1 + g / 2
+    let m := Nat.ceil (100 * (d : ℝ) ^ 2 * H)
+    let W := Nat.floor (a * d * m / H)
+    let Cmin := Nat.floor ((1 - g / 10) * m)
+    let Cmax := Nat.ceil ((1 + 13 * g / 20) * m)
+    let B := (asymmetricBandTuples d W Cmin Cmax).card
+    80 ≤ g * m →
+    11 ≤ ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W Cmin →
+    ((d - 1 : ℕ) : ℝ) * simplexTailRatio (d - 1) W (Cmax + 1) ≤ 13 / 50 →
+    (Module.finrank F (LinearMap.range
+      (asymmetricBandLocalConstraint (d := d) (m := m) (W := W)
+        (Cmin := Cmin) (Cmax := Cmax) (L := (m : ℝ) * D * (1 + g))
+        hD center received)) : ℝ) ≤
+      10 / 3 * g * a ^ 2 / H ^ 2 * B * (m : ℝ) ^ 3 *
+        (d : ℝ) ^ (-g / (2 + g)) := by
+  dsimp only
+  intro hgm hlower hupper
+  apply finrank_asymmetricBandLocalConstraint_le_normalized_of_band_card_lower
+    g d D center received hg hg' hd hD hgm
+  simpa only [mul_div_assoc] using
+    asymmetricBand_card_lower_of_tail_margins (d := d) hlower hupper
 
 end ReedSolomon.HiddenDerivative.SharperBand

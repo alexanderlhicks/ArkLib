@@ -5,7 +5,7 @@ These finite tests are not a proof of the proposed uniform 5.75 theorem.
 
 from collections import Counter
 from fractions import Fraction
-from math import comb, factorial, exp, log
+from math import comb, factorial, exp, log, prod
 
 
 def simplex(r, budget):
@@ -81,6 +81,26 @@ def scalar_checks():
           float(c * c) * exp(float(c / 2)))
 
 
+def exact_tail_checks():
+    pairs = 0
+    for r in range(6):
+        for budget in range(13):
+            def p(t):
+                return (Fraction(comb(budget - t + r, r), comb(budget + r, r))
+                        if t <= budget else Fraction(0))
+
+            for t in range(budget + 1):
+                assert p(t) == prod(1 - Fraction(t, budget + i + 1) for i in range(r))
+                assert (1 - Fraction(t, budget + 1)) ** r <= p(t)
+            for s in range(budget + 2):
+                for t in range(budget + 2):
+                    assert p(s + t) <= p(s) * p(t)
+                    pairs += 1
+    # This guards against a spurious point from truncated natural subtraction.
+    assert comb(max(2 - 3, 0) + 3, 3) == 1
+    print('exact tail-product and correlation checks:', pairs, 'threshold pairs')
+
+
 def illustrative_sizes():
     for gap in (0.24, 0.1, 0.05, 0.01):
         row = []
@@ -93,5 +113,6 @@ def illustrative_sizes():
 
 if __name__ == '__main__':
     exact_checks()
+    exact_tail_checks()
     scalar_checks()
     illustrative_sizes()

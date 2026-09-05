@@ -16,6 +16,9 @@ Branch: `review/all-rate-rs-refinements`.
 | Canonical certificate | Exact-list and `Code.Lambda` consequences; convenient prefactor `5(d+1)m²` | Proved |
 | Finite sorting bridge | Weighted sum preserved, degree equals maximum, factorial fiber count | Proved |
 | Finite mass adapter | Maximum-event mass implies normalized band cardinality | Proved |
+| Exact coordinate tails | Guarded residual-simplex count, product ratio, negative correlation | Proved |
+| Maximum band mass | Second-moment lower bound minus an upper union bound | Proved |
+| Exponential tail bounds | Finite lower correction and upper denominator `W+r` | Proved |
 | Sharper rank | Coefficient `10/3` conditional on band coefficient `13/20` | Proved with explicit premise |
 | Candidate endpoint | Order `ceil(exp((23/4)/δ))` satisfies scalar threshold `540` | Proved |
 | Uniform `13/20` mass | Maximum-coordinate tail estimates at the prescribed parameters | Still open in Lean |
@@ -95,8 +98,26 @@ Pr[Cmin≤max u≤Cmax] ≥ μ/(1+μ) - ν.
 The review's finite analytic argument targets `μ>11` and `ν<13/50`, giving
 `11/12-13/50=197/300>13/20`. At `d=ceil(exp(5.75/δ))`, it uses
 `gH/(1+g/2)≥5.75`, `1/2≤H_(d-1)-log(d-1)≤1`, and explicitly bounded rounding errors below `1/100`.
-Those uniform tail estimates are **not yet a Lean theorem**. Neither an axiom nor a fabricated
-completed capstone stands in for them. The scalar exponential margins are already checked.
+The finite identities, negative correlation, second-moment and union bounds are now proved in
+[SimplexCoordinateTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexCoordinateTail.lean)
+and [SimplexMaximumTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexMaximumTail.lean).
+In particular, `asymmetricBand_card_lower_of_tail_margins` proves the `13/20` band count from
+the two explicit numerical premises `11≤μ` and `ν≤13/50`.
+The rank adapter `SharperBand.finrank_asymmetricBandLocalConstraint_le_normalized_of_tail_margins`
+then gives the `10/3` bound for the actual local constraint without a separate band-count premise.
+
+[SimplexTailBounds](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexTailBounds.lean)
+also proves the discrete exponential estimates
+
+```text
+exp(-r*z/(1-z)) ≤ p(t),  z=t/(W+1),  t≤W
+p(t) ≤ exp(-r*t/(W+r)),  r>0.
+```
+
+The lower exponent equals `-r*z-r*z²/(1-z)`, so the finite correction is retained.
+The missing uniform step is now to discharge the numerical tail premises for the actual rounded
+all-rate parameters. Those uniform estimates are **not yet a Lean theorem**. No axiom or
+fabricated completed capstone stands in for them. The scalar exponential margins are checked.
 
 Treat this as progress over the pinned implementation, not a settled priority claim or a review
 of the complete manuscript.
@@ -111,7 +132,8 @@ With the pinned Lean/dependency setup available:
 
 This builds the relevant modules, runs `scripts/AllRateRefinementAudit.lean` under `--trust=0`,
 rejects principal-theorem axioms other than `propext`, `Classical.choice`, and `Quot.sound`,
-and runs exact integer/rational experiments on 65 small simplexes and 2275 bands.
+and runs exact integer/rational experiments on 65 small simplexes and 2275 bands, plus 6084
+threshold pairs for the product and correlation formulas (including dimension zero).
 The tests illustrate and regression-check the counting identities; they do not prove a uniform
 asymptotic theorem. The script does not upload artifacts or run a decoder benchmark.
 
@@ -124,12 +146,12 @@ Before integration, also run:
 The focused audit complements, rather than replaces, the repository-wide axiom sweep and style,
 runtime, import, and documentation gates.
 
-The focused command passed on 2026-09-05: all 15 principal declarations had only the accepted
+The focused command passed on 2026-09-05: all 31 audited declarations had only the accepted
 logical axioms, the concrete Lean examples checked, and the exact finite tests passed on
-65 simplexes, 27,118 points, and 2,275 bands. Documentation integrity, knowledge-base lint,
+65 simplexes, 27,118 points, 2,275 bands, and 6,084 threshold pairs. Documentation integrity, knowledge-base lint,
 shell syntax, and whitespace checks also passed. The full `./scripts/validate.sh --axioms`
-command passed, including the fixture matrix and the regression sweep over 14,368 declarations
-in 566 modules: no new axiom or `sorry` taint. Existing unrelated baseline debt is unchanged.
+command passed, including the fixture matrix and the regression sweep: no new axiom or `sorry`
+taint. Existing unrelated baseline debt is unchanged.
 
 ## Optional offline transport
 

@@ -1,6 +1,6 @@
 # Finite argument for the sharper band count
 
-This note records the mathematical argument for the remaining uniform tail estimate. The sorting/permutation bridge and mass-to-band adapter are now proved in [SimplexPartitionCounting](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean). The conditional rank and endpoint estimates also compile. The uniform tail estimates below and the complete `5.75` construction/list theorem are not yet formalized.
+This note records the mathematical argument for the remaining uniform tail estimate. The sorting/permutation bridge and mass-to-band adapter are proved in [SimplexPartitionCounting](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean). The exact finite coordinate tails, negative correlation, second-moment maximum bound, and exponential tail bounds are also proved, as detailed below. The conditional rank and endpoint estimates compile. The uniform numerical estimates at the prescribed parameters and the complete `5.75` construction/list theorem are not yet formalized.
 
 This is a proof proposal over the pinned implementation, not a review of the complete manuscript.
 No novelty or runtime claim is made.
@@ -34,6 +34,11 @@ B\ge\frac{|\{u\in U:C_{\min}\le\max_i u_i\le C_{\max}\}|}{r!}.
 There is no coordinate-floor loss. The factorial is an orbit-size bound, not a claim that all orbits have the same size. This is a partition-conjugation viewpoint; the standard correspondence and restricted generating functions are documented in [NIST DLMF §26.9](https://dlmf.nist.gov/26.9).
 
 ## 2 An exact formula and a simple uniform lower bound
+
+Equations (2) and (3), including the necessary over-budget guard and zero-mean case, are proved in
+[SimplexCoordinateTail](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexCoordinateTail.lean)
+and [SimplexMaximumTail](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexMaximumTail.lean).
+The inclusion-exclusion formula (4) is exact-test-checked but not yet formalized.
 
 For `r≥1`, under the uniform distribution on `U`, for integer `0≤t≤W`,
 
@@ -79,6 +84,10 @@ F(b):=|\{u\in U:\max u\le b\}|
 Define `F(−1)=0`; the band event count is `F(Cmax)−F(Cmin−1)`. **The condition on each term is essential:** using truncated natural subtraction inside the binomial without excluding `j(b+1)>W` would introduce spurious terms.
 
 ## 3 Uniform finite estimates at `c₀=23/4`
+
+[SimplexTailBounds](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexTailBounds.lean)
+proves the general exponential inequalities used below. Substitution of the prescribed rounded
+parameters and the uniform numerical error estimates in this section remain proof obligations.
 
 Now prescribe
 
