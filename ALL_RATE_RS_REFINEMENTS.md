@@ -1,219 +1,174 @@
-# All-rate RS refinements: code handoff
+# All-rate RS refinements: verified `5.5` milestone
 
-Research work in progress for code review.
-This is a code branch on top of `075c65576b53c04e54a8c59cdf7c466cc9ac157f`, not a claim
-that the complete unpublished manuscript or its decoder runtime has been verified.
+The quantitative construction and list-bound milestone is proved in Lean.
+This branch refines Quang Dao's implementation at
+`075c65576b53c04e54a8c59cdf7c466cc9ac157f`; it does not claim to verify the complete manuscript,
+an efficient decoder, or its runtime.
 
 Branch: `review/all-rate-rs-refinements`.
 
-## What is implemented
+## The theorem to review first
 
-| Layer | New result | Status |
-|---|---|---|
-| Root counting | Exact good-witness denominator; division-free eighth-budget count | Proved |
-| Band list adapter | Integer-rounded `32/7` coefficient with the eighth-budget premise | Proved |
-| All-rate frontend | Default prime-field list bound with `floor(32(d+1)m²q^(2d)/7)` | Proved |
-| Canonical certificate | Exact-list and `Code.Lambda` consequences; convenient prefactor `5(d+1)m²` | Proved |
-| Finite sorting bridge | Weighted sum preserved, degree equals maximum, factorial fiber count | Proved |
-| Finite mass adapter | Maximum-event mass implies normalized band cardinality | Proved |
-| Exact coordinate tails | Guarded residual-simplex count, product ratio, negative correlation | Proved |
-| Maximum band mass | Second-moment lower bound minus an upper union bound | Proved |
-| Exponential tail bounds | Finite lower correction and upper denominator `W+r` | Proved |
-| Sharper rank | Coefficient `10/3` conditional on band coefficient `13/20` | Proved with explicit premise |
-| Candidate endpoint | Order `ceil(exp((23/4)/δ))` satisfies scalar threshold `540` | Proved |
-| Sharper dimension | Cubic denominator `140` instead of `162`, with finite ceiling reserve | Proved |
-| Tunable endpoint | Uniform `c² exp(c/2)` lower bound for every `c≥4` | Proved |
-| Further candidate endpoint | Order `ceil(exp((11/2)/δ))` exceeds the new threshold `1400/3` | Proved |
-| Interpolation adapter | Actual nonzero band polynomial from sharper mass and endpoint | Proved with explicit premises |
-| Uniform `13/20` mass | Maximum-coordinate tail estimates at the prescribed parameters | Still open in Lean |
-| Full smaller-order construction/list capstone | Parameter assembly plus the missing tail estimate | Not claimed |
+For every `0 < δ < 1/4`, define
 
-No new `sorry`, project axiom, native-computation proof, or runtime claim is introduced.
-The original `6.76` construction and larger-field theorem are preserved.
+```text
+d = ceil(exp((11/2)/δ))
+H = H_(d−1)
+m = ceil(100*d²*H).
+```
 
-## Review the unconditional improvement first
+For every `n ≥ 8m`, every `1 ≤ k ≤ n`, every prime `q ≥ n`, every injective
+evaluation domain `Fin n ↪ ZMod q`, and every received word, the number of polynomials
+of degree less than `k` agreeing at least `A = k + ceil(δn)` times is at most
 
-1. In [SeparantRootCount](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/RootFinding/SeparantRootCount.lean),
-   the division-free inequality `(S-H)*N ≤ S*P` now has an exact natural-division corollary
-   when `H<S`. Under `8H≤S`, it also gives `7N≤8P`.
-2. In [BandConstruction](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/BandConstruction.lean),
-   `agreeingPolynomials_encard_le_div_seven_of_band_certificate` carries that bound through the
-   original message-degree and agreement frontend.
-3. In [StrongBand](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/StrongBand.lean),
-   `strong_band_pointwise_div_seven` discharges the budget from the original prescribed parameters.
-   `strong_band_certificate_div_seven` includes the exact list, canonical relative-radius bound,
-   and infeasible-threshold case. `strong_band_certificate_five` supplies a simpler gap-only factor.
+```text
+floor(32*(d+1)*m²*q^(2d)/7).
+```
 
-The original block hypothesis gives `8mA≤q²`, and `d<K` gives
-`max(0,mA+d-K)≤mA`. Thus the default quadratic-extension branch already has the required
-eighth-budget condition. The original degree-one larger-field branch has only a half-budget
-condition: its old prefactor is intentionally not changed.
+The floor is taken after multiplying by the field power. If `A > n`, the list is empty.
+There is no extra evaluation point or padding-field assumption; `q = n` is included.
 
-The natural floor applies to the whole product. It is not moved inside a gap-only factor.
+Start with
+[RefinedBand](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/RefinedBand.lean):
 
-## Then review the new finite counting argument
+- `refined_hidden_derivative_construction`: an actual nonzero interpolant at this order
+  and multiplicity, with the original ambient dimension and each jet degree at most `2m`.
+- `refined_band_pointwise_div_seven`: the exact polynomial-list bound above.
+- `refined_band_certificate_div_seven`: the canonical exact-list certificate, including
+  `Code.Lambda` at radius `1 − k/n − δ` and the infeasible-threshold guarantee.
+- `refined_band_certificate_of_large_field`: bound `8*(d+1)*m²*q^d` under the original
+  larger-field condition `2*(m*A+d−K) ≤ q`, with truncated natural subtraction and
+  `K = max(k, floor(δn/2))`.
+- `refined_quantitative_all_rate`: the improved small-gap theorem together with the
+  existing order-zero list bounds for `δ ≥ 1/4`.
+
+The larger-field branch has only a half-field separant budget, so it retains prefactor `8`.
+The default quadratic-extension branch has the stronger eighth-field budget and prefactor
+`32/7`. Neither branch infers characteristic from the cardinality of an arbitrary field:
+the frontend explicitly requires a prime field.
+
+The original `6.76` interfaces are preserved. In
+[RefinedBandParameters](ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/RefinedBandParameters.lean),
+`refinedDerivativeOrder_le_strong` and `refinedBandMultiplicity_le_strong` verify that
+both the rounded order and block threshold do not increase. Ignoring negligible ceiling
+effects, the derivative-order scale improves by `exp(1.26/δ)`; at `δ=0.1` this is about
+`296,559`. This is a parameter improvement, not a measured decoding speedup.
+
+## What closes the proof
+
+| Layer | Verified contribution |
+|---|---|
+| Root counting | Exact good-witness denominator and the integer-rounded `32/7` bound |
+| Sorting bridge | Weighted sum preserved, ordinary degree equals maximum, at most `r!` preimages |
+| Finite tails | Guarded residual-simplex count, exact product, negative correlation |
+| Maximum event | Second-moment lower bound minus an upper union bound |
+| Uniform band mass | Coefficient `13/20` at the actual rounded `5.5` parameters |
+| Local rank | Normalized coefficient `10/3` from that mass |
+| Dimension | Cubic denominator `140`, with a finite reserve for both ceilings |
+| Endpoint | Strict scalar bound `>1400/3` at `c=11/2` |
+| Assembly | Exact integer dimension exceeds the combined local budgets |
+| Frontend | Actual construction, exact lists, canonical radius, both field regimes |
+
+### Exact finite counting
 
 [SimplexPartitionCounting](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean)
-sorts a tuple `u` into descending coordinates `x`, extends `x` by zero, and sets
-`c_i=x_i-x_(i+1)`. It proves:
+sorts `u ∈ N^r` with `sum u ≤ W` into `x₁≥…≥xᵣ≥0` and takes consecutive gaps.
+It proves `sum j*c_j = sum u`, `sum c_j = max u`, and an at-most-`r!` fiber bound.
+Thus a maximum-coordinate event of mass `η` gives at least `η W^r/(r!)²` band tuples.
+Repeated coordinates and the zero-dimensional convention are handled exactly.
+
+[SimplexCoordinateTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexCoordinateTail.lean)
+and
+[SimplexMaximumTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexMaximumTail.lean)
+prove, for the uniform ordinary simplex,
 
 ```text
-sum (i+1)*c_i = sum u_i
-sum c_i       = max u_i
-(c, sorting permutation) determines u
+p(t) = choose(W-t+r,r)/choose(W+r,r)   if t≤W, otherwise 0
+p(s+t) ≤ p(s)*p(t)
+μ = r*p(Cmin),   ν = r*p(Cmax+1)
+Pr[Cmin≤max u≤Cmax] ≥ μ/(1+μ) − ν.
 ```
 
-Consequently, a simplex event with `Cmin≤max u≤Cmax` has cardinality at most
-`card(asymmetricBandTuples)*r!`. This avoids the old coordinate-floor loss. The zero-dimensional
-case is included, and no equal-fiber-size assumption is made.
+The over-budget guard is essential: truncated subtraction inside an unguarded binomial would
+create spurious points. The proof uses negative correlation, not independence.
 
-The last theorem converts any finite maximum-event mass certificate into the precise
-`mass * W^r/(r!)²` band lower bound consumed by the rank calculation.
+### Uniform errors, now discharged
 
-[SharperBandNormalizedRank](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/SharperBandNormalizedRank.lean)
-reuses the existing generic estimates and proves the improved conditional rank coefficient:
+[SimplexBandParameters](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexBandParameters.lean)
+proves `1000 H² ≤ d` whenever `log d ≥ 22`, using an exact rational Taylor bound and
+`H ≤ log d + 3/5`. It also uses `1/2 ≤ H−log(d−1) ≤ 3/5`.
+The multiplicity gives `1000 H² ≤ m`. These bounds absorb the finite corrections:
 
 ```text
-(9/8)*(20/13)*(101/100)*(19/10) < 10/3
-162*(10/3) = 540
+r*z²/(1−z) ≤ 1/100,  z=Cmin/(W+1)<1
+2H/d + 2H²/m ≤ 4/1000 < 1/100.
 ```
 
-[SharperBandEndpoint](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SharperBandEndpoint.lean)
-reuses generic endpoint monotonicity and proves the new low-/high-rate endpoint and multiplicity
-bounds at `23/4=5.75`. The crucial numeric margin is certified by rational exponential partial sums,
-not floating-point computation.
-
-## Further improvement: count more of each band fiber
-
-[AsymmetricBandDimensionBound](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/AsymmetricBandDimensionBound.lean)
-now exposes the simplex fraction `θ` and upper-cutoff slope `β`. The sufficient rounding condition is
+The all-rate slack inequality gives `gH/(1+g/2) ≥ 11/2`.
+[SimplexBandMass](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexBandMass.lean)
+then proves
 
 ```text
-2 ≤ (1-β-θ)*g*m
-dimension ≥ B*D*m³*g³*θ³/6.
+μ ≥ exp(269/100) > 14
+ν ≤ exp(-263/200) < 27/100
+14/15 − 27/100 = 199/300 > 13/20.
 ```
 
-For `β=13/20`, take `θ=17499/50000=0.34998`, leaving `gm/50000` for both ceilings.
-The existing hypotheses `d≥1000` and `gm≥100(d+1)` imply `gm≥100000`, so this gives
+There is no logarithm of a potentially zero upper-tail probability. The upper exponential
+estimate includes thresholds exceeding the whole budget. The lower threshold is proved
+feasible, rather than assumed.
+
+### Rank, dimension, and strict separation
+
+The sharper rank coefficient follows from
+`(9/8)*(20/13)*(101/100)*(19/10) = 17271/5200 < 10/3`.
+
+The dimension argument uses upper-cutoff slope `β=13/20` and simplex fraction
+`θ=17499/50000`, leaving `gm/50000≥2` for both ceilings. Since `θ³/6>1/140`,
 
 ```text
-dimension ≥ B*D*m³*g³/140
-140*(10/3) = 1400/3.
+dimension ≥ B*D*m³*g³/140.
 ```
 
-This is a `81/70 ≈ 1.157` factor improvement in the dimension lower bound under the prescribed
-large-order hypotheses. The old `/162` theorem and its smaller multiplicity domain are preserved.
-There is no band-mass premise in the dimension improvement itself.
+Taking the limiting fraction `7/20` without a reserve is unsafe; the audit contains a concrete
+counterexample. No real-valued dimension lower bound is treated as an attained dimension.
 
 [TunableBandEndpoint](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/TunableBandEndpoint.lean)
-proves both rate regimes and the multiplicity bound with a variable `c≥4`, then specializes to
-`c=11/2=5.5`. Its high-rate endpoint is `473.1896… > 1400/3`, certified by a rational Taylor sum.
+proves the endpoint lower bound `c² exp(c/2)` in both rate regimes for every `c≥4`.
+At `c=11/2`, an exact rational Taylor certificate gives
+`c² exp(c/2)>1400/3=140*(10/3)`.
 [SharperBandComparison](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/SharperBandComparison.lean)
-connects the improved constants to the exact integer dimension comparison and a genuine nonzero
-band interpolant, conditional on `13/20` band mass and the endpoint inequality.
+turns these inequalities into strict separation of the actual integer counts.
+The refined parameter assembly discharges all its premises.
 
-**The full `5.5` list-decoding bound is not yet proved.** The available harmonic estimate
-`H_r≤log r+3/5` suggests stronger lower-tail margins than the earlier `+1` estimate. With finite
-errors bounded by `1/100`, the new candidate gives
+See [the derivation](docs/research/all-rate-partition-count.md) for the progression from the
+earlier `5.75` candidate to the completed `5.5` result.
 
-```text
-log μ ≥ (3/5)*(11/2) - 3/5 - 1/100 = 269/100
-log ν ≤ -1/2 - (3/20)*(11/2) + 1/100 = -263/200
-μ ≥ 14,  ν ≤ 27/100
-14/15 - 27/100 = 199/300 > 13/20.
-```
+## Reproduce and audit
 
-The rational exponential margins and the finite mass adapter for these two tail bounds are proved.
-The uniform substitution of the actual rounded parameters into those analytic bounds is still open;
-neither floating-point experiments nor the scalar endpoint theorem discharge that obligation.
-See [the finite argument](docs/research/all-rate-partition-count.md#5-a-sharper-dimension-and-a-further-candidate)
-for the derivation and the precise proof boundary.
-
-## The remaining proof target is concrete
-
-The complete finite derivation, including rounding errors and every numerical margin, is in
-[the partition-count note](docs/research/all-rate-partition-count.md). Its Lean proof status is
-marked separately from the mathematical argument.
-
-For a uniform ordinary simplex `U={u in N^r : sum u≤W}`, shifting coordinates gives
-
-```text
-p(t) = Pr[u_1≥t] = choose(W-t+r,r) / choose(W+r,r)     (0≤t≤W)
-p(2t) ≤ p(t)^2
-μ = r*p(Cmin)
-ν = r*p(Cmax+1)
-Pr[Cmin≤max u≤Cmax] ≥ μ/(1+μ) - ν.
-```
-
-The review's finite analytic argument targets `μ>11` and `ν<13/50`, giving
-`11/12-13/50=197/300>13/20`. At `d=ceil(exp(5.75/δ))`, it uses
-`gH/(1+g/2)≥5.75`, `1/2≤H_(d-1)-log(d-1)≤1`, and explicitly bounded rounding errors below `1/100`.
-The finite identities, negative correlation, second-moment and union bounds are now proved in
-[SimplexCoordinateTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexCoordinateTail.lean)
-and [SimplexMaximumTail](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexMaximumTail.lean).
-In particular, `asymmetricBand_card_lower_of_tail_margins` proves the `13/20` band count from
-the two explicit numerical premises `11≤μ` and `ν≤13/50`.
-The rank adapter `SharperBand.finrank_asymmetricBandLocalConstraint_le_normalized_of_tail_margins`
-then gives the `10/3` bound for the actual local constraint without a separate band-count premise.
-
-[SimplexTailBounds](ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexTailBounds.lean)
-also proves the discrete exponential estimates
-
-```text
-exp(-r*z/(1-z)) ≤ p(t),  z=t/(W+1),  t≤W
-p(t) ≤ exp(-r*t/(W+r)),  r>0.
-```
-
-The lower exponent equals `-r*z-r*z²/(1-z)`, so the finite correction is retained.
-The missing uniform step is now to discharge the numerical tail premises for the actual rounded
-all-rate parameters. Those uniform estimates are **not yet a Lean theorem**. No axiom or
-fabricated completed capstone stands in for them. The scalar exponential margins are checked.
-
-Treat this as progress over the pinned implementation, not a settled priority claim or a review
-of the complete manuscript.
-
-## Reproduce
-
-With the pinned Lean/dependency setup available:
+With the pinned Lean/dependency setup:
 
 ```bash
 ./scripts/check-all-rate-refinements.sh
-```
-
-This builds the relevant modules, runs `scripts/AllRateRefinementAudit.lean` under `--trust=0`,
-rejects principal-theorem axioms other than `propext`, `Classical.choice`, and `Quot.sound`,
-and runs exact integer/rational experiments on 65 small simplexes and 2275 bands, plus 6084
-threshold pairs for the product and correlation formulas (including dimension zero), and 60
-dimension-rounding cases including the exact multiplicity threshold.
-The tests illustrate and regression-check the counting identities; they do not prove a uniform
-asymptotic theorem. The script does not upload artifacts or run a decoder benchmark.
-
-Before integration, also run:
-
-```bash
 ./scripts/validate.sh --axioms
 ```
 
-The focused audit complements, rather than replaces, the repository-wide axiom sweep and style,
-runtime, import, and documentation gates.
+The focused script builds the capstones, checks 62 principal declarations under `--trust=0`,
+and rejects every axiom except `propext`, `Classical.choice`, and `Quot.sound`.
+Its Lean canaries include the explicit `δ=0.1` order, the quarter-gap boundary, and the
+full-length `q=n` canonical bound.
 
-The audit now covers 45 principal declarations, including the new dimension, tunable endpoint,
-interpolation, and tail-margin theorems. Its Lean canaries include an explicit counterexample to
-using the limiting `7/20` simplex fraction without reserving room for ceilings. All new scalar
-certificates also have independent exact-rational Taylor-sum checks.
+Exact integer/rational experiments check 65 simplexes, 27,118 points, 2,275 bands, 6,084
+threshold pairs, 60 dimension-rounding cases, and the rational exponential margins.
+These finite examples illustrate the proofs; the uniform theorem is established by Lean,
+not by the experiments. The scripts do not upload artifacts or run a decoder benchmark.
 
-## Optional offline transport
+The repository-wide validator additionally checks the warning budget, source policy, runtime
+regressions, imports, documentation, and axiom-sweep fixtures. The branch introduces no
+`sorry`, project axiom, native-computation proof, or claim to efficient decoding.
 
-An incremental Git bundle can be fetched into a repository containing the pinned base:
-
-```bash
-git bundle verify /path/to/all-rate-rs-refinements.bundle
-git fetch /path/to/all-rate-rs-refinements.bundle \
-  review/all-rate-rs-refinements:review/all-rate-rs-refinements
-git switch review/all-rate-rs-refinements
-```
-
-The bundle contains the committed code,
-audit, tests, and this handoff, not the local research scratch files or the user's other work.
+This is an improvement over the pinned implementation, not a settled literature-priority claim.
+The separate public zero-padding observation means qualitative all-rate coverage itself should
+not be presented as our novelty. The contribution here is the verified quantitative refinement.
 
 The proofs and review were developed with Codex; adaptations preserve Quang's original file credit.

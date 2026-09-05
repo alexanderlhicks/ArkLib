@@ -193,6 +193,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegime
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.LowOrderRegimeCanary
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.Main
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RateCover
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RefinedBand
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RefinedBandParameters
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.UniformThresholds
 import ArkLib.Data.CodingTheory.ReedSolomon.Constrained
@@ -242,6 +244,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.DonorShe
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.FreeOrder
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SharperBandEndpoint
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexBandCounting
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexBandMass
+import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexBandParameters
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexCantelli
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexCoordinateTail
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SimplexMaximumTail

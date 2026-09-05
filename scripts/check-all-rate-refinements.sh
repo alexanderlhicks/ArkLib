@@ -11,6 +11,7 @@ export LAKE_ARTIFACT_CACHE=false
 export LAKE_NO_CACHE=true
 
 lake build \
+  ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RefinedBand \
   ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandNormalizedRank \
   ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandComparison \

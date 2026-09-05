@@ -1,6 +1,6 @@
 """Exact regression checks for the simplex/partition bridge; no network or file I/O.
 
-These finite tests are not a proof of the proposed smaller-order all-rate theorems.
+These finite tests illustrate the Lean proofs; they do not replace uniform verification.
 """
 
 from collections import Counter
@@ -104,11 +104,11 @@ def exact_tail_checks():
 def illustrative_sizes():
     for gap in (0.24, 0.1, 0.05, 0.01):
         row = []
-        for c in (6.76, 5.75):
+        for c in (6.76, 5.5):
             log_d = c / gap
             log_n = log(800) + 2 * log_d + log(log_d + 0.5772156649015329)
             row.append((round(log_d / log(10), 3), round(log_n / log(10), 3)))
-        print('gap / approximate (log10 d, log10 N), original and candidate:', gap, row)
+        print('gap / approximate (log10 d, log10 N), original and verified refinement:', gap, row)
 
 
 def dimension_slack_checks():
@@ -146,6 +146,11 @@ def dimension_slack_checks():
     assert taylor(lower_exponent, 12) > 14
     assert taylor(upper_exponent, 10) > Fraction(100, 27)
     assert Fraction(14, 15) - Fraction(27, 100) > Fraction(13, 20)
+    assert taylor(Fraction(22), 12) >= 1000000
+    for offset in (Fraction(0), Fraction(1, 100), Fraction(1), Fraction(10), Fraction(1000)):
+        assert 1000 * (offset + 23)**2 <= 1000000 * (1 + offset + offset**2 / 2)
+    assert Fraction(1, 1000) / (1 - Fraction(1, 1000)) < Fraction(1, 100)
+    assert 2 * Fraction(1, 1000) + 2 * Fraction(1, 1000) < Fraction(1, 100)
     print('exact dimension rounding checks:', instances, 'cases; c=11/2 scalar margins passed')
 
 

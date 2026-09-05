@@ -5,6 +5,7 @@ Authors: ArkLib Contributors
 -/
 
 import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.StrongBand
+import ArkLib.Data.CodingTheory.ReedSolomon.AllRateListDecoding.RefinedBand
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandNormalizedRank
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.SharperBandComparison
 import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.SharperBandEndpoint
@@ -21,8 +22,8 @@ Run with `lake env lean --trust=0 scripts/AllRateRefinementAudit.lean` after bui
 Missing declarations and any axiom beyond the accepted logical baseline fail this command.
 The repository-wide axiom sweep remains a separate integration gate.
 
-This audits the stronger root-count frontend and the proved pieces of the sharper band route.
-It deliberately does not advertise an unconditional smaller-order all-rate theorem.
+This audits the full `5.5` construction and quantitative all-rate theorem, together with the
+finite counting and analytic lemmas on which they depend. No runtime theorem is asserted.
 -/
 
 open ReedSolomon.HiddenDerivative ReedSolomon.AllRateListDecoding
@@ -102,6 +103,27 @@ example :
   rw [show min (1 : ℝ) ((1 / 10) / (9 / 10)) = 1 / 9 by norm_num] at h
   exact h
 
+/-- The small-gap order really uses `5.5`, not the old order hidden behind a numerical bound. -/
+example : refinedDerivativeOrder (1 / 10) = Nat.ceil (Real.exp 55) := by
+  rw [refinedDerivativeOrder_eq_ceil (by norm_num : (1 / 10 : ℝ) < 1 / 4)]
+  norm_num
+
+/-- The exact quarter boundary retains the separately proved order-zero regime. -/
+example : refinedDerivativeOrder (1 / 4) = 0 := refinedDerivativeOrder_eq_zero le_rfl
+
+/-- No padding room is hidden in the improved canonical theorem: specialize to `n=q`.
+The domain is still an arbitrary injection and the original message dimension is retained. -/
+example {δ : ℝ} {q k : ℕ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
+    (hblock : 8 * refinedBandMultiplicity δ ≤ q) (hk : 0 < k) (hkq : k ≤ q)
+    (hq : q.Prime) (domain : Fin q ↪ ZMod q) :
+    Code.Lambda (ReedSolomon.code domain k : Set (Fin q → ZMod q))
+      (capacityRadius δ q k) ≤
+        (((32 * (refinedDerivativeOrder δ + 1) * refinedBandMultiplicity δ ^ 2 *
+          q ^ (2 * refinedDerivativeOrder δ)) / 7 : ℕ) : ℕ∞) := by
+  obtain ⟨certificate⟩ := refined_band_certificate_div_seven
+    hδ hδ' hblock hk hkq hq le_rfl domain
+  exact certificate.lambda_le
+
 open Lean Elab Command in
 run_cmd do
   let declarations : Array Name := #[
@@ -149,7 +171,24 @@ run_cmd do
     ``SharperBand.band_budget_lt_dimensionCount_of_mass_and_endpoint,
     ``SharperBand.exists_nonzero_band_interpolant_of_mass_and_endpoint,
     ``asymmetricBand_card_lower_of_tail_bounds,
-    ``asymmetricBand_card_lower_of_tighter_tail_margins]
+    ``asymmetricBand_card_lower_of_tighter_tail_margins,
+    ``band_thousand_sq_add_one_le_exp,
+    ``band_harmonic_simplex_errors,
+    ``band_simplex_lower_exponent,
+    ``band_simplex_upper_exponent,
+    ``asymmetricBand_mass_of_simplex_parameters,
+    ``band_block_size_bounds_of_constant,
+    ``refinedDerivativeOrder_le_strong,
+    ``refinedBandMultiplicity_le_strong,
+    ``refined_band_rate_parameter_estimates,
+    ``refined_band_budget_lt_dimensionCount,
+    ``refined_hidden_derivative_construction,
+    ``refined_band_pointwise_div_seven,
+    ``refined_band_certificate_div_seven,
+    ``refined_band_pointwise_of_large_field,
+    ``refined_band_certificate_of_large_field,
+    ``refined_asymmetric_band,
+    ``refined_quantitative_all_rate]
   let accepted : Array Name := #[``propext, ``Classical.choice, ``Quot.sound]
   for decl in declarations do
     let axioms ← collectAxioms decl

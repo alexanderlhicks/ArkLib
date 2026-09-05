@@ -14,8 +14,8 @@ import ArkLib.Data.CodingTheory.ReedSolomon.HiddenDerivative.Parameters.BandEndp
 The same finite endpoint argument works for every `c ≥ 4`. Keeping `c` explicit avoids
 repeating the parameter proof at each improved dimension or mass constant. In particular,
 `c = 11/2` exceeds the threshold `1400/3` coming from dimension denominator `140` and
-rank coefficient `10/3`. This is a scalar theorem, not a completed list-decoding theorem:
-the stronger band count at the prescribed parameters remains a separate obligation.
+rank coefficient `10/3`. This module proves the scalar part; `SimplexBandMass` supplies the
+stronger band count and `AllRateListDecoding.RefinedBand` assembles the full list theorem.
 -/
 
 namespace ReedSolomon.HiddenDerivative

@@ -1,8 +1,8 @@
 # Finite argument for the sharper band count
 
-This note records the mathematical argument for the remaining uniform tail estimate. The sorting/permutation bridge and mass-to-band adapter are proved in [SimplexPartitionCounting](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexPartitionCounting.lean). The exact finite coordinate tails, negative correlation, second-moment maximum bound, and exponential tail bounds are also proved, as detailed below. The conditional rank and endpoint estimates compile. Section 5 records the further proved dimension improvement and `5.5` scalar endpoint. The uniform numerical estimates at the prescribed parameters and the complete smaller-order construction/list theorem are not yet formalized.
+This note records the finite argument behind the verified `5.5` all-rate refinement. The sorting/permutation bridge, exact tails, negative correlation, second-moment bound, uniform rounded-parameter estimates, and final construction/list theorem are now proved. Section 3 preserves the historical `5.75` derivation; Section 5 gives the stronger completed route. The capstone is [RefinedBand](../../ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/RefinedBand.lean).
 
-This is a proof proposal over the pinned implementation, not a review of the complete manuscript.
+This is a verified refinement of the pinned implementation, not a review of the complete manuscript.
 No novelty or runtime claim is made.
 
 ## 1 Sort an ordinary simplex instead of dividing coordinates
@@ -86,8 +86,8 @@ Define `F(−1)=0`; the band event count is `F(Cmax)−F(Cmin−1)`. **The condi
 ## 3 Uniform finite estimates at `c₀=23/4`
 
 [SimplexTailBounds](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexTailBounds.lean)
-proves the general exponential inequalities used below. Substitution of the prescribed rounded
-parameters and the uniform numerical error estimates in this section remain proof obligations.
+proves the general exponential inequalities used below. This section records the earlier
+candidate argument; the completed uniform Lean estimates use the sharper route in Section 5.
 
 Now prescribe
 
@@ -176,8 +176,9 @@ Combining (1) with stars and bars, `binom(W+r,r)≥W^r/r!`, yields
 \tag{8}
 \]
 
-The pinned parent implementation uses `29/100` in place of `13/20`. This is the proposed
-substantive gain; equation (8) remains a mathematical proof proposal, not a completed Lean theorem.
+The pinned parent implementation uses `29/100` in place of `13/20`. Equation (8) is now proved
+at the smaller constant `11/2` by `asymmetricBand_mass_of_simplex_parameters` and the refined
+parameter assembly; see Section 5.
 
 ## 4 Feed the stronger count into the existing rank and dimension bounds
 
@@ -223,7 +224,7 @@ This inequality is not justified merely by decimals: `exp(23/8)>17`, proved by a
 
 The remaining ambient and field budgets have ample room. From `n≥8m` we get `δn≥800c₀d²=4600d²`, replacing the old `5408d²`. This still gives `δn≥12`, `d<D`, and the rate interval used above. Also `gm≥100(d+1)`, `2m<q`, and `8mA≤q²` remain available. No new characteristic assumption or evaluation-set restriction is being introduced.
 
-## 5 A sharper dimension and a further candidate
+## 5 A sharper dimension and the completed 5.5 theorem
 
 The original discrete dimension proof places a simplex of side `ceil(gm/3)` inside each band
 fiber. The upper cutoff `Cmax=ceil((1+13g/20)m)` actually leaves almost `7gm/20` of the degree
@@ -243,7 +244,7 @@ The existing `d≥1000`, `gm≥100(d+1)` assumptions imply the required `gm≥10
 \boxed{\dim\ge BDm^3g^3/140.}
 \]
 
-This is a fully proved improvement, independent of the unproved uniform mass estimate. Simply
+This is a fully proved improvement, independent of the uniform mass estimate. Simply
 using `θ=7/20` would not absorb rounding: at `g=m=D=1`, the cutoff and simplex ceilings add to
 `ceil(1.65)+ceil(0.35)=3>ceil(2)`. The general theorem exposes the reserve instead of hiding it.
 
@@ -259,15 +260,15 @@ assembles the sharper mass, dimension, and endpoint into a strict inequality of 
 and an actual nonzero interpolant over any field. The mass and scalar comparison are explicit
 premises, and every denominator used in the strict comparison is positive.
 
-There is a plausible stronger mass estimate at this new constant. In the lower-edge argument,
+The stronger mass estimate at this constant is now proved. In the lower-edge argument,
 replace `H−log r≤1` with `H−log r≤3/5`, which is already proved by `band_harmonic_le_log` for
 `r≥32`. Retaining the same `1/100` finite-error allowance gives
 
 \[
-\log\mu\ge -\tfrac35+\tfrac35\cdot\tfrac{11}{2}-\tfrac1{100}
-=\tfrac{269}{100},\qquad
-\log\nu\le-\tfrac12-\tfrac3{20}\cdot\tfrac{11}{2}+\tfrac1{100}
-=-\tfrac{263}{200}.
+\mu\ge \exp\left(-\tfrac35+\tfrac35\cdot\tfrac{11}{2}-\tfrac1{100}\right)
+=\exp(\tfrac{269}{100}),\qquad
+\nu\le\exp\left(-\tfrac12-\tfrac3{20}\cdot\tfrac{11}{2}+\tfrac1{100}\right)
+=\exp(-\tfrac{263}{200}).
 \]
 
 The exponential margins `exp(269/100)>14` and `exp(263/200)>100/27` are proved. So is the
@@ -275,12 +276,40 @@ finite adapter from `μ≥14`, `ν≤27/100` to band mass `13/20`, since
 `14/15−27/100=199/300>13/20`. The old margins `μ≥11`, `ν≤13/50` are not silently reused:
 the upper-tail allowance has changed.
 
-For the remaining uniform-error proof, `d≥exp(22)>10⁸` still holds when `0<δ≤1/4` and
-`c=11/2`. The same comparison `H≤1+log d≤d^(1/4)` works: putting `t=(log d)/4≥11/2`, a
-cubic partial sum of `exp(t)` dominates `1+4t`. These inequalities give the same sub-`1/100`
-finite corrections as in Section 3. This substitution, the all-rate ambient/field parameter
-assembly at `c=11/2`, and the final list-decoding frontend are **not yet proved in Lean**.
+The proof works directly with exponentials, so it never takes the logarithm of a zero upper
+tail. The lower threshold is proved feasible; the upper estimate includes the over-budget case.
 
-The change from `5.75` to `5.5` would reduce the exponential derivative-order scale by
-`exp(0.25/δ)`; at `δ=0.1` that is about `12.2`. This illustrates a conditional parameter gain,
-not a measured decoding speedup or a completed smaller-order theorem.
+The uniform-error proof in
+[SimplexBandParameters](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexBandParameters.lean)
+uses a simpler coarse estimate than the fourth-root comparison suggested above. For `t≥22`,
+an exact rational Taylor certificate gives `exp(22)≥1000000`; multiplying by the quadratic
+Taylor lower bound at `t−22` proves
+
+\[
+1000(t+1)^2\le e^t.
+\]
+
+Since `log d≥22` and `H≤log d+3/5`, this implies `1000H²≤d`. The prescribed multiplicity
+also gives `1000H²≤m`. With `H≥1`, the lower finite correction is at most
+`(1/1000)/(1−1/1000)<1/100`, and the upper correction is at most
+`2H/d+2H²/m≤4/1000<1/100`. Every floor and ceiling is retained in the two exponent lemmas.
+
+[SimplexBandMass](../../ArkLib/Data/CodingTheory/ReedSolomon/HiddenDerivative/Parameters/SimplexBandMass.lean)
+closes the uniform `13/20` mass theorem.
+[RefinedBandParameters](../../ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/RefinedBandParameters.lean)
+then discharges the ambient-rate, multiplicity, mass, and endpoint premises of the exact
+integer dimension comparison. No counting hypothesis is left to the caller.
+
+Finally,
+[RefinedBand](../../ArkLib/Data/CodingTheory/ReedSolomon/AllRateListDecoding/RefinedBand.lean)
+proves the actual order-indexed construction, the bound
+`floor(32(d+1)m²q^(2d)/7)`, its canonical exact-list/`Code.Lambda` certificate, and the
+separate larger-field bound `8(d+1)m²q^d`. These hold uniformly for arbitrary injective
+evaluation domains, all message dimensions `1≤k≤n`, and every prime `q≥n`, assuming `n≥8m`.
+Oversized agreement thresholds are handled by empty lists. The existing order-zero list
+regime is included in `refined_quantitative_all_rate`.
+
+Compared with the earlier `5.75` candidate, the completed `5.5` theorem reduces the exponential
+order scale by `exp(0.25/δ)`; at `δ=0.1` this is about `12.2`. Relative to the pinned `6.76`
+theorem, the scale gain is `exp(1.26/δ)`, about `296,559` at that gap. These describe the
+exponential parameters, ignoring ceilings; they are not decoding-speed measurements.
